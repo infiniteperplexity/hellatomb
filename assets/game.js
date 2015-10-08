@@ -1,4 +1,4 @@
-//http://www.codingcookies.com/2013/04/07/building-a-roguelike-in-javascript-part-3b/
+//http://www.codingcookies.com/2013/04/20/building-a-roguelike-in-javascript-part-4/
 
 var Game =  {
 	_display: null,
