@@ -52,9 +52,15 @@ var Game =  {
 		this._currentScreen = screen;
 		if (!this._currentScreen !== null) {
 			this._currentScreen.enter();
-			this._currentScreen.render(this._display);
+			this.refresh();
 		}
-	}
+	},
+	refresh: function() {
+		// Clear the screen
+		this._display.clear();
+		// Render the screen
+		this._currentScreen.render(this._display);
+	},
 }
 
 window.onload = function() {
