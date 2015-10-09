@@ -28,8 +28,8 @@ Game.Screen.playScreen = {
 	enter: function() {  
 		var map = [];
 		// Create a map based on our size parameters
-		var mapWidth = 500;
-		var mapHeight = 500;
+		var mapWidth = 100;
+		var mapHeight = 48;
 		for (var x = 0; x < mapWidth; x++) {
 			// Create the nested array for the y values
 			map.push([]);
@@ -107,6 +107,21 @@ Game.Screen.playScreen = {
 				);
 			}
 		}
+		// Get the messages in the player's queue and render them
+		var messages = this._player.getMessages();
+		var messageY = 0;
+		for (var i = 0; i < messages.length; i++) {
+			// Draw each message, adding the number of lines
+			messageY += display.drawText(
+				0, 
+				messageY,
+				'%c{white}%b{black}' + messages[i]
+			);
+		}
+		// Render player HP 
+		var stats = '%c{white}%b{black}';
+		stats += vsprintf('HP: %d/%d ', [this._player.getHp(), this._player.getMaxHp()]);
+		display.drawText(0, screenHeight, stats);
 	},
 	move: function(dX, dY) {
 		// Positive dX means movement right
