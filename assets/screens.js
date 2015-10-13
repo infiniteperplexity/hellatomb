@@ -23,6 +23,7 @@ Game.Screen.startScreen = {
 Game.Screen.playScreen = {
 	_map: null,
 	_player: null,
+	_gameEnded: false,
 	enter: function() {
 		// Create a map based on our size parameters
 		var width = 100;
@@ -63,43 +64,42 @@ Game.Screen.playScreen = {
 				// Mark cell as explored
 				map.setExplored(x, y, currentDepth, true);
 			});
-		//	render the explored map cells
+		// Render the explored map cells
 		for (var x = topLeftX; x < topLeftX + screenWidth; x++) {
 			for (var y = topLeftY; y < topLeftY + screenHeight; y++) {
 				if (map.isExplored(x, y, currentDepth)) {
 					// Fetch the glyph for the tile and render it to the screen
 					// at the offset position.
-					var tile = this._map.getTile(x, y, currentDepth);
-					// The foreground color becomes dark gray if the tile has been
-					// explored but is not visible
-					var foreground = visibleCells[x + ',' + y] ?
-						tile.getForeground() : 'darkGray';
+					var glyph = this._map.getTile(x, y, currentDepth);
+					var foreground = glyph.getForeground();
+					// If we are at a cell that is in the field of vision, we need
+					// to check if there are items or entities.
+					if (visibleCells[x + ',' + y]) {
+						// Check for items first, since we want to draw entities
+						// over items.
+						var items = map.getItemsAt(x, y, currentDepth);
+						// If we have items, we want to render the top most item
+						if (items) {
+							glyph = items[items.length - 1];
+						}
+						// Check if we have an entity at the position
+						if (map.getEntityAt(x, y, currentDepth)) {
+							glyph = map.getEntityAt(x, y, currentDepth);
+						}
+						// Update the foreground color in case our glyph changed
+						foreground = glyph.getForeground();
+					} else {
+						// Since the tile was previously explored but is not 
+						// visible, we want to change the foreground color to
+						// dark gray.
+						foreground = 'darkGray';
+					}
 					display.draw(
 						x - topLeftX,
 						y - topLeftY,
-						tile.getChar(), 
+						glyph.getChar(), 
 						foreground, 
-						tile.getBackground());
-				}
-			}
-		}
-		// Render the entities
-		var entities = this._map.getEntities();
-		for (var i = 0; i < entities.length; i++) {
-			var entity = entities[i];
-			// Only render the entitiy if they would show up on the screen
-			if (entity.getX() >= topLeftX && entity.getY() >= topLeftY &&
-				entity.getX() < topLeftX + screenWidth &&
-				entity.getY() < topLeftY + screenHeight &&
-				entity.getZ() == this._player.getZ()) {
-				if (visibleCells[entity.getX() + ',' + entity.getY()]) {
-					display.draw(
-						entity.getX() - topLeftX, 
-						entity.getY() - topLeftY,	
-						entity.getChar(), 
-						entity.getForeground(), 
-						entity.getBackground()
-					);
+						glyph.getBackground());
 				}
 			}
 		}
@@ -119,7 +119,15 @@ Game.Screen.playScreen = {
 		stats += vsprintf('HP: %d/%d ', [this._player.getHp(), this._player.getMaxHp()]);
 		display.drawText(0, screenHeight, stats);
 	},
-	handleInput: function(inputType, inputData) {
+	 handleInput: function(inputType, inputData) {
+		// If the game is over, enter will bring the user to the losing screen.
+		if (this._gameEnded) {
+			if (inputType === 'keydown' && inputData.keyCode === ROT.VK_RETURN) {
+				Game.switchScreen(Game.Screen.loseScreen);
+			}
+			// Return to make sure the user can't still play
+			return;
+		}
 		if (inputType === 'keydown') {
 			// If enter is pressed, go to the win screen
 			// If escape is pressed, go to lose screen
@@ -157,6 +165,9 @@ Game.Screen.playScreen = {
 			// Unlock the engine
 			this._map.getEngine().unlock();
 		} 
+	},
+	setGameEnded: function(gameEnded) {
+		this._gameEnded = gameEnded;
 	},
 	move: function(dX, dY, dZ) {
 		var newX = this._player.getX() + dX;

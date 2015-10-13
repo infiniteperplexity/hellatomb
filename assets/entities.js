@@ -1,63 +1,17 @@
 // Create our Mixins namespace
 Game.Mixins = {};
 
-// Define our Moveable mixin
-Game.Mixins.Moveable = {
-	name: 'Moveable',
-	tryMove: function(x, y, z, map) {
-		var map = this.getMap();
-		// Must use starting z
-		var tile = map.getTile(x, y, this.getZ());
-		var target = map.getEntityAt(x, y, this.getZ());
-		// If our z level changed, check if we are on stair
-		if (z < this.getZ()) {
-			if (tile != Game.Tile.stairsUpTile) {
-				Game.sendMessage(this, "You can't go up here!");
-			} else {
-				Game.sendMessage(this, "You ascend to level %d!", [z + 1]);
-				this.setPosition(x, y, z);
-			}
-		} else if (z > this.getZ()) {
-			if (tile != Game.Tile.stairsDownTile) {
-				Game.sendMessage(this, "You can't go down here!");
-			} else {
-				this.setPosition(x, y, z);
-				Game.sendMessage(this, "You descend to level %d!", [z + 1]);
-			}
-		// If an entity was present at the tile
-		} else if (target) {
-			// If we are an attacker, try to attack
-			// the target
-			if (this.hasMixin('Attacker')) {
-				this.attack(target);
-				return true;
-			} else {
-				// If not nothing we can do, but we can't 
-				// move to the tile
-				return false;
-			}
-		// Check if we can walk on the tile
-		// and if so simply walk onto it
-		} else if (tile.isWalkable()) {	
-			// Update the entity's position
-			this.setPosition(x, y, z);
-			return true;
-		// Check if the tile is diggable, and
-		// if so try to dig it
-		} else if (tile.isDiggable()) {
-			map.dig(x, y, z);
-			return true;
-		}
-		return false;
-	}
-}
-
-
 // Main player's actor mixin
 Game.Mixins.PlayerActor = {
 	name: 'PlayerActor',
 	groupName: 'Actor',
 	act: function() {
+		// Detect if the game is over
+		if (this.getHp() < 1) {
+			Game.Screen.playScreen.setGameEnded(true);
+			// Send a last message to the player
+			Game.sendMessage(this, 'You have died... Press [Enter] to continue!');
+		}
 		// Re-render the screen
 		Game.refresh();
 		// Lock the engine and wait asynchronously
@@ -160,8 +114,12 @@ Game.Mixins.Destructible = {
 		// If have 0 or less HP, then remove ourseles from the map
 		if (this._hp <= 0) {
 			Game.sendMessage(attacker, 'You kill the %s!', [this.getName()]);
-			Game.sendMessage(this, 'You die!');
-			this.getMap().removeEntity(this);
+			// Check if the player died, and if so call their act method to prompt the user
+			if (this.hasMixin(Game.Mixins.PlayerActor)) {
+				this.act();
+			} else {
+				this.getMap().removeEntity(this);
+			}
 		}
 	}
 }
@@ -192,6 +150,21 @@ Game.Mixins.Sight = {
 		return this._sightRadius;
 	}
 }
+
+Game.Mixins.WanderActor = {
+	name: 'WanderActor',
+	groupName: 'Actor',
+	act: function() {
+		// Flip coin to determine if moving by 1 in the positive or negative direction
+		var moveOffset = (Math.round(Math.random()) === 1) ? 1 : -1;
+		// Flip coin to determine if moving in x direction or y direction
+		if (Math.round(Math.random()) === 1) {
+			this.tryMove(this.getX() + moveOffset, this.getY(), this.getZ());
+		} else {
+			this.tryMove(this.getX(), this.getY() + moveOffset, this.getZ());
+		}
+	}
+};
 
 // Message sending functions
 Game.sendMessage = function(recipient, message, args) {
@@ -231,13 +204,35 @@ Game.PlayerTemplate = {
 	maxHp: 40,
 	attackValue: 10,
 	sightRadius: 6,
-	mixins: [Game.Mixins.Moveable, Game.Mixins.PlayerActor, Game.Mixins.Attacker, Game.Mixins.Destructible, Game.Mixins.Sight, Game.Mixins.MessageRecipient]
+	mixins: [Game.Mixins.PlayerActor, Game.Mixins.Attacker, Game.Mixins.Destructible, Game.Mixins.Sight, Game.Mixins.MessageRecipient]
 };
-// Fungus template
-Game.FungusTemplate = {
+
+Game.EntityRepository = new Game.Repository('entities', Game.Entity);
+
+Game.EntityRepository.define('fungus', {
 	name: 'fungus',
 	character: 'F',
 	foreground: 'green',
 	maxHp: 10,
 	mixins: [Game.Mixins.FungusActor, Game.Mixins.Destructible]
-}
+});
+
+Game.EntityRepository.define('bat', {
+	name: 'bat',
+	character: 'B',
+	foreground: 'white',
+	maxHp: 5,
+	attackValue: 4,
+	mixins: [Game.Mixins.WanderActor, 
+			 Game.Mixins.Attacker, Game.Mixins.Destructible]
+});
+
+Game.EntityRepository.define('newt', {
+	name: 'newt',
+	character: ':',
+	foreground: 'yellow',
+	maxHp: 3,
+	attackValue: 2,
+	mixins: [Game.Mixins.WanderActor, 
+			 Game.Mixins.Attacker, Game.Mixins.Destructible]
+});
