@@ -1,4 +1,4 @@
-Game.Map = function(tiles, player) {
+Game.Map = function(tiles) {
     this._tiles = tiles;
     // Cache dimensions
     this._depth = tiles.length
@@ -12,23 +12,8 @@ Game.Map = function(tiles, player) {
     // Create a table which will hold the items
     this._items = {};
     // Create the engine and scheduler
-    this._scheduler = new ROT.Scheduler.Simple();
+    this._scheduler = new ROT.Scheduler.Speed();
     this._engine = new ROT.Engine(this._scheduler);
-    // Add the player
-    this.addEntityAtRandomPosition(player, 0);
-    // Add random entities and items to each floor.
-    for (var z = 0; z < this._depth; z++) {
-        // 15 entities per floor
-        for (var i = 0; i < 15; i++) {
-            // Add a random entity
-            this.addEntityAtRandomPosition(Game.EntityRepository.createRandom(), z);
-        }
-        // 10 items per floor
-        for (var i = 0; i < 15; i++) {
-            // Add a random entity
-            this.addItemAtRandomPosition(Game.ItemRepository.createRandom(), z);
-        }
-    }
     // Setup the explored array
     this._explored = new Array(this._depth);
     this._setupExploredArray();
@@ -178,6 +163,10 @@ Game.Map.prototype.addEntity = function(entity) {
     // them to the scheduler
     if (entity.hasMixin('Actor')) {
        this._scheduler.add(entity, true);
+    } 
+    // If the entity is the player, set the player.
+    if (entity.hasMixin(Game.EntityMixins.PlayerActor)) {
+        this._player = entity;
     }
 };
 
@@ -191,11 +180,18 @@ Game.Map.prototype.removeEntity = function(entity) {
     if (entity.hasMixin('Actor')) {
         this._scheduler.remove(entity);
     }
+    // If the entity is the player, update the player field.
+    if (entity.hasMixin(Game.EntityMixins.PlayerActor)) {
+        this._player = undefined;
+    }
 };
 
-Game.Map.prototype.updateEntityPosition = function(entity, oldX, oldY, oldZ) {
-    // Delete the old key if it is the same entity and we have old positions.
-    if (oldX) {
+
+Game.Map.prototype.updateEntityPosition = function(
+    entity, oldX, oldY, oldZ) {
+    // Delete the old key if it is the same entity
+    // and we have old positions.
+    if (typeof oldX === 'number') {
         var oldKey = oldX + ',' + oldY + ',' + oldZ;
         if (this._entities[oldKey] == entity) {
             delete this._entities[oldKey];
@@ -247,4 +243,8 @@ Game.Map.prototype.addItem = function(x, y, z, item) {
 Game.Map.prototype.addItemAtRandomPosition = function(item, z) {
     var position = this.getRandomFloorPosition(z);
     this.addItem(position.x, position.y, position.z, item);
+};
+
+Game.Map.prototype.getPlayer = function() {
+    return this._player;
 };
