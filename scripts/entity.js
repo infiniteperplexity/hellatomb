@@ -1,3 +1,5 @@
+//http://stackoverflow.com/questions/18524652/how-to-use-javascript-object-defineproperty
+
 function Entity(props) {
 	props = props || {};
 	for (var p in props if p ) {
@@ -9,7 +11,7 @@ function Entity(props) {
 		},
 		set: function(_x) {
 			this._x = _x;
-		}	
+		}
 	});
 	Object.defineProperty(this,"y",{
 		get: function() {
@@ -17,7 +19,7 @@ function Entity(props) {
 		},
 		set: function(_x) {
 			this._y = _y;
-		}	
+		}
 	});
 	Object.defineProperty(this,"z",{
 		get: function() {
@@ -25,7 +27,7 @@ function Entity(props) {
 		},
 		set: function(_z) {
 			this._z = _z;
-		}	
+		}
 	});
 	Object.defineProperty(this,"name",{
 		get: function() {
@@ -33,7 +35,7 @@ function Entity(props) {
 		},
 		set: function(_name) {
 			this._name = _name;
-		}	
+		}
 	});
 	Object.defineProperty(this,"name",{
 		get: function() {
@@ -41,7 +43,7 @@ function Entity(props) {
 		},
 		set: function(_name) {
 			this._name = _name;
-		}	
+		}
 	});
 }
 
@@ -84,13 +86,13 @@ Object.defineProperties(Tile.prototype,"tileType",{
 		this.tileType = ttype;
 		this.opaque = ttype.opaque;
 		this.solid = ttype.solid;
-		this.unwalkable = tttype.fallable || this.solid;		
-	}	
+		this.unwalkable = tttype.fallable || this.solid;
+	}
 });
 Object.defineProperties(Tile.prototype,"fallable",{
 	get: function() {
 		return this.ttype.fallable;
-	}	
+	}
 });
 Object.defineProperties(Tile.prototype,"symbol",{
 	get: function() {
@@ -110,7 +112,7 @@ Object.defineProperties(Tile.prototype,"lightLevel",{
 	//solution: prioritize memory for serialization, and speed in play.
 	// pathfinding and fov are the pain points/
 	// fov wants direct access to opacity.
-	// pathfinding wants direct access to...well...not 
+	// pathfinding wants direct access to...well...not
 FloorTile = {symbol: "."};
 WallTile = {symbol: "#", opaque: true, solid: true};
 PitTile = {symbol: "_",fallable: true};

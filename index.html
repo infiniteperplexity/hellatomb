@@ -5,8 +5,168 @@
 	</head>
 	<body>
 		<script src="assets/rot.min.js"></script>
-		<script src="assets/sprintf.min.js"></script>
-		<script src="scripts/game.js"></script>
-		<script src="scripts/ui.js"></script>
-	</body>
+		<script>
+			// set up the game
+			var Game = {};
+			Game.display = new ROT.Display({width: 80, height: 25});
+			document.body.appendChild(Game.display.getContainer());
+
+			// set up a really good keyboard input system
+			Game.boundKeys = [];
+			Game.bindKey = function(key, func) {
+				//alert(ROT.VK_D);
+				Game.boundKeys[ROT[key]] = func;
+			}
+			Game.keydown = function(key) {
+				Game.boundKeys[key.keyCode]();
+			}
+			window.addEventListener('keydown',Game.keydown);
+			var Player = {};
+			Player.actions = {};
+			Player.actions.tryMoveWest = function() {Player.actions.tryMove('W');};
+			Player.actions.tryMoveNorth = function() {Player.actions.tryMove('N');};
+			Player.actions.tryMoveEast = function() {Player.actions.tryMove('E');};
+			Player.actions.tryMoveSouth = function() {Player.actions.tryMove('S');};
+			Player.actions.tryMoveNorthWest = function() {Player.actions.tryMove('NW');};
+			Player.actions.tryMoveNorthEast = function() {Player.actions.tryMove('NE');};
+			Player.actions.tryMoveSouthWest = function() {Player.actions.tryMove('SW');};
+			Player.actions.tryMoveSouthEast= function() {Player.actions.tryMove('SE');};
+			Player.actions.tryMove = function(dir) {
+				if (dir==='N') {
+					Player.entity.y-=1;
+				} else if (dir==='NW') {
+					Player.entity.x-=1;
+					Player.entity.y-=1;
+				} else if (dir==='NE') {
+					Player.entity.x+=1;
+					Player.entity.y-=1;
+				} else if (dir==='S') {
+					Player.entity.y+=1;
+				} else if (dir==='SW') {
+					Player.entity.x-=1;
+					Player.entity.y+=1;
+				} else if (dir==='SE') {
+					Player.entity.x+=1;
+					Player.entity.y+=1;
+				} else if (dir==='W') {
+					Player.entity.x-=1;
+				} else if (dir==='E') {
+					Player.entity.x+=1;
+				}
+				Game.render();
+				Map.engine.unlock();
+			};
+			// bind number pad movement
+			Game.bindKey("VK_NUMPAD1",Player.actions.tryMoveSouthWest);
+			Game.bindKey("VK_NUMPAD2",Player.actions.tryMoveSouth);
+			Game.bindKey("VK_NUMPAD3",Player.actions.tryMoveSouthEast);
+			Game.bindKey("VK_NUMPAD4",Player.actions.tryMoveWest);
+			Game.bindKey("VK_NUMPAD6",Player.actions.tryMoveEast);
+			Game.bindKey("VK_NUMPAD7",Player.actions.tryMoveNorthWest);
+			Game.bindKey("VK_NUMPAD8",Player.actions.tryMoveNorth);
+			Game.bindKey("VK_NUMPAD9",Player.actions.tryMoveNorthEast);
+			// bind arrow movement
+			Game.bindKey("VK_LEFT",Player.actions.tryMoveWest);
+			Game.bindKey("VK_RIGHT",Player.actions.tryMoveEast);
+			Game.bindKey("VK_UP",Player.actions.tryMoveNorth);
+			Game.bindKey("VK_DOWN",Player.actions.tryMoveSouth);
+			// bind keyboard movement
+			Game.bindKey("VK_Z",Player.actions.tryMoveSouthWest);
+			Game.bindKey("VK_S",Player.actions.tryMoveSouth);
+			Game.bindKey("VK_X",Player.actions.tryMoveSouth);
+			Game.bindKey("VK_C",Player.actions.tryMoveSouthEast);
+			Game.bindKey("VK_A",Player.actions.tryMoveWest);
+			Game.bindKey("VK_D",Player.actions.tryMoveEast);
+			Game.bindKey("VK_Q",Player.actions.tryMoveNorthWest);
+			Game.bindKey("VK_W",Player.actions.tryMoveNorth);
+			Game.bindKey("VK_E",Player.actions.tryMoveNorthEast);
+
+			// set up a really solid map-and-tile system
+			var Map = {};
+			Map.grid = [];
+			Map.fastXGrid = [];
+			Map.fastYGrid = [];
+			Map.tiles = {
+					floorTile: 0,
+					wallTile: 1
+			}
+			Map.tileProperties = [];
+			Map.tileProperties[Map.tiles.floorTile] = {symbol: "."};
+			Map.tileProperties[Map.tiles.wallTile] = {symbol: "#", opaque: true, solid: true};
+			for (var x = 0; x < 80; x++) {
+				Map.grid[x] = [];
+				for (var y = 0; y < 25; y++) {
+					if (x===0 || x===79 || y===0 || y===24) {
+						Map.grid[x][y] = Map.tiles.wallTile;
+					} else {
+						Map.grid[x][y] = Map.tiles.floorTile;
+					}
+					Map.fastXGrid[x*25 + y] = Map.grid[x][y];
+					Map.fastYGrid[y*80 + x] = Map.grid[x][y];
+				}
+			}
+			Map.actors = [];
+			Map.scheduler = new ROT.Scheduler.Speed();
+			Map.engine = new ROT.Engine(Map.scheduler);
+
+			//set up a really solid entity system
+			var Entity = function(template) {
+				var entity = {};
+				entity.components = [];
+				for (var i = 0; i<template.length; i++) {
+			    entity.components.push(template[i]);
+					for (var property in template[i]) {
+						entity[property] = template[i][property];
+					}
+			  }
+				return entity;
+			};
+			var CreatureTemplate = function() {return [ActorComponent(), GridComponent(), DrawableComponent()];};
+			var DrawableComponent = function () {return{symbol: "@"};};
+			var ActorComponent = function() {return {actor: null, speed: 1};};
+			var GridComponent = function() {return {x: null, y: null, level: null}};
+			var Necromancer = function() {return CreatureTemplate();}
+			var PlayerActor = {
+				act: function() {
+					Game.render();
+					Game.engine.lock();
+				}
+			};
+			Player.entity = Entity(Necromancer());
+			Player.x = Player.entity.x = 1;
+			Player.z = Player.entity.y = 1;
+			Player.entity.actor = PlayerActor;
+			Map.actors.push(Player.entity);
+
+
+			// Now set up drawing
+			Game.render = function() {
+				// draw the tiles
+				for (var x = 0; x < 80; x++) {
+					for (var y = 0; y < 25; y++) {
+						this.display.draw(
+							x,
+							y,
+							Map.tileProperties[Map.grid[x][y]].symbol,
+							"white",
+							"black"
+						);
+					}
+				}
+				// draw the actors
+				var actor;
+				for (var i = 0; i<Map.actors.length; i++) {
+					actor = Map.actors[i];
+					this.display.draw(
+						actor.x,
+						actor.y,
+						actor.symbol,
+						"white",
+						"black"
+					);
+				}
+			}
+			Game.render();
+</script>
+</body>
 </html>
