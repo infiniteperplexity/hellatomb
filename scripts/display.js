@@ -13,7 +13,17 @@ HTomb = (function(HTomb) {
     yoffset: 0
   };
 
-
+  var drawAt = function(x,y,ch,fg,bg) {
+    fg = fg || "white";
+    bg = bg || "black";
+    display.draw(
+      x-screen.xoffset,
+      y-screen.yoffset,
+      ch,
+      fg,
+      bg
+    );
+  }
   var render = function() {
     var Player = HTomb.World.Player;
     var z = Player.z;
@@ -98,5 +108,6 @@ HTomb = (function(HTomb) {
     */
     HTomb.Display.display = display;
     HTomb.Display.render = render;
+    HTomb.Display.drawAt = drawAt;
     return HTomb;
 })(HTomb);

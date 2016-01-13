@@ -38,6 +38,5 @@ HTomb = (function(HTomb) {
     caster.compute(x,y,r,show);
   };
   HTomb.FOV.visible = visible;
-
   return HTomb;
 })(HTomb);

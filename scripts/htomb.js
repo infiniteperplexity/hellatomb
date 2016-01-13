@@ -31,6 +31,7 @@ var HTomb = (function() {
   var Controls = {};
   var Entity = {};
   var FOV = {};
+  var Path = {};
 
 
   return {
@@ -41,7 +42,8 @@ var HTomb = (function() {
     World: World,
     Controls: Controls,
     Entity: Entity,
-    FOV: FOV
+    FOV: FOV,
+    Path: Path
   };
 })();
 window.onload = HTomb.init;
