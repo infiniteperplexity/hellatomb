@@ -16,6 +16,7 @@ HTomb = (function(HTomb) {
 
   var render = function() {
     var Player = HTomb.World.Player;
+    var z = Player.z;
     if (Player.x >=screen.xoffset+SCREENW-2) {
       screen.xoffset = Player.x-SCREENW+2;
     } else if (Player.x <= screen.xoffset) {
@@ -26,7 +27,6 @@ HTomb = (function(HTomb) {
     } else if (Player.y <= screen.yoffset) {
       screen.yoffset = Player.y-1;
     }
-    var z = 1;
     var level = HTomb.World.levels[z];
     var grid = level.grid;
     var xoffset = screen.xoffset;

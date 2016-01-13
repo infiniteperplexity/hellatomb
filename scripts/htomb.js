@@ -11,10 +11,11 @@ var HTomb = (function() {
   var init = function() {
     World.init();
     World.Player = HTomb.Entity.create(HTomb.Entity.Necromancer());
+    var ground = World.groundLevel(1,1);
     World.Player.x = 1;
     World.Player.y = 1;
-    World.Player.z = 1;
-    World.levels[1].critters[World.Player.x*LEVELW + World.Player.y] = World.Player;
+    World.Player.z = ground+1;
+    World.levels[ground+1].critters[World.Player.x*LEVELW + World.Player.y] = World.Player;
     //World.Player.actor = PlayerActor;
     World.actors[0] = World.Player;
     Display.render();
