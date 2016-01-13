@@ -1,57 +1,101 @@
-Game.display = new ROT.Display({width: Game.Constants.screenw, height: Game.Constants.screenh});
-document.body.appendChild(Game.display.getContainer());
+HTomb = (function(HTomb) {
+  "use strict";
+  var SCREENW = HTomb.Constants.SCREENW;
+  var SCREENH = HTomb.Constants.SCREENH;
 
-Game.screen = {
-  z: 1,
-  xoffset: 0,
-  yoffset: 0
-};
-// Now set up drawing
-Game.render = function() {
-  var p = Game.Player.entity;
-  var w = Game.Constants.screenw;
-  var h = Game.Constants.screenh;
-  var tiles = Game.World.tileProperties;
-  if (p.x >= Game.screen.xoffset+w-2) {
-    Game.screen.xoffset = p.x-w+2;
-  } else if (p.x <= Game.screen.xoffset) {
-    Game.screen.xoffset = p.x-1;
-  }
-  if (p.y >= Game.screen.yoffset+h-2) {
-    Game.screen.yoffset = p.y-h+2;
-  } else if (p.y <= Game.screen.yoffset) {
-    Game.screen.yoffset = p.y-1;
-  }
-  var z = 1;
-  var level = Game.World.levels[z];
-  var grid = level.grid;
-  var xoffset = Game.screen.xoffset;
-  var yoffset = Game.screen.yoffset;
-  // draw the tiles
-  var levelw = Game.Constants.levelw;
-  for (var x = xoffset; x < xoffset+w; x++) {
-    for (var y = yoffset; y < yoffset+h; y++) {
-      Game.display.draw(
-        x-xoffset,
-        y-yoffset,
-        tiles[grid[x][y][0]].symbol,
-        (level.visible[x*levelw+y]===true) ? "white" : "gray",
+
+  var display = new ROT.Display({width: SCREENW, height: SCREENH});
+  document.body.appendChild(display.getContainer());
+
+  var screen = {
+    z: 1,
+    xoffset: 0,
+    yoffset: 0
+  };
+
+
+  var render = function() {
+    var Player = HTomb.World.Player;
+    if (Player.x >=screen.xoffset+SCREENW-2) {
+      screen.xoffset = Player.x-SCREENW+2;
+    } else if (Player.x <= screen.xoffset) {
+      screen.xoffset = Player.x-1;
+    }
+    if (Player.y >= screen.yoffset+SCREENH-2) {
+      screen.yoffset = Player.y-SCREENH+2;
+    } else if (Player.y <= screen.yoffset) {
+      screen.yoffset = Player.y-1;
+    }
+    var z = 1;
+    var level = HTomb.World.levels[z];
+    var grid = level.grid;
+    var xoffset = screen.xoffset;
+    var yoffset = screen.yoffset;
+    var tiles = HTomb.World.tiles;
+    for (var x = xoffset; x < xoffset+SCREENW; x++) {
+      for (var y = yoffset; y < yoffset+SCREENH; y++) {
+        display.draw(
+          x-xoffset,
+          y-yoffset,
+          tiles[grid[x][y]].symbol,
+          "white",
+          "black"
+        );
+      }
+    }
+    for (var key in level.critters) {
+      var critter = level.critters[key];
+      display.draw(
+        critter.x-xoffset,
+        critter.y-yoffset,
+        critter.symbol,
+        "white",
         "black"
       );
     }
-  }
-  // this doesn't make a whole lot of sense...what about items?
-  var actor;
-  for (var i = 0; i<Game.World.actors.length; i++) {
-    actor = Game.World.actors[i];
-    if (actor.z===z && actor.x>=xoffset && actor.x<w+xoffset && actor.y>=yoffset && actor.y<h+yoffset) {
-      Game.display.draw(
-        actor.x-xoffset,
-        actor.y-yoffset,
-        actor.symbol,
-        (level.visible[actor.x*levelw+actor.y]===true) ? "white": "gray",
-        "black"
-      );
+  };
+/*
+  // could we make the "Controls" module a property of the Player entity rather than the reverse?
+  var render = function() {
+    //= Game.SCREENWorld.tileProperties;
+    if (Player.x >=screen.xoffset+SCREENW-2) {
+      screen.xoffset = Player.x-SCREENW+2;
+    } else if (Player.x <= screen.xoffset) {
+      screen.xoffset = Player.x-1;
     }
-  }
-};
+    if (Player.y >= screen.yoffset+SCREENH-2) {
+      screen.yoffset = Player.y-SCREENH+2;
+    } else if (Player.y <= screen.yoffset) {
+      screen.yoffset = Player.y-1;
+    }
+    var z = 1;
+    var level = HTomb.World.levels[z];
+    var grid = level.grid;
+    var xoffset = screen.xoffset;
+    var yoffset = screen.yoffset;
+    // draw the tiles
+    for (var x = xoffset; x < xoffset+SCREENW; x++) {
+      for (var y = yoffset; y < yoffset+SCREENH; y++) {
+        display.draw(
+          x-xoffset,
+          y-yoffset,
+          tiles[grid[x][y][0]].symbol,
+          "white",
+          "black"
+        );
+      }
+    }
+    for (var feature in HTomb.level.features) {
+
+    }
+    for (var items in HTom.level.items) {
+
+    }
+    for (var unit in HTomb.level.units) {
+
+    }
+    */
+    HTomb.Display.display = display;
+    HTomb.Display.render = render;
+    return HTomb;
+})(HTomb);

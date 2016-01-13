@@ -1,76 +1,86 @@
-Game.boundKeys = [];
-Game.bindKey = function(key, func) {
-  Game.boundKeys[ROT[key]] = func;
-};
-Game.boundKey = function(key) {
-  Game.boundKeys[key.keyCode]();
-};
-window.addEventListener("keydown", Game.boundKey);
-Game.Player.actions = {};
-Game.Player.actions.tryMoveWest = function() {Game.Player.actions.tryMove('W');};
-Game.Player.actions.tryMoveNorth = function() {Game.Player.actions.tryMove('N');};
-Game.Player.actions.tryMoveEast = function() {Game.Player.actions.tryMove('E');};
-Game.Player.actions.tryMoveSouth = function() {Game.Player.actions.tryMove('S');};
-Game.Player.actions.tryMoveNorthWest = function() {Game.Player.actions.tryMove('NW');};
-Game.Player.actions.tryMoveNorthEast = function() {Game.Player.actions.tryMove('NE');};
-Game.Player.actions.tryMoveSouthWest = function() {Game.Player.actions.tryMove('SW');};
-Game.Player.actions.tryMoveSouthEast= function() {Game.Player.actions.tryMove('SE');};
-Game.Player.actions.tryMove = function(dir) {
-  var x = Game.Player.entity.x;
-  var y = Game.Player.entity.y;
-  var newx = x;
-  var newy = y;
-  if (dir==='N') {
-    newy-=1;
-  } else if (dir==='NW') {
-    newx-=1;
-    newy-=1;
-  } else if (dir==='NE') {
-    newx+=1;
-    newy-=1;
-  } else if (dir==='S') {
-    newy+=1;
-  } else if (dir==='SW') {
-    newx-=1;
-    newy+=1;
-  } else if (dir==='SE') {
-    newx+=1;
-    newy+=1;
-  } else if (dir==='W') {
-    newx-=1;
-  } else if (dir==='E') {
-    newx+=1;
-  }
-  if (  newx<0 || newx>Game.Constants.levelw || newy<0 || newy>Game.Constants.levelh ||
-        (Game.World.tileProperties[Game.World.levels[Game.Player.entity.z].grid[newx][newy][0]].solid)) {
-    console.log("Can't go that way.");
-  } else {
-    Game.Player.entity.x = newx;
-    Game.Player.entity.y = newy;
-    Game.turn();
-  }
-};
-// bind number pad movement
-Game.bindKey("VK_NUMPAD1",Game.Player.actions.tryMoveSouthWest);
-Game.bindKey("VK_NUMPAD2",Game.Player.actions.tryMoveSouth);
-Game.bindKey("VK_NUMPAD3",Game.Player.actions.tryMoveSouthEast);
-Game.bindKey("VK_NUMPAD4",Game.Player.actions.tryMoveWest);
-Game.bindKey("VK_NUMPAD6",Game.Player.actions.tryMoveEast);
-Game.bindKey("VK_NUMPAD7",Game.Player.actions.tryMoveNorthWest);
-Game.bindKey("VK_NUMPAD8",Game.Player.actions.tryMoveNorth);
-Game.bindKey("VK_NUMPAD9",Game.Player.actions.tryMoveNorthEast);
-// bind arrow movement
-Game.bindKey("VK_LEFT",Game.Player.actions.tryMoveWest);
-Game.bindKey("VK_RIGHT",Game.Player.actions.tryMoveEast);
-Game.bindKey("VK_UP",Game.Player.actions.tryMoveNorth);
-Game.bindKey("VK_DOWN",Game.Player.actions.tryMoveSouth);
-// bind keyboard movement
-Game.bindKey("VK_Z",Game.Player.actions.tryMoveSouthWest);
-Game.bindKey("VK_S",Game.Player.actions.tryMoveSouth);
-Game.bindKey("VK_X",Game.Player.actions.tryMoveSouth);
-Game.bindKey("VK_C",Game.Player.actions.tryMoveSouthEast);
-Game.bindKey("VK_A",Game.Player.actions.tryMoveWest);
-Game.bindKey("VK_D",Game.Player.actions.tryMoveEast);
-Game.bindKey("VK_Q",Game.Player.actions.tryMoveNorthWest);
-Game.bindKey("VK_W",Game.Player.actions.tryMoveNorth);
-Game.bindKey("VK_E",Game.Player.actions.tryMoveNorthEast);
+HTomb = (function(HTomb) {
+  "use strict";
+  var LEVELW = HTomb.Constants.LEVELW;
+  var LEVELH = HTomb.Constants.LEVELH;
+  var Controls = HTomb.Controls;
+  var boundKeys = [];
+  var bindKey = function(key, func) {
+    boundKeys[ROT[key]] = func;
+  };
+  var boundKey = function(key) {
+    boundKeys[key.keyCode]();
+  };
+  window.addEventListener("keydown", boundKey);
+  Controls.actions = {};
+  Controls.actions.tryMoveWest = function() {Controls.actions.tryMove('W');};
+  Controls.actions.tryMoveNorth = function() {Controls.actions.tryMove('N');};
+  Controls.actions.tryMoveEast = function() {Controls.actions.tryMove('E');};
+  Controls.actions.tryMoveSouth = function() {Controls.actions.tryMove('S');};
+  Controls.actions.tryMoveNorthWest = function() {Controls.actions.tryMove('NW');};
+  Controls.actions.tryMoveNorthEast = function() {Controls.actions.tryMove('NE');};
+  Controls.actions.tryMoveSouthWest = function() {Controls.actions.tryMove('SW');};
+  Controls.actions.tryMoveSouthEast = function() {Controls.actions.tryMove('SE');};
+  Controls.actions.tryMove = function(dir) {
+    var x = HTomb.World.Player.x;
+    var y = HTomb.World.Player.y;
+    var newx = x;
+    var newy = y;
+    if (dir==='N') {
+      newy-=1;
+    } else if (dir==='NW') {
+      newx-=1;
+      newy-=1;
+    } else if (dir==='NE') {
+      newx+=1;
+      newy-=1;
+    } else if (dir==='S') {
+      newy+=1;
+    } else if (dir==='SW') {
+      newx-=1;
+      newy+=1;
+    } else if (dir==='SE') {
+      newx+=1;
+      newy+=1;
+    } else if (dir==='W') {
+      newx-=1;
+    } else if (dir==='E') {
+      newx+=1;
+    }
+    if (  newx<0 || newx>LEVELW || newy<0 || newy>LEVELH ||
+          (HTomb.World.tiles[HTomb.World.levels[HTomb.World.Player.z].grid[newx][newy]].solid)) {
+      console.log("Can't go that way.");
+    } else {
+      delete HTomb.World.levels[HTomb.World.Player.z].critters[x*LEVELW+y];
+      HTomb.World.levels[HTomb.World.Player.z].critters[newx*LEVELW+newy] = HTomb.World.Player;
+      HTomb.World.Player.x = newx;
+      HTomb.World.Player.y = newy;
+      HTomb.turn();
+    }
+  };
+  // bind number pad movement
+  bindKey("VK_NUMPAD1",Controls.actions.tryMoveSouthWest);
+  bindKey("VK_NUMPAD2",Controls.actions.tryMoveSouth);
+  bindKey("VK_NUMPAD3",Controls.actions.tryMoveSouthEast);
+  bindKey("VK_NUMPAD4",Controls.actions.tryMoveWest);
+  bindKey("VK_NUMPAD6",Controls.actions.tryMoveEast);
+  bindKey("VK_NUMPAD7",Controls.actions.tryMoveNorthWest);
+  bindKey("VK_NUMPAD8",Controls.actions.tryMoveNorth);
+  bindKey("VK_NUMPAD9",Controls.actions.tryMoveNorthEast);
+  // bind arrow movement
+  bindKey("VK_LEFT",Controls.actions.tryMoveWest);
+  bindKey("VK_RIGHT",Controls.actions.tryMoveEast);
+  bindKey("VK_UP",Controls.actions.tryMoveNorth);
+  bindKey("VK_DOWN",Controls.actions.tryMoveSouth);
+  // bind keyboard movement
+  bindKey("VK_Z",Controls.actions.tryMoveSouthWest);
+  bindKey("VK_S",Controls.actions.tryMoveSouth);
+  bindKey("VK_X",Controls.actions.tryMoveSouth);
+  bindKey("VK_C",Controls.actions.tryMoveSouthEast);
+  bindKey("VK_A",Controls.actions.tryMoveWest);
+  bindKey("VK_D",Controls.actions.tryMoveEast);
+  bindKey("VK_Q",Controls.actions.tryMoveNorthWest);
+  bindKey("VK_W",Controls.actions.tryMoveNorth);
+  bindKey("VK_E",Controls.actions.tryMoveNorthEast);
+
+  return HTomb;
+})(HTomb);
