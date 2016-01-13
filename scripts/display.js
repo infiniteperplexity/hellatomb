@@ -32,13 +32,14 @@ HTomb = (function(HTomb) {
     var xoffset = screen.xoffset;
     var yoffset = screen.yoffset;
     var tiles = HTomb.World.tiles;
+    var vis = HTomb.FOV.visible;
     for (var x = xoffset; x < xoffset+SCREENW; x++) {
       for (var y = yoffset; y < yoffset+SCREENH; y++) {
         display.draw(
           x-xoffset,
           y-yoffset,
           tiles[grid[x][y]].symbol,
-          "white",
+          (vis[x][y]===true) ? "red" : "white",
           "black"
         );
       }

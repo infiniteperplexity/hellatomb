@@ -18,15 +18,19 @@ var HTomb = (function() {
     World.levels[ground+1].critters[World.Player.x*LEVELW + World.Player.y] = World.Player;
     //World.Player.actor = PlayerActor;
     World.actors[0] = World.Player;
+    FOV.findVisible(World.Player.x, World.Player.y, World.Player.z, 10);
     Display.render();
   };
   var turn = function() {
     Display.render();
+    FOV.resetVisible();
+    FOV.findVisible(World.Player.x, World.Player.y, World.Player.z, 10);
   };
   var World = {};
   var Display = {};
   var Controls = {};
   var Entity = {};
+  var FOV = {};
 
 
   return {
@@ -36,7 +40,8 @@ var HTomb = (function() {
     Display: Display,
     World: World,
     Controls: Controls,
-    Entity: Entity
+    Entity: Entity,
+    FOV: FOV
   };
 })();
 window.onload = HTomb.init;
