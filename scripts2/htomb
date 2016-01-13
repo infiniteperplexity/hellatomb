@@ -1,0 +1,14 @@
+var HTomb = function() {
+
+var Constants = {};
+var LEVELW = Constants.LEVELW = 100;
+var LEVELH = Constants.LEVELH = 100;
+var NLEVELS = Constants.NLEVELS = 50;
+
+
+
+
+  return {
+
+  };
+}();

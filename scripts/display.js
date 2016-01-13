@@ -11,6 +11,7 @@ Game.render = function() {
   var p = Game.Player.entity;
   var w = Game.Constants.screenw;
   var h = Game.Constants.screenh;
+  var tiles = Game.World.tileProperties;
   if (p.x >= Game.screen.xoffset+w-2) {
     Game.screen.xoffset = p.x-w+2;
   } else if (p.x <= Game.screen.xoffset) {
@@ -22,18 +23,19 @@ Game.render = function() {
     Game.screen.yoffset = p.y-1;
   }
   var z = 1;
-  var grid = Game.World.levels[z].grid;
+  var level = Game.World.levels[z];
+  var grid = level.grid;
   var xoffset = Game.screen.xoffset;
   var yoffset = Game.screen.yoffset;
-  var tiles = Game.World.tileProperties;
   // draw the tiles
+  var levelw = Game.Constants.levelw;
   for (var x = xoffset; x < xoffset+w; x++) {
     for (var y = yoffset; y < yoffset+h; y++) {
       Game.display.draw(
         x-xoffset,
         y-yoffset,
-        tiles[grid[x][y]].symbol,
-        "white",
+        tiles[grid[x][y][0]].symbol,
+        (level.visible[x*levelw+y]===true) ? "white" : "gray",
         "black"
       );
     }
@@ -47,10 +49,9 @@ Game.render = function() {
         actor.x-xoffset,
         actor.y-yoffset,
         actor.symbol,
-        "white",
+        (level.visible[actor.x*levelw+actor.y]===true) ? "white": "gray",
         "black"
       );
     }
   }
-  Game.FOV.visibility();
 };

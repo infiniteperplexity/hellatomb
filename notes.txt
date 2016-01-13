@@ -1,0 +1,61 @@
+FOV is working now that I thought carefully about closures
+There are some problems though.  First off, field of vision is square whereas I would prefer round.  That can be fixed with a square root...
+even a fast square root?  Heck I could precompute integer-rounded square roots.
+A bigger issue is that the code is kind of a mess.  But all code is kind of a mess at this stage.
+If I just yanked out the FOV code from ROT.js and adapted it myself, I might be able to achieve really powerful optimization.
+
+What's next?
+
+Well...I think creature AIs *without* player instructions are a nice, difficult way to start.
+That will force my hand on the A-star thing.
+Then the Simplex landscape
+
+So...I'm a bit leery on this grid thing...using ultra-minimal storage for the grid squares may require keeping another grid for contents.
+What are we really dealing with here?
+1,000,000 bytes.  That's one megabyte of terrain data for a saved game, which is totally reasonable. I wonder what it costs to save a hash instead?
+In terms of JSON length, not really anything more.  I guess then the question is how much it costs to shuttle around an array with empty fields.
+If I really go crazy I could delete empty containers, but that's crap.
+However, if you're smart, the way you save it is to sparsify everything but the terrain.  You definitely don't have to keep everything in memory like that though.
+Let's see...with memory, you can keep up to a thousand gigabyes without too much trouble.  So as long as my thing isn't a thousand times as complex as...eh...it might be though.
+Is there a better way?
+Well...there's that "x,y" way.  That's sparse, but slow.  And I mean sloooooow.
+What about double lookup, by x and y?  creatures["x"]["y"]?  That's still 64 bytes per creature, but not quite as bad as the alternative.
+The main problem there is assignment is not sparse.  You have to either assign every x or check to see whether it has been assigned every time.
+How about...[0,[],[]]?  That's the terrain, creature(s), items, and features?  Are "double features" allowed?  I'm leaning toward no.  Nor double creatures?
+One could change in the accessors at a later date if needed.  But then again, no one probably cannot.  Oh...I remember I had to end up putting "creature segments" in the old game.
+checking for an empty array, though, should be pretty fast.
+So I'm thinking [0,[],[],[]], which should be about four megabytes or so.  That should be fine.
+
+~
+
+After quite a bit of thought, I have decided on the following structure:
+
+1) A two-dimensional array of integers.
+2) An associative array of Creatures (Actors?  Foreground entities?)
+3) An associative array of lists of items.
+4) An associate array of features.
+So...the associative arrays should be fastest if they are keyed by numbers coded as x*base+y.  The problem there is that BASE needs to be
+a constant and the namespacing is a bit dodgy.  Any way to avoid that?  Sure...we can pick a flat constant, much higher than any base you'd
+actually use.  Might there be some other algorithm to uniquely map two numbers onto one?
+
+That's honestly not a great idea.  The best idea here, the one that solves multiple problems, is to simply pick a better namespacing structure.
+How does the VS3D model work again?
+
+Okay...that's what I thought.  Now, the problem I think...is that this will be too interconnected to use that structure. Right?
+How it works is this...you set VS3D equal to the function returned from a self-executing closure.
+Then at each step, you pass VS3D as the argument to another self-executing closure and repeat the process.  The result is
+that the dependencies go in a very specific order.  You can never see anything from the previous step unless it's specifically exposed,
+and...can you ever see anything from the next step?
+
+Yes.  The only way to do it is to have the first step be, basically, declarations.  Declare your base object for each step...World, Entity,
+and the like in HTomb.  So it's HTomb.World, HTomb.Entity, etc.
+
+What order might you need?
+
+HTomb.Constants
+HTomb.Game
+HTomb.World
+HTomb.Display
+HTomb.Entity
+
+That way, anything you need fast access to gets "taken out of the box" right at the top of each program.
