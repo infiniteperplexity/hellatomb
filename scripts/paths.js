@@ -80,8 +80,8 @@ HTomb = (function(HTomb) {
         this.compute(x,y+1);
         this.compute(x,y-1);
       }
-    }
-  }
+    };
+  };
 
   HTomb.Path.flood = function(x,y,z) {
     grid0 = levels[z].grid;

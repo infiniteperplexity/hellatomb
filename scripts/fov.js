@@ -12,11 +12,19 @@ HTomb = (function(HTomb) {
       visible[i][j] = false;
     }
   }
+  var ox, oy, r0;
 
   var passlight = function(x,y) {
+      //constrain to the grid
       if (x<0 || x>=LEVELW || y<0 || y>=LEVELH) {
         return false;
       }
+      //curve the edges
+      if (Math.sqrt((x-ox)*(x-ox)+(y-oy)*(y-oy)) > r0) {
+        return false;
+      }
+      //only opaque tiles block light
+      //if this ever changes use a different FOV
       return (tiles[grid[x][y]].opaque === undefined);
   };
 
@@ -34,6 +42,11 @@ HTomb = (function(HTomb) {
     }
   };
   HTomb.FOV.findVisible = function(x,y,z,r) {
+    //test code
+    ox = x;
+    oy = y;
+    r0 = r;
+    //end test
     grid = levels[z].grid;
     caster.compute(x,y,r,show);
   };

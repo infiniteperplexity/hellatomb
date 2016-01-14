@@ -23,19 +23,20 @@ HTomb = (function(HTomb) {
       fg,
       bg
     );
-  }
+  };
+
   var render = function() {
     var Player = HTomb.World.Player;
-    var z = Player.z;
-    if (Player.x >=screen.xoffset+SCREENW-2) {
-      screen.xoffset = Player.x-SCREENW+2;
-    } else if (Player.x <= screen.xoffset) {
-      screen.xoffset = Player.x-1;
+    var z = Player._z;
+    if (Player._x >=screen.xoffset+SCREENW-2) {
+      screen.xoffset = Player._x-SCREENW+2;
+    } else if (Player._x <= screen.xoffset) {
+      screen.xoffset = Player._x-1;
     }
-    if (Player.y >= screen.yoffset+SCREENH-2) {
-      screen.yoffset = Player.y-SCREENH+2;
-    } else if (Player.y <= screen.yoffset) {
-      screen.yoffset = Player.y-1;
+    if (Player._y >= screen.yoffset+SCREENH-2) {
+      screen.yoffset = Player._y-SCREENH+2;
+    } else if (Player._y <= screen.yoffset) {
+      screen.yoffset = Player._y-1;
     }
     var level = HTomb.World.levels[z];
     var grid = level.grid;
@@ -54,30 +55,33 @@ HTomb = (function(HTomb) {
         );
       }
     }
-    for (var key in level.critters) {
-      var critter = level.critters[key];
-      display.draw(
-        critter.x-xoffset,
-        critter.y-yoffset,
-        critter.symbol,
-        "white",
-        "black"
-      );
+    var creatures = HTomb.World.creatures;
+    for (var key in creatures) {
+      if (creatures[key]._z === z) {
+        var creature = creatures[key];
+        display.draw(
+          creature._x-xoffset,
+          creature._y-yoffset,
+          creature.symbol,
+          creature.fg || "white",
+          creature.bg || "black"
+        );
+      }
     }
   };
 /*
   // could we make the "Controls" module a property of the Player entity rather than the reverse?
   var render = function() {
     //= Game.SCREENWorld.tileProperties;
-    if (Player.x >=screen.xoffset+SCREENW-2) {
-      screen.xoffset = Player.x-SCREENW+2;
-    } else if (Player.x <= screen.xoffset) {
-      screen.xoffset = Player.x-1;
+    if (Player._x >=screen.xoffset+SCREENW-2) {
+      screen.xoffset = Player._x-SCREENW+2;
+    } else if (Player._x <= screen.xoffset) {
+      screen.xoffset = Player._x-1;
     }
-    if (Player.y >= screen.yoffset+SCREENH-2) {
-      screen.yoffset = Player.y-SCREENH+2;
-    } else if (Player.y <= screen.yoffset) {
-      screen.yoffset = Player.y-1;
+    if (Player._y >= screen.yoffset+SCREENH-2) {
+      screen.yoffset = Player._y-SCREENH+2;
+    } else if (Player._y <= screen.yoffset) {
+      screen.yoffset = Player._y-1;
     }
     var z = 1;
     var level = HTomb.World.levels[z];

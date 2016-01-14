@@ -10,21 +10,16 @@ var HTomb = (function() {
   var SCREENH = Constants.SCREENH = 25;
   var init = function() {
     World.init();
-    World.Player = HTomb.Entity.create(HTomb.Entity.Necromancer());
+    World.Player = HTomb.Entity.create("Necromancer");
     var ground = World.groundLevel(1,1);
-    World.Player.x = 1;
-    World.Player.y = 1;
-    World.Player.z = ground+1;
-    World.levels[ground+1].critters[World.Player.x*LEVELW + World.Player.y] = World.Player;
-    //World.Player.actor = PlayerActor;
-    World.actors[0] = World.Player;
-    FOV.findVisible(World.Player.x, World.Player.y, World.Player.z, 10);
+    World.Player.place(1,1,ground+1);
+    FOV.findVisible(World.Player._x, World.Player._y, World.Player._z, 10);
     Display.render();
   };
   var turn = function() {
     Display.render();
     FOV.resetVisible();
-    FOV.findVisible(World.Player.x, World.Player.y, World.Player.z, 10);
+    FOV.findVisible(World.Player._x, World.Player._y, World.Player._z, 10);
   };
   var World = {};
   var Display = {};

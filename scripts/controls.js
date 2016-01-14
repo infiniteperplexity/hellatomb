@@ -21,8 +21,8 @@ HTomb = (function(HTomb) {
   Controls.actions.tryMoveSouthWest = function() {Controls.actions.tryMove('SW');};
   Controls.actions.tryMoveSouthEast = function() {Controls.actions.tryMove('SE');};
   Controls.actions.tryMove = function(dir) {
-    var x = HTomb.World.Player.x;
-    var y = HTomb.World.Player.y;
+    var x = HTomb.World.Player._x;
+    var y = HTomb.World.Player._y;
     var newx = x;
     var newy = y;
     if (dir==='N') {
@@ -47,13 +47,12 @@ HTomb = (function(HTomb) {
       newx+=1;
     }
     if (  newx<0 || newx>LEVELW || newy<0 || newy>LEVELH ||
-          (HTomb.World.tiles[HTomb.World.levels[HTomb.World.Player.z].grid[newx][newy]].solid)) {
+          (HTomb.World.tiles[HTomb.World.levels[HTomb.World.Player._z].grid[newx][newy]].solid)) {
       console.log("Can't go that way.");
     } else {
-      delete HTomb.World.levels[HTomb.World.Player.z].critters[x*LEVELW+y];
-      HTomb.World.levels[HTomb.World.Player.z].critters[newx*LEVELW+newy] = HTomb.World.Player;
-      HTomb.World.Player.x = newx;
-      HTomb.World.Player.y = newy;
+      delete HTomb.World.levels[HTomb.World.Player._z].critters[x*LEVELW+y];
+      HTomb.World.levels[HTomb.World.Player._z].critters[newx*LEVELW+newy] = HTomb.World.Player;
+      HTomb.World.Player.place(newx,newy,HTomb.World.Player._z);
       HTomb.turn();
     }
   };

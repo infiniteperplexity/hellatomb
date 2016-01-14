@@ -55,8 +55,8 @@ HTomb = (function(HTomb) {
 
         }
       }
-      console.log("highest and lowest points: ", mx, mn);
     }
+    console.log("highest and lowest points: ", mx, mn);
   };
   HTomb.World.groundLevel = function(x,y) {
     for (var z=NLEVELS-2; z>0; z--) {
@@ -65,5 +65,10 @@ HTomb = (function(HTomb) {
       }
     }
   };
+
+  HTomb.World.creatures = {};
+  HTomb.World.items = {};
+  HTomb.World.features = {};
+
   return HTomb;
 })(HTomb);
