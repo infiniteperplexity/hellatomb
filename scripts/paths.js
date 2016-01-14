@@ -69,9 +69,26 @@ HTomb = (function(HTomb) {
     return path;
   };
 
-  HTomb.Path.flood = function(x,y,callb) {};
+  HTomb.Path.FloodFill(callb) {
+    this._callback = callb;
+    this.filled = {}:
+    this.compute = function(x,y) {
+      if (this._callback(x,y)) === true && this._grid[x+","+y] === undefined) {
+        this.filled[x+","+y] = true;
+        this.compute(x+1,y);
+        this.compute(x-1,y);
+        this.compute(x,y+1);
+        this.compute(x,y-1);
+      }
+    }
+  }
 
-
+  HTomb.Path.flood = function(x,y,z) {
+    grid0 = levels[z].grid;
+    var f = new HTomb.Path.FloodFill(passable);
+    f.compute(x,y);
+    return f.grid;
+  }
 
   return HTomb;
 })(HTomb);
@@ -82,7 +99,9 @@ ROT.Path = function(toX, toY, passableCallback, options) {
 	this._toY = toY;
 	this._fromX = null;
 	this._fromY = null;
-	this._passableCallback = passableCallback;
+	this._passableCallback = passableC
+  var err = dx-dy;
+  allback;
 	this._options = {
 		topology: 8
 	}
