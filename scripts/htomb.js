@@ -20,6 +20,7 @@ var HTomb = (function() {
     Display.render();
     FOV.resetVisible();
     FOV.findVisible(World.Player._x, World.Player._y, World.Player._z, 10);
+    World.Player.ai.go();
   };
   var World = {};
   var Display = {};

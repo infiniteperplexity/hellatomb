@@ -9,6 +9,7 @@ HTomb = (function(HTomb) {
   var WALLTILE = 1;
   var tiles = [];
   tiles[FLOORTILE] = {symbol: "."};
+  //tiles[FLOORTILE] = {symbol: "\u22C0"};
   tiles[WALLTILE]  = {symbol: "#", opaque: true, solid: true};
 
   function addLevel(z) {
@@ -18,17 +19,19 @@ HTomb = (function(HTomb) {
     }
     levels[z] = level;
     level.grid = [];
+    level.explored = [];
     for (var x=0; x<LEVELW; x++) {
       level.grid.push([]);
+      level.explored.push([]);
       for (var y=0; y<LEVELH; y++) {
         if (x===0 || x===LEVELW-1 || y===0 || y===LEVELH-1 || z===0 || z===NLEVELS-1) {
           level.grid[x][y] = WALLTILE;
         } else {
           level.grid[x][y] = FLOORTILE;
         }
+        level.explored[x][y] = false;
       }
     }
-    level.critters = {};
   }
 
   HTomb.World.levels = levels;
@@ -69,6 +72,7 @@ HTomb = (function(HTomb) {
   HTomb.World.creatures = {};
   HTomb.World.items = {};
   HTomb.World.features = {};
+
 
   return HTomb;
 })(HTomb);

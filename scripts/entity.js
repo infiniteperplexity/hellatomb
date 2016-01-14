@@ -78,7 +78,7 @@ HTomb = (function(HTomb) {
       if (prop==="components") {
         ent.components = [];
         for (var comp in properties.components) {
-          ent.components[comp] = properties.components[comp];
+          HTomb.Entity.addComponent(properties.components[comp], ent);
         }
       } else {
         ent[prop] = properties[prop];
@@ -86,12 +86,31 @@ HTomb = (function(HTomb) {
     }
     return ent;
   };
+  
+  var AIComponent = {
+    name: "ai",
+    target: null,
+    mood: null,
+    init: function(){this.path = [];},
+    go: function() {console.log(this.name + " is thinking...");}
+  };
+  HTomb.Entity.addComponent = function(comp, ent) {
+    ent[comp.name] = {};
+    for (var p in comp) {
+      if (typeof(comp[p])==="function") {
+        ent[comp.name][p] = comp[p].bind(ent);
+      } else if (p!=="name") {
+        ent[comp.name][p] = comp[p];
+      }
+    }
+  };
 
   HTomb.Entity.define({
       name: "Necromancer",
       isCreature: true,
       symbol: "@",
-      fg: "lavender"
+      fg: "#D888FF",
+      components: [AIComponent]
   });
 
   return HTomb;
