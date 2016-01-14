@@ -69,11 +69,11 @@ HTomb = (function(HTomb) {
     return path;
   };
 
-  HTomb.Path.FloodFill(callb) {
+  HTomb.Path.FloodFill = function(callb) {
     this._callback = callb;
-    this.filled = {}:
+    this.filled = {};
     this.compute = function(x,y) {
-      if (this._callback(x,y)) === true && this._grid[x+","+y] === undefined) {
+      if (this._callback(x,y) === true && this.filled[x+","+y] === undefined) {
         this.filled[x+","+y] = true;
         this.compute(x+1,y);
         this.compute(x-1,y);
