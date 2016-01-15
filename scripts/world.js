@@ -5,9 +5,11 @@ HTomb = (function(HTomb) {
   var NLEVELS = HTomb.Constants.NLEVELS;
   var levels = [];
   var actors = [];
+  var VOIDTILE = -1;
   var FLOORTILE = 0;
   var WALLTILE = 1;
   var tiles = [];
+  tiles[VOIDTILE] = {symbol: " ", opaque: true, solid: true};
   tiles[FLOORTILE] = {symbol: "."};
   //tiles[FLOORTILE] = {symbol: "\u22C0"};
   tiles[WALLTILE]  = {symbol: "#", opaque: true, solid: true};
@@ -25,7 +27,7 @@ HTomb = (function(HTomb) {
       level.explored.push([]);
       for (var y=0; y<LEVELH; y++) {
         if (x===0 || x===LEVELW-1 || y===0 || y===LEVELH-1 || z===0 || z===NLEVELS-1) {
-          level.grid[x][y] = WALLTILE;
+          level.grid[x][y] = VOIDTILE;
         } else {
           level.grid[x][y] = FLOORTILE;
         }
@@ -53,9 +55,10 @@ HTomb = (function(HTomb) {
         grid[x][y] = parseInt(noise.get(x/20,y/20)*scale+ground);
         mx = Math.max(mx,grid[x][y]);
         mn = Math.min(mn,grid[x][y]);
-        for (var zz=grid[x][y]; zz>=0; zz--) {
-          levels[zz].grid[x][y] = WALLTILE;
-
+        if (x>0 && x<LEVELW-1 && y>0 && y<LEVELH-1) {
+          for (var zz=grid[x][y]; zz>=0; zz--) {
+            levels[zz].grid[x][y] = WALLTILE;
+          }
         }
       }
     }

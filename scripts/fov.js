@@ -17,7 +17,7 @@ HTomb = (function(HTomb) {
 
   var passlight = function(x,y) {
       //constrain to the grid
-      if (x<0 || x>=LEVELW || y<0 || y>=LEVELH) {
+      if (x<=0 || x>=LEVELW-1 || y<=0 || y>=LEVELH-1) {
         return false;
       }
       //curve the edges

@@ -8,6 +8,8 @@ var HTomb = (function() {
   var NLEVELS = Constants.NLEVELS = 50;
   var SCREENW = Constants.SCREENW = 80;
   var SCREENH = Constants.SCREENH = 25;
+  var STATUSH = Constants.STATUSH = 2;
+  var SCROLLH = Constants.SCROLLH = 6;
   var init = function() {
     World.init();
     World.Player = HTomb.Entity.create("Necromancer");

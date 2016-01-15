@@ -49,6 +49,7 @@ HTomb = (function(HTomb) {
     if (  newx<0 || newx>LEVELW || newy<0 || newy>LEVELH ||
           (HTomb.World.tiles[HTomb.World.levels[HTomb.World.Player._z].grid[newx][newy]].solid)) {
       console.log("Can't go that way.");
+      HTomb.Display.pushMessage("Can't go that way.");
     } else {
       HTomb.World.Player.place(newx,newy,HTomb.World.Player._z);
       HTomb.turn();
