@@ -7,11 +7,15 @@ HTomb = (function(HTomb) {
   var display = new ROT.Display({width: SCREENW, height: SCREENH+STATUSH+SCROLLH});
   document.body.appendChild(display.getContainer());
 
-  var screen = {
+  var main = {
     z: 1,
     xoffset: 0,
     yoffset: 0
   };
+
+  var screen = main;
+
+  var intro = {};
 
   var drawAt = function(x,y,ch,fg,bg) {
     fg = fg || "white";
@@ -33,7 +37,16 @@ HTomb = (function(HTomb) {
     }
     drawScroll();
   };
+
+  //var screen = intro;
   var render = function() {
+    screen.render();
+  };
+
+  intro.render = function() {
+    display.drawText(1,1, "Welcome to HellaTomb!");
+  };
+  main.render = function() {
     drawScreen();
     drawStatus();
     drawScroll();
@@ -105,6 +118,9 @@ HTomb = (function(HTomb) {
     }
   };
   HTomb.Display.display = display;
+  HTomb.Display.screen = screen;
+  HTomb.Display.main = main;
+  HTomb.Display.intro = intro;
   HTomb.Display.render = render;
   HTomb.Display.drawAt = drawAt;
   return HTomb;

@@ -79,6 +79,10 @@ HTomb = (function(HTomb) {
   bindKey("VK_Q",Controls.actions.tryMoveNorthWest);
   bindKey("VK_W",Controls.actions.tryMoveNorth);
   bindKey("VK_E",Controls.actions.tryMoveNorthEast);
+  Controls.actions.glance = function(click) {
+    HTomb.Display.pushMessage("Clicked at " + click.clientX +", " + click.clientY +".");
+  };
+  window.addEventListener("mousedown",Controls.actions.glance);
 
   return HTomb;
 })(HTomb);
