@@ -22,7 +22,7 @@ HTomb = (function(HTomb) {
     _y: null,
     _z: null,
     symbol: ' ',
-    components: []
+    behaviors: []
   };
 
   var creatures = HTomb.World.creatures;
@@ -72,13 +72,13 @@ HTomb = (function(HTomb) {
 
   HTomb.Entity.create = function(tname) {
     var ent = Object.create(entity);
-    ent.components = [];
+    ent.behaviors = [];
     var properties = HTomb.Entity.templates[tname];
     for (var prop in properties) {
-      if (prop==="components") {
-        ent.components = [];
-        for (var comp in properties.components) {
-          HTomb.Entity.addComponent(properties.components[comp], ent);
+      if (prop==="behaviors") {
+        ent.behaviors = [];
+        for (var beh in properties.behaviors) {
+          HTomb.Entity.addBehavior(properties.behaviors[beh], ent);
         }
       } else {
         ent[prop] = properties[prop];
@@ -86,21 +86,21 @@ HTomb = (function(HTomb) {
     }
     return ent;
   };
-  
-  var AIComponent = {
+
+  var AIBehavior = {
     name: "ai",
     target: null,
     mood: null,
     init: function(){this.path = [];},
     go: function() {console.log(this.name + " is thinking...");}
   };
-  HTomb.Entity.addComponent = function(comp, ent) {
-    ent[comp.name] = {};
-    for (var p in comp) {
-      if (typeof(comp[p])==="function") {
-        ent[comp.name][p] = comp[p].bind(ent);
+  HTomb.Entity.addBehavior = function(beh, ent) {
+    ent[beh.name] = {};
+    for (var p in beh) {
+      if (typeof(beh[p])==="function") {
+        ent[beh.name][p] = beh[p].bind(ent);
       } else if (p!=="name") {
-        ent[comp.name][p] = comp[p];
+        ent[beh.name][p] = beh[p];
       }
     }
   };
@@ -110,7 +110,7 @@ HTomb = (function(HTomb) {
       isCreature: true,
       symbol: "@",
       fg: "#D888FF",
-      components: [AIComponent]
+      behaviors: [AIBehavior]
   });
 
   return HTomb;

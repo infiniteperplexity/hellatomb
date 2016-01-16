@@ -12,26 +12,31 @@ var HTomb = (function() {
   var SCROLLH = Constants.SCROLLH = 6;
   var init = function() {
     World.init();
-    World.Player = HTomb.Entity.create("Necromancer");
+    var Player = HTomb.Player = Entity.create("Necromancer");
+    //Entity.addBehavior(PlayerBehavior,Player);
     var ground = World.groundLevel(1,1);
-    World.Player.place(1,1,ground+1);
-    FOV.findVisible(World.Player._x, World.Player._y, World.Player._z, 10);
-    Display.render();
+    Player.place(1,1,ground+1);
+    FOV.findVisible(Player._x, Player._y, Player._z, 10);
+    GUI.current.init();
+    GUI.render();
   };
   var turn = function() {
-    Display.render();
+    var Player = HTomb.Player;
+    GUI.render();
     FOV.resetVisible();
-    FOV.findVisible(World.Player._x, World.Player._y, World.Player._z, 10);
-    World.Player.ai.go();
+    FOV.findVisible(Player._x, Player._y, Player._z, 10);
+    HTomb.Player.ai.go();
   };
   var World = {};
+  var Player = {};
   var Display = {};
   var Controls = {};
   var Entity = {};
   var FOV = {};
   var Path = {};
   var Events = {};
-
+  var Commands = {};
+  var GUI = {};
 
   return {
     Constants: Constants,
@@ -43,7 +48,10 @@ var HTomb = (function() {
     Entity: Entity,
     FOV: FOV,
     Path: Path,
-    Events: Events
+    Events: Events,
+    Commands: Commands,
+    GUI: GUI,
+    Player: Player
   };
 })();
 window.onload = HTomb.init;
