@@ -1,13 +1,22 @@
 HTomb = (function(HTomb) {
   "use strict";
+  // break out constants
   var SCREENW = HTomb.Constants.SCREENW;
   var SCREENH = HTomb.Constants.SCREENH;
+  var LEVELW = HTomb.Constants.LEVELW;
+  var LEVELH = HTomb.Constants.LEVELH;
   var SCROLLH = HTomb.Constants.SCROLLH;
   var STATUSH = HTomb.Constants.STATUSH;
+
+  // *************properties of the base GUI object*************
   var GUI = HTomb.GUI;
-  GUI.main = {};
-  GUI.current = GUI.main;
-  GUI.previous = {};
+  var display = new ROT.Display({width: SCREENW, height: SCREENH+STATUSH+SCROLLH});
+  document.body.appendChild(display.getContainer());
+  GUI.init = function() {
+    GUI.current = intro;
+    intro.init();
+    intro.render();
+  };
   GUI.switch = function(newgui) {
     GUI.previous = GUI.current;
     GUI.current = newgui;
@@ -15,10 +24,38 @@ HTomb = (function(HTomb) {
       newgui.init();
     }
     GUI.render();
-  }
-
-  var display = new ROT.Display({width: SCREENW, height: SCREENH+STATUSH+SCROLLH});
-  document.body.appendChild(display.getContainer());
+  };
+  // events and commmands
+  var Commands = HTomb.Commands;
+  var keydown = function(key) {
+    GUI.current.keydown(key);
+  };
+  var mousedown = function(click) {
+    GUI.current.mousedown(click);
+  };
+  var bindKey = function(key, func) {
+    GUI.current.boundKeys[ROT[key]] = func;
+  };
+  window.addEventListener("keydown",keydown);
+  window.addEventListener("mousedown",mousedown);
+  // message buffer
+  var scroll = [];
+  GUI.pushMessage = function(strng) {
+    //for (var pad=0; pad<(SCREENW-strng.length); pad++) {
+      //strng = strng.join(" ");
+    //}
+    scroll.unshift(strng);
+    if (scroll.length>=SCROLLH-1) {
+      scroll.pop();
+    }
+    if (GUI.current === main) {
+      drawScroll();
+    }
+  };
+  // rendering
+  GUI.render = function() {
+    GUI.current.render();
+  };
   GUI.drawAt = function(
     x,y,ch,fg,bg) {
     fg = fg || "white"  ;
@@ -31,39 +68,36 @@ HTomb = (function(HTomb) {
       bg
     );
   };
-  var scroll = [];
-  HTomb.Display.pushMessage = function(strng) {
-    //for (var pad=0; pad<(SCREENW-strng.length); pad++) {
-      //strng = strng.join(" ");
-    //}
-    scroll.unshift(strng);
-    if (scroll.length>=SCROLLH-1) {
-      scroll.pop();
-    }
-    if (GUI.current === GUI.main) {
-      drawScroll();
-    }
+
+
+
+  // ************intro GUI************************
+
+  var intro = {};
+  intro.init = function() {};
+  intro.render = function() {
+    display.drawText(1,1, "Welcome to HellaTomb!");
   };
-  var Commands = HTomb.Commands;
-  var keydown = function(key) {
-    GUI.current.keydown(key);
+  intro.keydown = function() {
+    GUI.switch(main);
   };
-  var mousedown = function(click) {
-    GUI.current.mousedown(click);
-  }
-  window.addEventListener("keydown",keydown);
-  window.addEventListener("mousedown",mousedown);
-  GUI.main.mousedown = function(click) {
+  intro.mousedown = function() {
+    GUI.switch(main);
+  };
+
+  // ************main GUI************************
+  var z = 1;
+  var xoffset = 0;
+  var yoffset = 0;
+  var main = {};
+  main.mousedown = function(click) {
     Commands.glance(click.clientX, click.clientY);
-  }
-  var bindKey = function(key, func) {
-    GUI.current.boundKeys[ROT[key]] = func;
   };
-  GUI.main.boundKeys = [];
-  GUI.main.keydown = function(key) {
-    GUI.main.boundKeys[key.keyCode]();
+  main.boundKeys = [];
+  main.keydown = function(key) {
+    main.boundKeys[key.keyCode]();
   };
-  GUI.main.init = function() {
+  main.init = function() {
     // bind number pad movement
     bindKey("VK_NUMPAD1",Commands.tryMoveSouthWest);
     bindKey("VK_NUMPAD2",Commands.tryMoveSouth);
@@ -89,13 +123,7 @@ HTomb = (function(HTomb) {
     bindKey("VK_W",Commands.tryMoveNorth);
     bindKey("VK_E",Commands.tryMoveNorthEast);
   };
-
-  GUI.main.state = {
-    z: 1,
-    xoffset: 0,
-    yoffset: 0
-  };
-  GUI.main.render = function() {
+  main.render = function() {
     drawScreen();
     drawStatus();
     drawScroll();
@@ -122,38 +150,83 @@ HTomb = (function(HTomb) {
     }
   };
   var drawScreen = function() {
-    var state = GUI.main.state;
     var Player = HTomb.Player;
-    var z = Player._z;
-    if (Player._x >=state.xoffset+SCREENW-2) {
-      state.xoffset = Player._x-SCREENW+2;
-    } else if (Player._x <= state.xoffset) {
-      state.xoffset = Player._x-1;
+    z = Player._z;
+    if (Player._x >=xoffset+SCREENW-2) {
+      xoffset = Player._x-SCREENW+2;
+    } else if (Player._x <= xoffset) {
+      xoffset = Player._x-1;
     }
-    if (Player._y >= state.yoffset+SCREENH-2) {
-      state.yoffset = Player._y-SCREENH+2;
-    } else if (Player._y <= state.yoffset) {
-      state.yoffset = Player._y-1;
+    if (Player._y >= yoffset+SCREENH-2) {
+      yoffset = Player._y-SCREENH+2;
+    } else if (Player._y <= yoffset) {
+      yoffset = Player._y-1;
     }
     var level = HTomb.World.levels[z];
     var grid = level.grid;
-    var xoffset = state.xoffset;
-    var yoffset = state.yoffset;
     var tiles = HTomb.World.tiles;
     var vis = HTomb.FOV.visible;
     var explored = level.explored;
+    var creatures = HTomb.World.creatures;
+    var items = HTomb.World.items;
+    var features = HTomb.World.features;
+    var sym;
+    var fg;
+    var bg;
+    var coord;
+    var below;
+    var thing;
+    // I am not sure if this is the best way
     for (var x = xoffset; x < xoffset+SCREENW; x++) {
       for (var y = yoffset; y < yoffset+SCREENH; y++) {
-        display.draw(
-          x-xoffset,
-          y-yoffset,
-          tiles[grid[x][y]].symbol,
-          (explored[x][y]===false) ? "black" : (vis[x][y]===true) ? "white" : "gray",
-          "black"
-        );
+        coord = x*LEVELW*LEVELH + y*LEVELH + z;
+        fg = "white";
+        bg = "black";
+        // testing
+        explored[x][y] = true;
+        // end testing
+        if (!explored[x][y]) {
+          sym = " ";
+        } else if (vis[x][y]===false) {
+          fg = "gray";
+          bg = "black";
+          if (items[coord]) {
+            thing = items.coord[items.coord.length-1];
+            sym = thing.symbol || "X";
+          } else if (features[coord]) {
+            thing = features[coord];
+            sym = thing.symbol || "X";
+          } else {
+            sym = tiles[grid[x][y]].symbol || "X";
+          }
+        } else {
+          if (creatures[coord]) {
+            thing = creatures[coord];
+            sym = thing.symbol || "X";
+            fg = thing.fg || "white";
+            bg = thing.bg || "black";
+          } else if (items[coord]) {
+            thing = items.coord[items.coord.length-1];
+            sym = thing.symbol || "X";
+            fg = thing.fg || "white";
+            bg = thing.bg || "black";
+          } else if (features[coord]) {
+            thing = features[coord];
+            sym = thing.symbol || "X";
+            fg = thing.fg || "white";
+            bg = thing.bg || "black";
+          } else {
+            sym = tiles[grid[x][y]].symbol || "X";
+          }
+        }
+        display.draw(x-xoffset, y-yoffset, sym, fg, bg);
+        //  tiles[grid[x][y]].symbol,
+        //  (explored[x][y]===false) ? "black" : (vis[x][y]===true) ? "white" : "gray",
+        //  "black"
+        //);
       }
     }
-    var creatures = HTomb.World.creatures;
+    /*var creatures = HTomb.World.creatures;
     for (var key in creatures) {
       if (creatures[key]._z === z) {
         var creature = creatures[key];
@@ -165,24 +238,10 @@ HTomb = (function(HTomb) {
           creature.bg || "black"
         );
       }
-    }
+    }*/
   };
 
-  GUI.intro = {};
-  GUI.intro.init = function() {};
-  GUI.intro.render = function() {
-    display.drawText(1,1, "Welcome to HellaTomb!");
-  };
-  GUI.intro.keydown = function() {
-    GUI.switch(GUI.main);
-  };
-  GUI.intro.mousedown = function() {
-    GUI.switch(GUI.main);
-  };
-  GUI.current = GUI.intro;
 
-  GUI.render = function() {
-    GUI.current.render();
-  };
+
   return HTomb;
 })(HTomb);

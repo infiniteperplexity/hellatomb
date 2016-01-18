@@ -104,13 +104,25 @@ HTomb = (function(HTomb) {
       }
     }
   };
-
+  //http://unicode-table.com/en/
+  //"\u02C4" is upward Slope, 5 is downward
   HTomb.Entity.define({
       name: "Necromancer",
       isCreature: true,
       symbol: "@",
       fg: "#D888FF",
       behaviors: [AIBehavior]
+  });
+
+  HTomb.Entity.define({
+      name: "UpSlope",
+      isFeature: true,
+      symbol: "\u02C4"
+  });
+  HTomb.Entity.define({
+      name: "DownSlope",
+      isFeature: true,
+      symbol: "\u02C5"
   });
 
   return HTomb;

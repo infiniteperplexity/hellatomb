@@ -17,20 +17,20 @@ var HTomb = (function() {
     var ground = World.groundLevel(1,1);
     Player.place(1,1,ground+1);
     FOV.findVisible(Player._x, Player._y, Player._z, 10);
-    GUI.current.init();
-    GUI.render();
+    GUI.init();
   };
   var turn = function() {
     var Player = HTomb.Player;
     GUI.render();
     FOV.resetVisible();
     FOV.findVisible(Player._x, Player._y, Player._z, 10);
-    HTomb.Player.ai.go();
+    for (var creature in World.creatures) {}
+      if (World.creatures[creature].ai) {
+        World.creatures[creature].ai.go();
+      }
   };
   var World = {};
   var Player = {};
-  var Display = {};
-  var Controls = {};
   var Entity = {};
   var FOV = {};
   var Path = {};
@@ -42,9 +42,7 @@ var HTomb = (function() {
     Constants: Constants,
     init: init,
     turn: turn,
-    Display: Display,
     World: World,
-    Controls: Controls,
     Entity: Entity,
     FOV: FOV,
     Path: Path,

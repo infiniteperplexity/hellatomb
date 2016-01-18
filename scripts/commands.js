@@ -38,16 +38,18 @@ HTomb = (function(HTomb) {
       newx+=1;
     }
     if (  newx<0 || newx>LEVELW || newy<0 || newy>LEVELH ||
-          (HTomb.World.tiles[HTomb.World.levels[HTomb.Player._z].grid[newx][newy]].solid)) {
+          (HTomb.World.tiles[HTomb.World.levels[HTomb.Player._z].grid[newx][newy]].solid) ||
+          (HTomb.World.tiles[HTomb.World.levels[HTomb.Player._z].grid[newx][newy]].fallabe)
+        ) {
       console.log("Can't go that way.");
-      HTomb.Display.pushMessage("Can't go that way.");
+      HTomb.GUI.pushMessage("Can't go that way.");
     } else {
       HTomb.Player.place(newx,newy,HTomb.Player._z);
       HTomb.turn();
     }
   };
   Commands.glance = function(x,y) {
-    HTomb.Display.pushMessage("Clicked at " + x +", " + y +".");
+    HTomb.GUI.pushMessage("Clicked at " + x +", " + y +".");
   };
   return HTomb;
 })(HTomb);
