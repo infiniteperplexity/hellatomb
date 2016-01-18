@@ -95,6 +95,9 @@ HTomb = (function(HTomb) {
   };
   main.boundKeys = [];
   main.keydown = function(key) {
+    if (  main.boundKeys[key.keyCode]===undefined) {
+      console.log("No binding for " + key.keyCode);
+    }
     main.boundKeys[key.keyCode]();
   };
   main.init = function() {
@@ -122,6 +125,8 @@ HTomb = (function(HTomb) {
     bindKey("VK_Q",Commands.tryMoveNorthWest);
     bindKey("VK_W",Commands.tryMoveNorth);
     bindKey("VK_E",Commands.tryMoveNorthEast);
+    bindKey("VK_PERIOD",Commands.tryMoveDown);
+    bindKey("VK_COMMA",Commands.tryMoveUp);
   };
   main.render = function() {
     drawScreen();

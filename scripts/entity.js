@@ -94,6 +94,29 @@ HTomb = (function(HTomb) {
     init: function(){this.path = [];},
     go: function() {console.log(this.name + " is thinking...");}
   };
+  var MovementBehavior = {
+    name: "movement",
+    walks: true,
+    canPass: function(x,y,z) {
+      if (x<0 || x>=LEVELW || y<0 || y>=LEVELH) {
+        return false;
+      }
+      var square = HTomb.World.getSquare(x,y,z);
+      if (square.terrain.solid===true && this.movement.phases===undefined) {
+        return false;
+      } else if (square.terrain.fallable===true && this.movement.flies===undefined) {
+        if (square.feature!==undefined && square.feature.name==="DownSlope") {
+          return true;
+        } else {
+          return false;
+        }
+      } else if (this.movement.walks===true) {
+        return true;
+      } else {
+        return false;
+      }
+    }
+  };
   HTomb.Entity.addBehavior = function(beh, ent) {
     ent[beh.name] = {};
     for (var p in beh) {
@@ -111,7 +134,7 @@ HTomb = (function(HTomb) {
       isCreature: true,
       symbol: "@",
       fg: "#D888FF",
-      behaviors: [AIBehavior]
+      behaviors: [AIBehavior, MovementBehavior]
   });
 
   HTomb.Entity.define({

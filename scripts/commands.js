@@ -14,6 +14,7 @@ HTomb = (function(HTomb) {
   Commands.tryMove = function(dir) {
     var x = HTomb.Player._x;
     var y = HTomb.Player._y;
+    var z = HTomb.Player._z;
     var newx = x;
     var newy = y;
     if (dir==='N') {
@@ -37,15 +38,42 @@ HTomb = (function(HTomb) {
     } else if (dir==='E') {
       newx+=1;
     }
-    if (  newx<0 || newx>LEVELW || newy<0 || newy>LEVELH ||
-          (HTomb.World.tiles[HTomb.World.levels[HTomb.Player._z].grid[newx][newy]].solid) ||
-          (HTomb.World.tiles[HTomb.World.levels[HTomb.Player._z].grid[newx][newy]].fallabe)
-        ) {
-      console.log("Can't go that way.");
+    if (HTomb.Player.movement===undefined || HTomb.Player.movement.canPass(newx,newy,z)===false) {
+      var square0 = HTomb.World.getSquare(x,y,z);
+      var square1 = HTomb.World.getSquare(newx,newy,z);
+      if (square0.feature!==undefined && square0.feature.name==="UpSlope" && square1.terrain.solid===true) {
+        Commands.tryMoveUp();
+      } else if (square0.feature!==undefined && square0.feature.name==="DownSlope" && square1.terrain.fallable===true) {
+        Commands.tryMoveDown();
+      }
       HTomb.GUI.pushMessage("Can't go that way.");
     } else {
-      HTomb.Player.place(newx,newy,HTomb.Player._z);
+      HTomb.Player.place(newx,newy,z);
       HTomb.turn();
+    }
+  };
+  Commands.tryMoveUp = function() {
+    var x = HTomb.Player._x;
+    var y = HTomb.Player._y;
+    var z = HTomb.Player._z;
+    var square = HTomb.World.getSquare(x,y,z);
+    if (square.feature!==undefined && square.feature.name==="UpSlope") {
+      HTomb.Player.place(x,y,z+1);
+      HTomb.turn();
+    } else {
+      HTomb.GUI.pushMessage("Can't go up here.");
+    }
+  };
+  Commands.tryMoveDown = function() {
+    var x = HTomb.Player._x;
+    var y = HTomb.Player._y;
+    var z = HTomb.Player._z;
+    var square = HTomb.World.getSquare(x,y,z);
+    if (square.feature!==undefined && square.feature.name==="DownSlope") {
+      HTomb.Player.place(x,y,z-1);
+      HTomb.turn();
+    } else {
+      HTomb.GUI.pushMessage("Can't go down here.");
     }
   };
   Commands.glance = function(x,y) {

@@ -11,9 +11,8 @@ HTomb = (function(HTomb) {
   var WALLTILE = 2;
   var tiles = [];
   tiles[VOIDTILE] = {symbol: " ", opaque: true, solid: true};
-  tiles[EMPTYTILE] = {symbol: " ", opaque: false, fallabe: true};
+  tiles[EMPTYTILE] = {symbol: "_", fallable: true};
   tiles[FLOORTILE] = {symbol: "."};
-  //tiles[FLOORTILE] = {symbol: "\u22C0"};
   tiles[WALLTILE]  = {symbol: "#", opaque: true, solid: true};
 
   function addLevel(z) {
@@ -126,6 +125,16 @@ HTomb = (function(HTomb) {
   HTomb.World.creatures = {};
   HTomb.World.items = {};
   HTomb.World.features = {};
+  HTomb.World.getSquare = function(x,y,z) {
+    var square = {};
+    var coord = x*LEVELW*LEVELH + y*LEVELH + z;
+    var grid = HTomb.World.levels[z].grid;
+    square.terrain = tiles[grid[x][y]];
+    square.creature = HTomb.World.creatures[coord];
+    square.items = HTomb.World.items[coord];
+    square.feature = HTomb.World.features[coord];
+    return square;
+  };
 
 
   return HTomb;
