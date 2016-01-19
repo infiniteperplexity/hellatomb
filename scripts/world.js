@@ -9,11 +9,11 @@ HTomb = (function(HTomb) {
   var EMPTYTILE = 0;
   var FLOORTILE = 1;
   var WALLTILE = 2;
-  var tiles = [];
-  tiles[VOIDTILE] = {symbol: " ", opaque: true, solid: true};
-  tiles[EMPTYTILE] = {symbol: "_", fallable: true};
-  tiles[FLOORTILE] = {symbol: "."};
-  tiles[WALLTILE]  = {symbol: "#", opaque: true, solid: true};
+  var terrain = [];
+  terrain[VOIDTILE] = {name: "boundary", symbol: " ", opaque: true, solid: true};
+  terrain[EMPTYTILE] = {name: "empty", symbol: "_", fallable: true};
+  terrain[FLOORTILE] = {name: "floor", symbol: "."};
+  terrain[WALLTILE]  = {name: "wall", symbol: "#", opaque: true, solid: true};
 
   function addLevel(z) {
     var level = {};
@@ -39,7 +39,7 @@ HTomb = (function(HTomb) {
 
   HTomb.World.levels = levels;
   HTomb.World.actors = actors;
-  HTomb.World.tiles = tiles;
+  HTomb.World.terrain = terrain;
   HTomb.World.init = function() {
     for (var z=0; z<NLEVELS; z++) {
       addLevel();
@@ -72,6 +72,7 @@ HTomb = (function(HTomb) {
         }
       }
     }
+    console.log("Highest at " + mx + ", lowest at " + mn);
     var squares;
     var square;
     var slope;
@@ -123,7 +124,7 @@ HTomb = (function(HTomb) {
   };
   HTomb.World.groundLevel = function(x,y) {
     for (var z=NLEVELS-2; z>0; z--) {
-      if (tiles[levels[z].grid[x][y]].solid===true) {
+      if (terrain[levels[z].grid[x][y]].solid===true) {
         return z;
       }
     }
@@ -135,10 +136,13 @@ HTomb = (function(HTomb) {
     var square = {};
     var coord = x*LEVELW*LEVELH + y*LEVELH + z;
     var grid = HTomb.World.levels[z].grid;
-    square.terrain = tiles[grid[x][y]];
+    square.terrain = terrain[grid[x][y]];
     square.creature = HTomb.World.creatures[coord];
     square.items = HTomb.World.items[coord];
     square.feature = HTomb.World.features[coord];
+    square.x = x;
+    square.y = y;
+    square.z = z;
     return square;
   };
 

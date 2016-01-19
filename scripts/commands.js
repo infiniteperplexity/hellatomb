@@ -48,8 +48,7 @@ HTomb = (function(HTomb) {
       }
       HTomb.GUI.pushMessage("Can't go that way.");
     } else {
-      HTomb.Player.place(newx,newy,z);
-      HTomb.turn();
+      Commands.movePlayer(newx,newy,z);
     }
   };
   Commands.tryMoveUp = function() {
@@ -58,8 +57,8 @@ HTomb = (function(HTomb) {
     var z = HTomb.Player._z;
     var square = HTomb.World.getSquare(x,y,z);
     if (square.feature!==undefined && square.feature.template==="UpSlope") {
-      HTomb.Player.place(x,y,z+1);
-      HTomb.turn();
+      HTomb.GUI.pushMessage("You scramble up the slope.");
+      Commands.movePlayer(x,y,z+1);
     } else {
       HTomb.GUI.pushMessage("Can't go up here.");
     }
@@ -70,14 +69,33 @@ HTomb = (function(HTomb) {
     var z = HTomb.Player._z;
     var square = HTomb.World.getSquare(x,y,z);
     if (square.feature!==undefined && square.feature.template==="DownSlope") {
-      HTomb.Player.place(x,y,z-1);
-      HTomb.turn();
+      HTomb.GUI.pushMessage("You scramble down the slope.");
+      Commands.movePlayer(x,y,z-1);
     } else {
       HTomb.GUI.pushMessage("Can't go down here.");
     }
   };
-  Commands.glance = function(x,y) {
-    HTomb.GUI.pushMessage("Clicked at " + x +", " + y +".");
+  Commands.look = function(square) {
+    HTomb.GUI.pushMessage(square.terrain.name + " square at " + square.x +", " + square.y + ", " + square.z + ".");
+    Commands.glance(square);
+  };
+  Commands.glance = function(square) {
+    console.log(square);
+    if (square.items) {
+      var mesg = "This square contains";
+      for (var i = 0; i<square.items.length; i++) {
+        mesg = mesg + " " + square.items[i].name;
+        if (i<square.items.length-1) {
+          mesg = mesg + ",";
+        }
+      }
+      HTomb.GUI.pushMessage(mesg);
+    }
+  };
+  Commands.movePlayer = function(x,y,z) {
+    HTomb.Player.place(x,y,z);
+    Commands.glance(x,y,z);
+    HTomb.turn();
   };
   return HTomb;
 })(HTomb);

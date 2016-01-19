@@ -10,6 +10,11 @@ var HTomb = (function() {
   var SCREENH = Constants.SCREENH = 25;
   var STATUSH = Constants.STATUSH = 2;
   var SCROLLH = Constants.SCROLLH = 6;
+  var FONTSIZE = Constants.FONTSIZE = 15;
+  var CHARWIDTH = Constants.CHARWIDTH = 9;
+  var CHARHEIGHT = Constants.CHARHEIGHT = 12;
+  var UNIBLOCK = Constants.UNIBLOCK = '\u2588';
+
   var init = function() {
     World.init();
     var Player = HTomb.Player = Entity.create("Necromancer");
@@ -37,6 +42,7 @@ var HTomb = (function() {
   var Events = {};
   var Commands = {};
   var GUI = {};
+  var Behavior = {};
 
   return {
     Constants: Constants,
@@ -49,7 +55,8 @@ var HTomb = (function() {
     Events: Events,
     Commands: Commands,
     GUI: GUI,
-    Player: Player
+    Player: Player,
+    Behavior: Behavior
   };
 })();
 window.onload = HTomb.init;

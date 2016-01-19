@@ -5,7 +5,7 @@ HTomb = (function(HTomb) {
   var levels = HTomb.World.levels;
   var grid;
   var explored;
-  var tiles = HTomb.World.tiles;
+  var terrain = HTomb.World.terrain;
   var visible = [];
   for (var i=0; i<LEVELW; i++) {
     visible.push([]);
@@ -26,7 +26,7 @@ HTomb = (function(HTomb) {
       }
       //only opaque tiles block light
       //if this ever changes use a different FOV
-      return (tiles[grid[x][y]].opaque === undefined);
+      return (terrain[grid[x][y]].opaque === undefined);
   };
 
   var show = function(x,y,r,v) {

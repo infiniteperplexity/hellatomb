@@ -1,5 +1,10 @@
 HTomb = (function(HTomb) {
   "use strict";
+  var creatures = HTomb.World.creatures;
+  var items = HTomb.World.items;
+  var features = HTomb.World.features;
+  var LEVELW = HTomb.Constants.LEVELW;
+  var LEVELH = HTomb.Constants.LEVELH;
 
   HTomb.Entity.templates = {};
   HTomb.Entity.define = function(properties) {
@@ -24,12 +29,6 @@ HTomb = (function(HTomb) {
     symbol: ' ',
     behaviors: []
   };
-
-  var creatures = HTomb.World.creatures;
-  var items = HTomb.World.items;
-  var features = HTomb.World.features;
-  var LEVELW = HTomb.Constants.LEVELW;
-  var LEVELH = HTomb.Constants.LEVELH;
   entity.place = function(x,y,z) {
     if (this.isCreature) {
       delete creatures[this._x*LEVELW*LEVELH + this._y*LEVELH + this._z];
@@ -62,7 +61,6 @@ HTomb = (function(HTomb) {
     this._z = z;
   };
 
-
   var blockProperty = function(obj,prop) {
     Object.defineProperty(obj,prop, {
       get: function() {throw new Error("Use underscore when calling " + prop);},
@@ -90,89 +88,38 @@ HTomb = (function(HTomb) {
     return ent;
   };
 
-  var AIBehavior = {
-    name: "ai",
-    target: null,
-    mood: null,
-    init: function(){this.path = [];},
-    go: function() {console.log(this.name + " is thinking...");}
-  };
-  var MovementBehavior = {
-    name: "movement",
-    walks: true,
-    canPass: function(x,y,z) {
-      if (x<0 || x>=LEVELW || y<0 || y>=LEVELH) {
-        return false;
-      }
-      var square = HTomb.World.getSquare(x,y,z);
-      if (square.terrain.solid===true && this.movement.phases===undefined) {
-        return false;
-      } else if (square.terrain.fallable===true && this.movement.flies===undefined) {
-        if (square.feature!==undefined && square.feature.template==="DownSlope") {
-          return true;
-        } else {
-          return false;
-        }
-      } else if (this.movement.walks===true) {
-        return true;
-      } else {
-        return false;
-      }
+  // behaviors
+  HTomb.Behavior.templates = {};
+  HTomb.Behavior.define = function(properties) {
+    if (!properties || !properties.template) {
+      console.log("invalid template definition");
+      return;
     }
-  };
-  var StackableBehavior = {
-    name: "stack",
-    maxn: 10,
-    n: 1
+    HTomb.Behavior[properties.template] = function(options) {
+      options = options || {};
+      var beh = {};
+      for (var p in properties) {
+        beh[p] = properties[p];
+      }
+      for (var o in options) {
+        beh[o] = options[o];
+      }
+      return beh;
+    };
   };
   HTomb.Entity.addBehavior = function(beh, ent) {
-    ent[beh.name] = {};
+    ent[beh.name] = {entity: ent};
     for (var p in beh) {
-      if (typeof(beh[p])==="function") {
-        ent[beh.name][p] = beh[p].bind(ent);
-      } else if (p!=="name") {
+      if (p!=="name") {
         ent[beh.name][p] = beh[p];
       }
+    }
+    if (ent[beh.name].init) {
+      ent[beh.name].init();
     }
   };
   //http://unicode-table.com/en/
   //"\u02C4" is upward Slope, 5 is downward
-  HTomb.Entity.define({
-      template: "Necromancer",
-      name: "the player",
-      isCreature: true,
-      symbol: "@",
-      fg: "#D888FF",
-      behaviors: [AIBehavior, MovementBehavior]
-  });
-
-  HTomb.Entity.define({
-      template: "UpSlope",
-      name: "upward slope",
-      isFeature: true,
-      symbol: "\u02C4"
-  });
-  HTomb.Entity.define({
-      template: "DownSlope",
-      name: "downward slope",
-      isFeature: true,
-      symbol: "\u02C5"
-  });
-  HTomb.Entity.define({
-    template: "Rock",
-    name: "rock",
-    isItem: true,
-    symbol: "*",
-    behaviors: [StackableBehavior]
-  });
-  HTomb.Entity.define({
-    template: "Zombie",
-    name: "zombie",
-    isCreature: true,
-    symbol: "z",
-    fg: "green",
-    behaviors: [AIBehavior, MovementBehavior]
-  });
 
   return HTomb;
 })(HTomb);
