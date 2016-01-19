@@ -41,9 +41,9 @@ HTomb = (function(HTomb) {
     if (HTomb.Player.movement===undefined || HTomb.Player.movement.canPass(newx,newy,z)===false) {
       var square0 = HTomb.World.getSquare(x,y,z);
       var square1 = HTomb.World.getSquare(newx,newy,z);
-      if (square0.feature!==undefined && square0.feature.name==="UpSlope" && square1.terrain.solid===true) {
+      if (square0.feature!==undefined && square0.feature.template==="UpSlope" && square1.terrain.solid===true) {
         Commands.tryMoveUp();
-      } else if (square0.feature!==undefined && square0.feature.name==="DownSlope" && square1.terrain.fallable===true) {
+      } else if (square0.feature!==undefined && square0.feature.template==="DownSlope" && square1.terrain.fallable===true) {
         Commands.tryMoveDown();
       }
       HTomb.GUI.pushMessage("Can't go that way.");
@@ -57,7 +57,7 @@ HTomb = (function(HTomb) {
     var y = HTomb.Player._y;
     var z = HTomb.Player._z;
     var square = HTomb.World.getSquare(x,y,z);
-    if (square.feature!==undefined && square.feature.name==="UpSlope") {
+    if (square.feature!==undefined && square.feature.template==="UpSlope") {
       HTomb.Player.place(x,y,z+1);
       HTomb.turn();
     } else {
@@ -69,7 +69,7 @@ HTomb = (function(HTomb) {
     var y = HTomb.Player._y;
     var z = HTomb.Player._z;
     var square = HTomb.World.getSquare(x,y,z);
-    if (square.feature!==undefined && square.feature.name==="DownSlope") {
+    if (square.feature!==undefined && square.feature.template==="DownSlope") {
       HTomb.Player.place(x,y,z-1);
       HTomb.turn();
     } else {

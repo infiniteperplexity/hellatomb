@@ -63,6 +63,12 @@ HTomb = (function(HTomb) {
           }
           zz = grid[x][y]+1;
           levels[zz].grid[x][y] = FLOORTILE;
+          if (Math.random() <= 0.025) {
+            HTomb.Entity.create("Rock").place(x,y,zz);
+          }
+          if (Math.random() <= 0.005) {
+            HTomb.Entity.create("Zombie").place(x,y,zz);
+          }
         }
       }
     }

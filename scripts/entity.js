@@ -3,7 +3,7 @@ HTomb = (function(HTomb) {
 
   HTomb.Entity.templates = {};
   HTomb.Entity.define = function(properties) {
-    if (!properties || !properties.name) {
+    if (!properties || !properties.template) {
       console.log("invalid template definition");
       return;
     }
@@ -11,7 +11,7 @@ HTomb = (function(HTomb) {
     for (var prop in properties) {
       template[prop] = properties[prop];
     }
-    HTomb.Entity.templates[properties.name] = template;
+    HTomb.Entity.templates[properties.template] = template;
   };
   //fully generic entity
   var entity = {
@@ -47,7 +47,10 @@ HTomb = (function(HTomb) {
           delete items[this._x*LEVELW*LEVELH + this._y*LEVELH + this._z];
         }
       }
-      pile = items[x*LEVELW*LEVELH + y*LEVELH + z] || [];
+      pile = items[x*LEVELW*LEVELH + y*LEVELH + z];
+      if (pile===undefined) {
+        pile = items[x*LEVELW*LEVELH + y*LEVELH + z] = [];
+      }
       pile.push(this);
     }
     if (this.isFeature) {
@@ -105,7 +108,7 @@ HTomb = (function(HTomb) {
       if (square.terrain.solid===true && this.movement.phases===undefined) {
         return false;
       } else if (square.terrain.fallable===true && this.movement.flies===undefined) {
-        if (square.feature!==undefined && square.feature.name==="DownSlope") {
+        if (square.feature!==undefined && square.feature.template==="DownSlope") {
           return true;
         } else {
           return false;
@@ -116,6 +119,11 @@ HTomb = (function(HTomb) {
         return false;
       }
     }
+  };
+  var StackableBehavior = {
+    name: "stack",
+    maxn: 10,
+    n: 1
   };
   HTomb.Entity.addBehavior = function(beh, ent) {
     ent[beh.name] = {};
@@ -130,7 +138,8 @@ HTomb = (function(HTomb) {
   //http://unicode-table.com/en/
   //"\u02C4" is upward Slope, 5 is downward
   HTomb.Entity.define({
-      name: "Necromancer",
+      template: "Necromancer",
+      name: "the player",
       isCreature: true,
       symbol: "@",
       fg: "#D888FF",
@@ -138,14 +147,31 @@ HTomb = (function(HTomb) {
   });
 
   HTomb.Entity.define({
-      name: "UpSlope",
+      template: "UpSlope",
+      name: "upward slope",
       isFeature: true,
       symbol: "\u02C4"
   });
   HTomb.Entity.define({
-      name: "DownSlope",
+      template: "DownSlope",
+      name: "downward slope",
       isFeature: true,
       symbol: "\u02C5"
+  });
+  HTomb.Entity.define({
+    template: "Rock",
+    name: "rock",
+    isItem: true,
+    symbol: "*",
+    behaviors: [StackableBehavior]
+  });
+  HTomb.Entity.define({
+    template: "Zombie",
+    name: "zombie",
+    isCreature: true,
+    symbol: "z",
+    fg: "green",
+    behaviors: [AIBehavior, MovementBehavior]
   });
 
   return HTomb;

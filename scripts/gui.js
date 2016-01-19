@@ -196,7 +196,7 @@ HTomb = (function(HTomb) {
           fg = "gray";
           bg = "black";
           if (items[coord]) {
-            thing = items.coord[items.coord.length-1];
+            thing = items[coord][items[coord].length-1];
             sym = thing.symbol || "X";
           } else if (features[coord]) {
             thing = features[coord];
@@ -211,7 +211,7 @@ HTomb = (function(HTomb) {
             fg = thing.fg || "white";
             bg = thing.bg || "black";
           } else if (items[coord]) {
-            thing = items.coord[items.coord.length-1];
+            thing = items[coord][items[coord].length-1];
             sym = thing.symbol || "X";
             fg = thing.fg || "white";
             bg = thing.bg || "black";
