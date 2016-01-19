@@ -76,26 +76,65 @@ HTomb = (function(HTomb) {
     }
   };
   Commands.look = function(square) {
+    if (square.creature) {
+      HTomb.GUI.pushMessage("There is a " + square.creature.name + " here.");
+    }
     HTomb.GUI.pushMessage(square.terrain.name + " square at " + square.x +", " + square.y + ", " + square.z + ".");
     Commands.glance(square);
   };
   Commands.glance = function(square) {
-    console.log(square);
     if (square.items) {
-      var mesg = "This square contains";
+      var mesg = "This square contains a";
       for (var i = 0; i<square.items.length; i++) {
         mesg = mesg + " " + square.items[i].name;
-        if (i<square.items.length-1) {
-          mesg = mesg + ",";
+        if (i===square.items.length-2) {
+          mesg = mesg + ", and a ";
+        } else if (i<square.items.length-1) {
+          mesg = mesg + ", a";
         }
       }
-      HTomb.GUI.pushMessage(mesg);
+      HTomb.GUI.pushMessage(mesg+".");
+    }
+    if (square.feature) {
+      HTomb.GUI.pushMessage("There is a " + square.feature.name + " here.");
     }
   };
   Commands.movePlayer = function(x,y,z) {
     HTomb.Player.place(x,y,z);
-    Commands.glance(x,y,z);
+    var square = HTomb.World.getSquare(x,y,z);
+    Commands.glance(square);
     HTomb.turn();
+  };
+  Commands.pickup = function() {
+    var square = HTomb.Player.getSquare();
+    if (!square.items) {
+      HTomb.GUI.pushMessage("Nothing here to pick up.");
+    } else if (!HTomb.Player.inventory) {
+      HTomb.GUI.pushMessage("You cannot carry items.");
+    } else if (HTomb.Player.inventory.n >= HTomb.Player.inventory.capacity) {
+      HTomb.GUI.pushMessage("You cannot carry any more items.");
+    } else {
+      // just pick up the first item for now
+      var item = square.items[0];
+      item.remove();
+      HTomb.Player.inventory.add(item);
+      HTomb.GUI.pushMessage("You pick up a " + item.name + ".");
+      HTomb.turn();
+    }
+  };
+  Commands.drop = function() {
+    var p = HTomb.Player;
+    if (!p.inventory) {
+      HTomb.GUI.pushMessage("You cannot carry items.");
+    } else if (p.inventory.length===0) {
+      HTomb.GUI.pushMessage("You have no items.");
+    } else {
+      var item = p.inventory.items[0];
+      p.inventory.remove(item);
+      item.place(p._x,p._y,p._z);
+      HTomb.GUI.pushMessage("You drop a " + item.name + ".");
+      HTomb.turn();
+    }
   };
   return HTomb;
 })(HTomb);

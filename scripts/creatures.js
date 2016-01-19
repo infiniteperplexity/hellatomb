@@ -5,11 +5,11 @@ HTomb = (function(HTomb) {
 
   HTomb.Entity.define({
       template: "Necromancer",
-      name: "the player",
+      name: "necromancer",
       isCreature: true,
       symbol: "@",
       fg: "#D888FF",
-      behaviors: [b.AI(), b.Movement()]
+      behaviors: [b.AI(), b.Movement(), b.Inventory(), b.Sight()]
   });
 
   HTomb.Entity.define({

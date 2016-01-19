@@ -4,19 +4,119 @@ HTomb = (function(HTomb) {
   var LEVELH = HTomb.Constants.LEVELH;
 
   HTomb.Behavior.define({
+    template: "Sight",
+    name: "sight",
+    range: 10
+  });
+  HTomb.Behavior.define({
     template: "AI",
     name: "ai",
     target: null,
     mood: null,
+    acted: false,
     init: function(){this.entity.path = [];},
-    go: function() {console.log(this.entity.name + " is thinking...");}
+    act: function() {
+      this.acted = false;
+      if (this.entity===HTomb.Player) {
+        return false;
+      }
+      if (this.acted===false) {
+        this.wander();
+      }
+    },
+    wander: function() {
+      if (!this.entity.movement) {
+        return false;
+      }
+      var r = Math.floor(Math.random()*8);
+      var dx = ROT.DIRS[8][r][0];
+      var dy = ROT.DIRS[8][r][1];
+      this.acted = this.entity.movement.tryStep(dx,dy);
+    }
+  });
+
+  HTomb.Behavior.define({
+    template: "Inventory",
+    name: "inventory",
+    capacity: 10,
+    init: function() {this.items = [];},
+    add: function(item) {
+      if (this.items.length>=this.capacity) {
+        console.log("Can't pick that up.");
+      } else {
+        this.items.push(item);
+      }
+    },
+    remove: function(item) {
+        var indx = this.items.indexOf(item);
+        if (indx===-1) {
+          console.log("Can't remove that");
+        } else {
+          this.items.slice(indx,1);
+        }
+    }
   });
 
   HTomb.Behavior.define({
     template: "Movement",
     name: "movement",
     walks: true,
+    tryStep: function(dx, dy) {
+      var x = this.entity._x;
+      var y = this.entity._y;
+      var z = this.entity._z;
+      var i0;
+      var one;
+      var two;
+      var dirs = ROT.DIRS[8];
+      if (this.canPass(x+dx,y+dy,z) && this.canMove(x+dx, y+dy,z)) {
+        this.entity.place(x+dx,y+dy,z);
+        //should subtract actionpoints;
+        return true;
+      } else for (var i=0; i<8; i++) {
+        if (dx===dirs[i][0] && dy===dirs[i][1]) {
+          i0 = i;
+          break;
+        }
+      }
+      for (i=1; i<5; i++) {
+        one = (i0+i)%8;
+        two = (i0-i>=0) ? i0-i : 8+i0-i;
+        if (Math.random>=0.5) {
+          //perform XOR swap
+          one = one^two;
+          two = one^two;
+          one = one^two;
+        }
+        dx = dirs[one][0];
+        dy = dirs[one][1];
+        if (this.canPass(x+dx,y+dy,z) && this.canMove(x+dx, y+dy,z)) {
+          this.entity.place(x+dx,y+dy,z);
+          //should subtract actionpoints;
+          return true;
+        }
+        dx = dirs[two][0];
+        dy = dirs[two][1];
+        if (this.canPass(x+dx,y+dy,z) && this.canMove(x+dx, y+dy,z)) {
+          this.entity.place(x+dx,y+dy,z);
+          //should subtract actionpoints;
+          return true;
+        }
+      }
+      console.log("creature couldn't move.");
+      return false;
+    },
     canPass: function(x,y,z) {
+      if (this.canMove(x,y,z)===false) {
+        return false;
+      }
+      var square = HTomb.World.getSquare(x,y,z);
+      if (square.creature) {
+        return false;
+      }
+      return true;
+    },
+    canMove: function(x,y,z) {
       if (x<0 || x>=LEVELW || y<0 || y>=LEVELH) {
         return false;
       }
@@ -35,6 +135,18 @@ HTomb = (function(HTomb) {
         return false;
       }
     }
+  });
+
+  HTomb.Behavior.define({
+    template: "Attacker",
+    name: "attack"
+  });
+
+  HTomb.Behavior.define({
+    template: "Defender",
+    name: "defend",
+    hp: 10,
+    maxhp: 10
   });
 
   HTomb.Behavior.define({

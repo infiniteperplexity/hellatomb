@@ -4,7 +4,6 @@ HTomb = (function(HTomb) {
   var LEVELH = HTomb.Constants.LEVELH;
   var NLEVELS = HTomb.Constants.NLEVELS;
   var levels = [];
-  var actors = [];
   var VOIDTILE = -1;
   var EMPTYTILE = 0;
   var FLOORTILE = 1;
@@ -38,7 +37,6 @@ HTomb = (function(HTomb) {
   }
 
   HTomb.World.levels = levels;
-  HTomb.World.actors = actors;
   HTomb.World.terrain = terrain;
   HTomb.World.init = function() {
     for (var z=0; z<NLEVELS; z++) {
@@ -144,6 +142,12 @@ HTomb = (function(HTomb) {
     square.y = y;
     square.z = z;
     return square;
+  };
+  HTomb.World.symbolAt = function(x,y,z) {
+    var coord = x*LEVELW*LEVELH + y*LEVELH + z;
+    var fg = "white";
+    var bg = "black";
+    // not finished yet...I don't even really know what this is for
   };
 
 

@@ -6,13 +6,14 @@ HTomb = (function(HTomb) {
   var LEVELW = HTomb.Constants.LEVELW;
   var LEVELH = HTomb.Constants.LEVELH;
   var SCROLLH = HTomb.Constants.SCROLLH;
+  var MENUW = HTomb.Constants.MENUW;
   var STATUSH = HTomb.Constants.STATUSH;
   var FONTSIZE = HTomb.Constants.FONTSIZE;
   var UNIBLOCK = HTomb.Constants.UNIBLOCK;
 
   // *************properties of the base GUI object*************
   var GUI = HTomb.GUI;
-  var display = new ROT.Display({width: SCREENW, height: SCREENH+STATUSH+SCROLLH, fontsize: FONTSIZE, forceSquareRatio: true});
+  var display = new ROT.Display({width: SCREENW+MENUW, height: SCREENH+STATUSH+SCROLLH, fontsize: FONTSIZE, forceSquareRatio: true});
   document.body.appendChild(display.getContainer());
   GUI.init = function() {
     GUI.current = intro;
@@ -33,8 +34,10 @@ HTomb = (function(HTomb) {
     GUI.current.keydown(key);
   };
   var mousedown = function(click) {
-    var x = Math.floor(click.clientX/HTomb.Constants.CHARWIDTH-1);
-    var y = Math.floor(click.clientY/HTomb.Constants.CHARHEIGHT-1);
+    var xskew = +1;
+    var yskew = +4;
+    var x = Math.floor((click.clientX+xskew)/HTomb.Constants.CHARWIDTH-1);
+    var y = Math.floor((click.clientY+yskew)/HTomb.Constants.CHARHEIGHT-1);
     GUI.current.mousedown(x,y);
   };
   var bindKey = function(key, func) {
@@ -133,12 +136,15 @@ HTomb = (function(HTomb) {
     bindKey("VK_E",Commands.tryMoveNorthEast);
     bindKey("VK_PERIOD",Commands.tryMoveDown);
     bindKey("VK_COMMA",Commands.tryMoveUp);
+    bindKey("VK_G",Commands.pickup);
+    bindKey("VK_F",Commands.drop);
   };
   main.render = function() {
     drawScreen();
     drawStatus();
     //drawScrollBorder();
     drawScroll();
+    drawMenu();
   };
   var drawStatus = function() {
     display.drawText(1,SCREENH+1,"HP: " + 5 + "/" + 5);
@@ -163,6 +169,20 @@ HTomb = (function(HTomb) {
       //black out the entire line with solid blocks
       display.drawText(1,SCREENH+STATUSH+s+1,"%c{black}"+(UNIBLOCK.repeat(SCREENW-2)));
       display.drawText(1,SCREENH+STATUSH+s+1,scroll[s]);
+    }
+  };
+  var menu = [];
+  var drawMenu = function() {
+    menu = [];
+    var inv = HTomb.Player.inventory;
+    if (inv) {
+      for (var item=0; item<inv.items.length; item++) {
+        menu.push(inv.items[item].name);
+      }
+    }
+    for (var i=0; i<(SCREENH+SCROLLH); i++) {
+      display.drawText(SCREENW+1, i+1,"%c{black}"+(UNIBLOCK.repeat(MENUW-2)));
+      display.drawText(SCREENW+1, i+1,menu[i]);
     }
   };
   var drawScreen = function() {
@@ -232,7 +252,10 @@ HTomb = (function(HTomb) {
             fg = thing.fg || "white";
             bg = thing.bg || "black";
           } else {
-            sym = terrain[grid[x][y]].symbol || "X";
+            thing = terrain[grid[x][y]];
+            sym = thing.symbol || "X";
+            fg = thing.fg || "white";
+            bg = thing.bg || "black";
           }
         }
         display.draw(x-xoffset, y-yoffset, sym, fg, bg);
