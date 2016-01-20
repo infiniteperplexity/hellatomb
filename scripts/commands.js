@@ -77,26 +77,26 @@ HTomb = (function(HTomb) {
   };
   Commands.look = function(square) {
     if (square.creature) {
-      HTomb.GUI.pushMessage("There is a " + square.creature.name + " here.");
+      HTomb.GUI.pushMessage("There is " + square.creature.describe() + " here.");
     }
     HTomb.GUI.pushMessage(square.terrain.name + " square at " + square.x +", " + square.y + ", " + square.z + ".");
     Commands.glance(square);
   };
   Commands.glance = function(square) {
     if (square.items) {
-      var mesg = "This square contains a";
+      var mesg = "This square contains";
       for (var i = 0; i<square.items.length; i++) {
-        mesg = mesg + " " + square.items[i].name;
+        mesg = mesg + " " + square.items[i].describe();
         if (i===square.items.length-2) {
-          mesg = mesg + ", and a ";
+          mesg = mesg + ", and";
         } else if (i<square.items.length-1) {
-          mesg = mesg + ", a";
+          mesg = mesg + ",";
         }
       }
       HTomb.GUI.pushMessage(mesg+".");
     }
     if (square.feature) {
-      HTomb.GUI.pushMessage("There is a " + square.feature.name + " here.");
+      HTomb.GUI.pushMessage("There is " + square.feature.describe() + " here.");
     }
   };
   Commands.movePlayer = function(x,y,z) {
@@ -118,7 +118,7 @@ HTomb = (function(HTomb) {
       var item = square.items[0];
       item.remove();
       HTomb.Player.inventory.add(item);
-      HTomb.GUI.pushMessage("You pick up a " + item.name + ".");
+      HTomb.GUI.pushMessage("You pick up " + item.describe() + ".");
       HTomb.turn();
     }
   };
@@ -126,13 +126,13 @@ HTomb = (function(HTomb) {
     var p = HTomb.Player;
     if (!p.inventory) {
       HTomb.GUI.pushMessage("You cannot carry items.");
-    } else if (p.inventory.length===0) {
+    } else if (p.inventory.items.length===0) {
       HTomb.GUI.pushMessage("You have no items.");
     } else {
       var item = p.inventory.items[0];
       p.inventory.remove(item);
       item.place(p._x,p._y,p._z);
-      HTomb.GUI.pushMessage("You drop a " + item.name + ".");
+      HTomb.GUI.pushMessage("You drop " + item.describe() + ".");
       HTomb.turn();
     }
   };

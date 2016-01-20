@@ -15,6 +15,7 @@ HTomb = (function(HTomb) {
   terrain[WALLTILE]  = {name: "wall", symbol: "#", opaque: true, solid: true};
 
   function addLevel(z) {
+    console.log("Test");
     var level = {};
     if (z===undefined) {
       z = levels.length;

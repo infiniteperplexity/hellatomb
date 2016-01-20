@@ -42,7 +42,9 @@ HTomb = (function(HTomb) {
     init: function() {this.items = [];},
     add: function(item) {
       if (this.items.length>=this.capacity) {
-        console.log("Can't pick that up.");
+        HTomb.GUI.pushMessage("Can't pick that up.");
+      } else if (item.stack) {
+        item.stack.stackInto(this.items);
       } else {
         this.items.push(item);
       }
@@ -50,9 +52,9 @@ HTomb = (function(HTomb) {
     remove: function(item) {
         var indx = this.items.indexOf(item);
         if (indx===-1) {
-          console.log("Can't remove that");
+          HTomb.GUI.pushMessage("Can't remove that");
         } else {
-          this.items.slice(indx,1);
+          this.items.splice(indx,1);
         }
     }
   });
@@ -153,7 +155,30 @@ HTomb = (function(HTomb) {
     template: "Stackable",
     name: "stack",
     maxn: 10,
-    n: 1
+    n: 1,
+    stackInto: function(arr) {
+      // this should divide it into successive stacks as needed
+      var one;
+      var two;
+      for (var i=0; i<arr.length; i++) {
+        if ((this.n>0) && (arr[i].template===this.entity.template) && (arr[i].stack.n<arr[i].stack.maxn)) {
+          one = this.n;
+          two = arr[i].stack.n;
+          if ((one+two)>this.maxn) {
+            arr[i].stack.n = this.maxn;
+            this.n = one+two-this.maxn;
+          } else {
+            arr[i].stack.n = one+two;
+            this.n = 0;
+          }
+        }
+      }
+      if (this.n>0) {
+        if (this.n>1) {
+        }
+        arr.push(this.entity);
+      }
+    }
   });
 
   return HTomb;

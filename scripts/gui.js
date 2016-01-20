@@ -13,7 +13,7 @@ HTomb = (function(HTomb) {
 
   // *************properties of the base GUI object*************
   var GUI = HTomb.GUI;
-  var display = new ROT.Display({width: SCREENW+MENUW, height: SCREENH+STATUSH+SCROLLH, fontsize: FONTSIZE, forceSquareRatio: true});
+  var display = new ROT.Display({width: SCREENW+MENUW, height: SCREENH+STATUSH+SCROLLH, fontsize: FONTSIZE});
   document.body.appendChild(display.getContainer());
   GUI.init = function() {
     GUI.current = intro;
@@ -106,8 +106,9 @@ HTomb = (function(HTomb) {
   main.keydown = function(key) {
     if (  main.boundKeys[key.keyCode]===undefined) {
       console.log("No binding for " + key.keyCode);
+    } else {
+      main.boundKeys[key.keyCode]();
     }
-    main.boundKeys[key.keyCode]();
   };
   main.init = function() {
     // bind number pad movement
@@ -144,7 +145,7 @@ HTomb = (function(HTomb) {
     drawStatus();
     //drawScrollBorder();
     drawScroll();
-    drawMenu();
+    //drawMenu();
   };
   var drawStatus = function() {
     display.drawText(1,SCREENH+1,"HP: " + 5 + "/" + 5);

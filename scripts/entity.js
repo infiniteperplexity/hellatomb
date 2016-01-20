@@ -36,49 +36,21 @@ HTomb = (function(HTomb) {
       creatures[x*LEVELW*LEVELH + y*LEVELH + z] = this;
     }
     if (this.isItem) {
-      var pile = items[this._x*LEVELW*LEVELH + this._y*LEVELH + this._z];
+      var pile = items[this._x*LEVELW*LEVELH + this._y*LEVELH + this._z];        // remove it from the old pile
+      if (pile) {
+        pile.splice(pile.indexOf(this));
+        if (pile.length===0) {
+          delete items[this._x*LEVELW*LEVELH + this._y*LEVELH + this._z];
+        }
+      }
+      // put it on the new pile
+      pile = items[x*LEVELW*LEVELH + y*LEVELH + z];
+      if (pile===undefined) {
+        pile = items[x*LEVELW*LEVELH + y*LEVELH + z] = [];
+      }
       if (this.stack) {
-        //keep this part the same for now
-        if (pile) {
-          pile.splice(pile.indexOf(this));
-          if (pile.length===0) {
-            delete items[this._x*LEVELW*LEVELH + this._y*LEVELH + this._z];
-          }
-        }
-        pile = items[x*LEVELW*LEVELH + y*LEVELH + z];
-        if (pile===undefined) {
-          pile = items[x*LEVELW*LEVELH + y*LEVELH + z] = [];
-          pile.push(this);
-        } else {
-          //this is an odd place for this logic, I think
-            for (var i=0; i<pile.length;pile++) {
-              if (this.template===pile[i].template) {
-                var one = this.stack.n;
-                var two = pile[i].stack.n;
-                var mx = this.stack.maxn;
-                if (one+two<=mx) {
-                  pile[i].stack.n = one+two;
-                } else {
-                  pile[i].stack.n = mx;
-                  this.stack.n = one+two-mx;
-                  pile.push(this);
-                }
-              }
-            }
-          }
-        } else {
-        // remove it from the old pile
-        if (pile) {
-          pile.splice(pile.indexOf(this));
-          if (pile.length===0) {
-            delete items[this._x*LEVELW*LEVELH + this._y*LEVELH + this._z];
-          }
-        }
-        // put it on the new pile
-        pile = items[x*LEVELW*LEVELH + y*LEVELH + z];
-        if (pile===undefined) {
-          pile = items[x*LEVELW*LEVELH + y*LEVELH + z] = [];
-        }
+        this.stack.stackInto(pile);
+      } else {
         pile.push(this);
       }
     }
@@ -103,7 +75,7 @@ HTomb = (function(HTomb) {
       var pile = items[x*LEVELW*LEVELH + y*LEVELH + z];
       // remove it from the old pile
       if (pile) {
-        pile.splice(pile.indexOf(this));
+        pile.splice(pile.indexOf(this),1);
         if (pile.length===0) {
           delete items[this._x*LEVELW*LEVELH + this._y*LEVELH + this._z];
         }
@@ -119,13 +91,24 @@ HTomb = (function(HTomb) {
   entity.getSquare = function() {
     return HTomb.World.getSquare(this._x,this._y,this._z);
   };
-
   var blockProperty = function(obj,prop) {
     Object.defineProperty(obj,prop, {
       get: function() {throw new Error("Use underscore when calling " + prop);},
       set: function(val) {throw new Error("Use 'place' instead of setting " + prop + " directly.");}
     });
   };
+  entity.describe = function() {
+    if (this.isItem && this.stack && this.stack.n>1) {
+      return (this.stack.n + " " +this.name+"s");
+    } else {
+      var first = this.name[0];
+      if (first==="a" || first==="e" || first==="i" || first==="o" || first==="u") {
+        return ("an " + this.name);
+      } else {
+        return ("a " + this.name);
+      }
+    }
+  }
   blockProperty(entity,'x');
   blockProperty(entity,'y');
   blockProperty(entity,'z');
