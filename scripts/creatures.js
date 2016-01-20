@@ -17,7 +17,7 @@ HTomb = (function(HTomb) {
     name: "zombie",
     isCreature: true,
     symbol: "z",
-    fg: "green",
+    fg: "#99FF66",
     behaviors: [b.AI(), b.Movement()]
   });
 

@@ -10,6 +10,8 @@ HTomb = (function(HTomb) {
   var STATUSH = HTomb.Constants.STATUSH;
   var FONTSIZE = HTomb.Constants.FONTSIZE;
   var UNIBLOCK = HTomb.Constants.UNIBLOCK;
+  var EARTHTONE = HTomb.Constants.EARTHTONE;
+  var SHADOW = HTomb.Constants.SHADOW;
 
   // *************properties of the base GUI object*************
   var GUI = HTomb.GUI;
@@ -220,12 +222,12 @@ HTomb = (function(HTomb) {
         fg = "white";
         bg = "black";
         // testing
-        explored[x][y] = true;
+        // explored[x][y] = true;
         // end testing
         if (!explored[x][y]) {
           sym = " ";
         } else if (vis[x][y]===false) {
-          fg = "gray";
+          fg = SHADOW;
           bg = "black";
           if (items[coord]) {
             thing = items[coord][items[coord].length-1];
@@ -250,12 +252,12 @@ HTomb = (function(HTomb) {
           } else if (features[coord]) {
             thing = features[coord];
             sym = thing.symbol || "X";
-            fg = thing.fg || "white";
+            fg = thing.fg || EARTHTONE;
             bg = thing.bg || "black";
           } else {
             thing = terrain[grid[x][y]];
             sym = thing.symbol || "X";
-            fg = thing.fg || "white";
+            fg = thing.fg || EARTHTONE;
             bg = thing.bg || "black";
           }
         }
