@@ -1,0 +1,16 @@
+def alphatize(s):
+	from PIL import Image
+	img_path = "C:/Users/Glenn/Documents/GitHub/htomb/htomb/htomb/images/"
+	img = Image.open(img_path + s +'.png')
+	imga = img.convert("RGBA")
+	datas = img.getdata()	
+	newData = []
+	for item in datas:
+		if item[0] == 255 and item[1] == 255 and item[2] == 255:
+			newData.append((255, 255, 255, 0))
+		else:
+			newData.append(item)
+	img.putdata(newData)
+	img.save(img_path + s +"2.png", "PNG")
+	
+alphatize("fog")
