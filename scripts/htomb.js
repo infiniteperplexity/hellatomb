@@ -8,7 +8,7 @@ var HTomb = (function() {
   var NLEVELS = Constants.NLEVELS = 50;
   var SCREENW = Constants.SCREENW = 60;
   var SCREENH = Constants.SCREENH = 25;
-  var MENUW = Constants.MENUW = 20;
+  var MENUW = Constants.MENUW = 30;
   var STATUSH = Constants.STATUSH = 2;
   var SCROLLH = Constants.SCROLLH = 6;
   var FONTSIZE = Constants.FONTSIZE = 15;

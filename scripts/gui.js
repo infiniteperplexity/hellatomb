@@ -147,7 +147,7 @@ HTomb = (function(HTomb) {
     drawStatus();
     //drawScrollBorder();
     drawScroll();
-    //drawMenu();
+    drawMenu();
   };
   var drawStatus = function() {
     display.drawText(1,SCREENH+1,"HP: " + 5 + "/" + 5);
@@ -174,18 +174,27 @@ HTomb = (function(HTomb) {
       display.drawText(1,SCREENH+STATUSH+s+1,scroll[s]);
     }
   };
-  var menu = [];
+  var menu = [
+    "To move use AWSD,",
+    "arrows, or keypad.",
+    "G to pick up,",
+    "F to drop.",
+    ", or . to go down or up.",
+    "Click to examine a square."
+  ];
   var drawMenu = function() {
-    menu = [];
-    var inv = HTomb.Player.inventory;
-    if (inv) {
-      for (var item=0; item<inv.items.length; item++) {
-        menu.push(inv.items[item].name);
-      }
-    }
+    //menu = [];
+    //var inv = HTomb.Player.inventory;
+    //if (inv) {
+    //  for (var item=0; item<inv.items.length; item++) {
+    //    menu.push(inv.items[item].name);
+    //  }
+    //}
     for (var i=0; i<(SCREENH+SCROLLH); i++) {
-      display.drawText(SCREENW+1, i+1,"%c{black}"+(UNIBLOCK.repeat(MENUW-2)));
-      display.drawText(SCREENW+1, i+1,menu[i]);
+      if (menu[i]) {
+        display.drawText(SCREENW+1, i+1, "%c{black}"+(UNIBLOCK.repeat(MENUW-2)));
+        display.drawText(SCREENW+1, i+1, menu[i]);
+      }
     }
   };
   var drawScreen = function() {
