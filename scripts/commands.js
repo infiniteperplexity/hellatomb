@@ -1,6 +1,8 @@
 HTomb = (function(HTomb) {
   "use strict";
   var Commands = HTomb.Commands;
+  var Controls = HTomb.Controls;
+  var GUI = HTomb.GUI;
   var LEVELW = HTomb.Constants.LEVELW;
   var LEVELH = HTomb.Constants.LEVELH;
   Commands.tryMoveWest = function() {Commands.tryMove('W');};
@@ -135,6 +137,12 @@ HTomb = (function(HTomb) {
       HTomb.GUI.pushMessage("You drop " + item.describe() + ".");
       HTomb.turn();
     }
+  };
+  Commands.showSpells = function() {
+    GUI.switchControls(Controls.chooseSpell);
+  };
+  Commands.returnToMain = function() {
+    GUI.switchControls(Controls.main);
   };
   return HTomb;
 })(HTomb);

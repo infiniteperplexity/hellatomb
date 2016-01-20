@@ -15,6 +15,7 @@ HTomb = (function(HTomb) {
 
   // *************properties of the base GUI object*************
   var GUI = HTomb.GUI;
+  var Controls = HTomb.Controls;
   var display = new ROT.Display({width: SCREENW+MENUW, height: SCREENH+STATUSH+SCROLLH, fontsize: FONTSIZE});
   document.body.appendChild(display.getContainer());
   GUI.init = function() {
@@ -30,20 +31,26 @@ HTomb = (function(HTomb) {
     }
     GUI.render();
   };
+  GUI.switchControls = function(newcontrols) {
+    Controls.previous = GUI.current.controls;
+    GUI.current.controls = newcontrols;
+    newcontrols.init();
+    GUI.render();
+  };
   // events and commmands
   var Commands = HTomb.Commands;
   var keydown = function(key) {
-    GUI.current.keydown(key);
+    GUI.current.controls.keydown(key);
   };
   var mousedown = function(click) {
     var xskew = +1;
     var yskew = +4;
     var x = Math.floor((click.clientX+xskew)/HTomb.Constants.CHARWIDTH-1);
     var y = Math.floor((click.clientY+yskew)/HTomb.Constants.CHARHEIGHT-1);
-    GUI.current.mousedown(x,y);
+    GUI.current.controls.mousedown(x,y);
   };
   var bindKey = function(key, func) {
-    GUI.current.boundKeys[ROT[key]] = func;
+    GUI.current.controls.boundKeys[ROT[key]] = func;
   };
   window.addEventListener("keydown",keydown);
   //window.addEventListener("mousedown",mousedown);
@@ -88,10 +95,11 @@ HTomb = (function(HTomb) {
   intro.render = function() {
     display.drawText(1,1, "Welcome to HellaTomb!");
   };
-  intro.keydown = function() {
+  intro.controls = Controls.intro = {};
+  Controls.intro.keydown = function() {
     GUI.switch(main);
   };
-  intro.mousedown = function(x,y) {
+  Controls.intro.mousedown = function(x,y) {
     GUI.switch(main);
   };
 
@@ -100,19 +108,26 @@ HTomb = (function(HTomb) {
   var xoffset = 0;
   var yoffset = 0;
   var main = {};
-  main.mousedown = function(x,y) {
+  main.controls = Controls.main = {};
+  Controls.main.mousedown = function(x,y) {
     var square = HTomb.World.getSquare(x+xoffset,y+yoffset,z);
     Commands.look(square);
   };
-  main.boundKeys = [];
-  main.keydown = function(key) {
-    if (  main.boundKeys[key.keyCode]===undefined) {
+  Controls.main.boundKeys = [];
+  Controls.main.keydown = function(key) {
+    if (  Controls.main.boundKeys[key.keyCode]===undefined) {
       console.log("No binding for " + key.keyCode);
     } else {
-      main.boundKeys[key.keyCode]();
+      Controls.main.boundKeys[key.keyCode]();
     }
   };
+
   main.init = function() {
+    Controls.main.init();
+    GUI.showMenu.default();
+  };
+
+  Controls.main.init = function() {
     // bind number pad movement
     bindKey("VK_NUMPAD1",Commands.tryMoveSouthWest);
     bindKey("VK_NUMPAD2",Commands.tryMoveSouth);
@@ -141,6 +156,8 @@ HTomb = (function(HTomb) {
     bindKey("VK_COMMA",Commands.tryMoveUp);
     bindKey("VK_G",Commands.pickup);
     bindKey("VK_F",Commands.drop);
+    //bindKey("VK_Z",Commands.showSpells);
+    //bindKey("VK_I",Commands.showInventory);
   };
   main.render = function() {
     drawScreen();
@@ -174,25 +191,44 @@ HTomb = (function(HTomb) {
       display.drawText(1,SCREENH+STATUSH+s+1,scroll[s]);
     }
   };
-  var menu = [
-    "To move use AWSD,",
-    "arrows, or keypad.",
-    "G to pick up,",
-    "F to drop.",
-    ", or . to go down or up.",
-    "Click to examine a square."
-  ];
+  var menu = [];
+  GUI.showMenu = {};
+  Controls.chooseSpell = {};
+  Controls.chooseSpell.boundKeys = [];
+  Controls.chooseSpell.keyDown = Controls.main.keydown.bind(this);
+  Controls.chooseSpell.init = function() {
+    bindKey("VK_ESC",Commands.returnToMain);
+    GUI.showMenu.spells();
+    GUI.render();
+  };
+  GUI.showMenu.spells = function() {
+    menu = ["Z to raise zombie.","Esc to go back."];
+  };
+  GUI.showMenu.inventory = function() {
+    menu = [];
+    var inv = HTomb.Player.inventory;
+    if (inv) {
+      for (var i=0; i<inv.items.length; i++) {
+        menu.push(inv.items[item].describe());
+      }
+    }
+  };
+  GUI.showMenu.default = function() {
+    menu = [
+      "To move use AWSD,",
+      "arrows, or keypad.",
+      "G to pick up,",
+      "F to drop.",
+      ", or . to go down or up.",
+      "Z to cast a spell",
+      "Click to examine a square."
+    ];
+  };
+
   var drawMenu = function() {
-    //menu = [];
-    //var inv = HTomb.Player.inventory;
-    //if (inv) {
-    //  for (var item=0; item<inv.items.length; item++) {
-    //    menu.push(inv.items[item].name);
-    //  }
-    //}
-    for (var i=0; i<(SCREENH+SCROLLH); i++) {
+    for (var i=0; i<SCREENH; i++) {
+      display.drawText(SCREENW+1, i+1, "%c{black}"+(UNIBLOCK.repeat(MENUW-2)));
       if (menu[i]) {
-        display.drawText(SCREENW+1, i+1, "%c{black}"+(UNIBLOCK.repeat(MENUW-2)));
         display.drawText(SCREENW+1, i+1, menu[i]);
       }
     }
