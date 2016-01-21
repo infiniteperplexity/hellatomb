@@ -81,7 +81,7 @@ HTomb = (function(HTomb) {
   };
   GUI.init = function() {
     GUI.panels = {overlay: intro};
-    Controls.context = new SplashContext();
+    Controls.context = splash;
     GUI.render();
   };
   GUI.reset = function() {
@@ -89,11 +89,12 @@ HTomb = (function(HTomb) {
       main: gameScreen,
       middle: status,
       bottom: scroll,
-      right: guide,
+      right: menu,
       corner: hover,
       overlay: null
     };
-    Controls.context = new ControlContext();
+    menu.text = defaultText;
+    Controls.context = main;
     GUI.render();
   };
 
@@ -198,8 +199,8 @@ HTomb = (function(HTomb) {
       display.drawText(this.x0,this.y0+s+1,this.buffer[s]);
     }
   };
-  var guide = new Panel(SCREENW+1,1);
-  guide.text = [
+  var menu = new Panel(SCREENW+1,1);
+  var defaultText = menu.text = [
     "To move use AWSD,",
     "arrows, or keypad.",
     "G to pick up,",
@@ -208,11 +209,11 @@ HTomb = (function(HTomb) {
     "Z to cast a spell",
     "Click to examine a square."
   ];
-  guide.render = function() {
+  menu.render = function() {
     for (var i=0; i<SCREENH; i++) {
       display.drawText(this.x0, this.y0+i+1, "%c{black}"+(UNIBLOCK.repeat(MENUW-2)));
-      if (guide.text[i]) {
-        display.drawText(this.x0, this.y0+1+i, guide.text[i]);
+      if (menu.text[i]) {
+        display.drawText(this.x0, this.y0+1+i, menu.text[i]);
       }
     }
   };
@@ -225,42 +226,12 @@ HTomb = (function(HTomb) {
     display.drawText(this.x0+1,this.y0+1, "Welcome to HellaTomb!");
   };
 
-
-
-
-  function ControlContext() {
-    this.xoffset = 0;
-    this.yoffset = 0;
-    this.z = 1;
+  function ControlContext(bindings) {
+    bindings = bindings || {};
     this.boundKeys = [];
-    // bind number pad movement
-    bindKey(this,"VK_NUMPAD1",Commands.tryMoveSouthWest);
-    bindKey(this,"VK_NUMPAD2",Commands.tryMoveSouth);
-    bindKey(this,"VK_NUMPAD3",Commands.tryMoveSouthEast);
-    bindKey(this,"VK_NUMPAD4",Commands.tryMoveWest);
-    bindKey(this,"VK_NUMPAD6",Commands.tryMoveEast);
-    bindKey(this,"VK_NUMPAD7",Commands.tryMoveNorthWest);
-    bindKey(this,"VK_NUMPAD8",Commands.tryMoveNorth);
-    bindKey(this,"VK_NUMPAD9",Commands.tryMoveNorthEast);
-    // bind arrow movement
-    bindKey(this,"VK_LEFT",Commands.tryMoveWest);
-    bindKey(this,"VK_RIGHT",Commands.tryMoveEast);
-    bindKey(this,"VK_UP",Commands.tryMoveNorth);
-    bindKey(this,"VK_DOWN",Commands.tryMoveSouth);
-    // bind keyboard movement
-    bindKey(this,"VK_Z",Commands.tryMoveSouthWest);
-    bindKey(this,"VK_S",Commands.tryMoveSouth);
-    bindKey(this,"VK_X",Commands.tryMoveSouth);
-    bindKey(this,"VK_C",Commands.tryMoveSouthEast);
-    bindKey(this,"VK_A",Commands.tryMoveWest);
-    bindKey(this,"VK_D",Commands.tryMoveEast);
-    bindKey(this,"VK_Q",Commands.tryMoveNorthWest);
-    bindKey(this,"VK_W",Commands.tryMoveNorth);
-    bindKey(this,"VK_E",Commands.tryMoveNorthEast);
-    bindKey(this,"VK_PERIOD",Commands.tryMoveDown);
-    bindKey(this,"VK_COMMA",Commands.tryMoveUp);
-    bindKey(this,"VK_G",Commands.pickup);
-    bindKey(this,"VK_F",Commands.drop);
+    for (var b in bindings) {
+      bindKey(this,b,bindings[b]);
+    }
   }
   ControlContext.prototype.keydown = function(key) {
     if (  this.boundKeys[key.keyCode]===undefined) {
@@ -269,14 +240,51 @@ HTomb = (function(HTomb) {
       this.boundKeys[key.keyCode]();
     }
   };
-  ControlContext.prototype.clickAt = function(x,y) {
+  ControlContext.prototype.clickAt = function() {
+    GUI.reset();
+  };
+  var main = new ControlContext({
+    // bind number pad movement
+    VK_LEFT: Commands.tryMoveWest,
+    VK_RIGHT: Commands.tryMoveEast,
+    VK_UP: Commands.tryMoveNorth,
+    VK_DOWN: Commands.tryMoveSouth,
+    // bind keyboard movement
+    VK_Z: Commands.tryMoveSouthWest,
+    VK_S: Commands.tryMoveSouth,
+    VK_X: Commands.tryMoveSouth,
+    VK_C: Commands.tryMoveSouthEast,
+    VK_A: Commands.tryMoveWest,
+    VK_D: Commands.tryMoveEast,
+    VK_Q: Commands.tryMoveNorthWest,
+    VK_W: Commands.tryMoveNorth,
+    VK_E: Commands.tryMoveNorthEast,
+    VK_PERIOD: Commands.tryMoveDown,
+    VK_COMMA: Commands.tryMoveUp,
+    VK_G: Commands.pickup,
+    VK_F: Commands.drop,
+    VK_P: Commands.showSpells
+  });
+  main.xoffset = 0;
+  main.yoffset = 0;
+  main.z = 1;
+
+  main.clickAt = function(x,y) {
     var square = HTomb.World.getSquare(x+this.xoffset,y+this.yoffset,this.z);
     Commands.look(square);
   };
-  function SplashContext() {}
-  SplashContext.prototype = new ControlContext();
-  SplashContext.prototype.clickAt = SplashContext.prototype.keydown = function() {
-    GUI.reset();
+  var splash = new ControlContext();
+  var spells = new ControlContext({
+      VK_Z: function() {Commands.raiseZombie();GUI.reset();},
+      VK_ESC: GUI.reset
+  });
+  Controls.contexts = {};
+  Controls.contexts.splash = splash;
+  Controls.contexts.main = main;
+  Controls.contexts.spells = spells;
+  GUI.updateMenu = function(txt) {
+    menu.text = txt;
+    menu.render();
   };
 
   //Controls.stack = [];

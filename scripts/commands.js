@@ -139,10 +139,14 @@ HTomb = (function(HTomb) {
     }
   };
   Commands.showSpells = function() {
-    GUI.switchControls(Controls.chooseSpell);
+    GUI.updateMenu(["Press Z to raise zombie","Press Esc to go back."]);
+    Controls.context = Controls.contexts.spells;
   };
   Commands.returnToMain = function() {
-    GUI.switchControls(Controls.main);
+    GUI.reset();
+  };
+  Commands.raiseZombie = function() {
+    GUI.pushMessage("Not yet implemented");
   };
   return HTomb;
 })(HTomb);
