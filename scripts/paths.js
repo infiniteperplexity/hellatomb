@@ -69,6 +69,11 @@ HTomb = (function(HTomb) {
     return path;
   };
 
+  HTomb.Path.distance = function(x0, y0, x1, y1) {
+    var line = HTomb.Path.line(x0,y0,x1,y1);
+    return line.length;
+  };
+
   HTomb.Path.FloodFill = function(callb) {
     this._callback = callb;
     this.filled = {};
@@ -88,7 +93,7 @@ HTomb = (function(HTomb) {
     var f = new HTomb.Path.FloodFill(passable);
     f.compute(x,y);
     return f.grid;
-  }
+  };
 
   return HTomb;
 })(HTomb);

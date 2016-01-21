@@ -20,18 +20,36 @@ HTomb = (function(HTomb) {
       if (this.entity===HTomb.Player) {
         return false;
       }
+      if (this.entity.minion) {
+        this.patrol(this.entity.minion.master._x,this.entity.minion.master._y);
+      }
       if (this.acted===false) {
         this.wander();
+      }
+      if (this.acted===false) {
+        console.log("creature failed to act!");
+      }
+    },
+    patrol: function(x,y,min,max) {
+      min = min || 3;
+      max = max || 6;
+      if (!this.entity.movement) {
+        return false;
+      }
+      var dist = HTomb.Path.distance(this.entity._x,this.entity._y,x,y);
+      if (dist<min) {
+        this.acted = this.entity.movement.walkAway(x,y);
+      } else if (dist>max) {
+        this.acted = this.entity.movement.walkToward(x,y);
+      } else {
+        this.acted = this.entity.movement.walkRandom();
       }
     },
     wander: function() {
       if (!this.entity.movement) {
         return false;
       }
-      var r = Math.floor(Math.random()*8);
-      var dx = ROT.DIRS[8][r][0];
-      var dy = ROT.DIRS[8][r][1];
-      this.acted = this.entity.movement.tryStep(dx,dy);
+      this.acted = this.entity.movement.walkRandom();
     }
   });
 
@@ -63,7 +81,33 @@ HTomb = (function(HTomb) {
     template: "Movement",
     name: "movement",
     walks: true,
+    walkRandom: function() {
+      var r = Math.floor(Math.random()*8);
+      var dx = ROT.DIRS[8][r][0];
+      var dy = ROT.DIRS[8][r][1];
+      return this.tryStep(dx,dy);
+    },
+    walkToward: function(x,y) {
+      // for now, assume a straight line...later do pathfinding
+      var x0 = this.entity._x;
+      var y0 = this.entity._y;
+      var line = HTomb.Path.line(x0,y0,x,y);
+      // need to handle errors somehow
+      var dx = line[1][0] - x0;
+      var dy = line[1][1] - y0;
+      return this.tryStep(dx,dy);
+    },
+    walkAway: function(x,y) {
+      var x0 = this.entity._x;
+      var y0 = this.entity._y;
+      var line = HTomb.Path.line(x0,y0,x,y);
+      // need to handle errors somehow
+      var dx = line[1][0] - x0;
+      var dy = line[1][1] - y0;
+      return this.tryStep(-dx,-dy);
+    },
     tryStep: function(dx, dy) {
+      // this should deal with slopes eventually
       var x = this.entity._x;
       var y = this.entity._y;
       var z = this.entity._z;

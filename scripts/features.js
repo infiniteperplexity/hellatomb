@@ -7,12 +7,14 @@ HTomb = (function(HTomb) {
       template: "UpSlope",
       name: "upward slope",
       isFeature: true,
+      portalTo: null,
       symbol: "\u02C4"
   });
   HTomb.Entity.define({
       template: "DownSlope",
       name: "downward slope",
       isFeature: true,
+      portalTo: null,
       symbol: "\u02C5"
   });
 
