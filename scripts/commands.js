@@ -146,7 +146,18 @@ HTomb = (function(HTomb) {
     GUI.reset();
   };
   Commands.raiseZombie = function() {
-    GUI.pushMessage("Not yet implemented");
+    var p = HTomb.Player;
+    var sq = HTomb.World.randomEmptyNeighbor(p._x,p._y,p._z);
+    if (sq) {
+      var z = HTomb.Entity.create("Zombie");
+      z.place(sq[0],sq[1],sq[2]);
+      if (!p.master) {
+        p.addBehavior(HTomb.Behavior.Master());
+      }
+      z.addBehavior(HTomb.Behavior.Minion());
+      z.minion.setMaster(p);
+      p.master.addMinion(z);
+    }
   };
   return HTomb;
 })(HTomb);

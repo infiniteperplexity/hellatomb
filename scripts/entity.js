@@ -121,7 +121,7 @@ HTomb = (function(HTomb) {
       if (prop==="behaviors") {
         ent.behaviors = [];
         for (var beh in properties.behaviors) {
-          HTomb.Entity.addBehavior(properties.behaviors[beh], ent);
+          ent.addBehavior(properties.behaviors[beh]);
         }
       } else {
         ent[prop] = properties[prop];
@@ -149,15 +149,15 @@ HTomb = (function(HTomb) {
       return beh;
     };
   };
-  HTomb.Entity.addBehavior = function(beh, ent) {
-    ent[beh.name] = {entity: ent};
+  entity.addBehavior = function(beh) {
+    this[beh.name] = {entity: this};
     for (var p in beh) {
       if (p!=="name") {
-        ent[beh.name][p] = beh[p];
+        this[beh.name][p] = beh[p];
       }
     }
-    if (ent[beh.name].init) {
-      ent[beh.name].init();
+    if (this[beh.name].init) {
+      this[beh.name].init();
     }
   };
   //http://unicode-table.com/en/

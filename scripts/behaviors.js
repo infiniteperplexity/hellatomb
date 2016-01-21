@@ -152,6 +152,30 @@ HTomb = (function(HTomb) {
   });
 
   HTomb.Behavior.define({
+    template: "Minion",
+    name: "minion",
+    master: null,
+    setMaster: function(cr) {
+      this.master = cr;
+    }
+  });
+
+  HTomb.Behavior.define({
+    template: "Master",
+    name: "master",
+    minions: null,
+    init: function() {
+      this.minions = [];
+    },
+    addMinion: function(cr) {
+      this.minions.push(cr);
+    },
+    removeMinion: function(cr) {
+      this.minions.splice(this.minions.indexOf(cr,1));
+    }
+  });
+
+  HTomb.Behavior.define({
     template: "Stackable",
     name: "stack",
     maxn: 10,

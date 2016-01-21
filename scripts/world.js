@@ -150,7 +150,22 @@ HTomb = (function(HTomb) {
     var bg = "black";
     // not finished yet...I don't even really know what this is for
   };
-
+  HTomb.World.randomEmptyNeighbor = function(x,y,z) {
+    var dirs = ROT.DIRS[8];
+    var d = [];
+    for (var i=0; i<dirs.length; i++) {
+      d.push([dirs[i][0],dirs[i][1]]);
+    }
+    d = d.randomize();
+    var square;
+    for (var j=0; j<d.length; j++) {
+      square = HTomb.World.getSquare(x+d[j][0],y+d[j][1],z);
+      if (square.terrain.solid===undefined && square.creature===undefined) {
+        return [x+d[j][0],y+d[j][1],z];
+      }
+    }
+    return false;
+  }
 
   return HTomb;
 })(HTomb);
