@@ -2,23 +2,12 @@ HTomb = (function(HTomb) {
   "use strict";
   var LEVELW = HTomb.Constants.LEVELW;
   var LEVELH = HTomb.Constants.LEVELH;
+  var NLEVELS = HTomb.Constants.NLEVELS;
   var World = HTomb.World;
   var features = HTomb.World.features;
 
   var terrain = HTomb.World.terrain;
   var levels = HTomb.World.levels;
-  var fastgrid;
-  function fastGrid() {
-    fastgrid = [];
-    for (var k=0; k<NLEVELS; k++) {
-      for (var i=0; i<LEVELW; i++) {
-        portals.push([]);
-        for (var j=0; j<LEVELH; j++) {
-          fastGrid.push(levels[k].grid[i][j]);
-        }
-      }
-    }
-  }
   var portals;
   function portalMap() {
     portals = [];
@@ -37,33 +26,65 @@ HTomb = (function(HTomb) {
     }
   }
   // default passability function
+  var t;
   function defaultPassable(x,y,z) {
-    return (terrain[fastgrid[x+y*NLEVELS+z*NLEVELS*LEVELH]].solid===undefined);
+    if (x<0 || x>=LEVELW || y<0 || y>=LEVELH || z<0 || z>=NLEVELS) {
+      return false;
+    }
+    t = terrain[levels[z].grid[x][y]];
+    //t = terrain[_fastgrid[y+x*LEVELH+z*LEVELH*LEVELW]];
+    return (t.solid===undefined && t.fallable===undefined);
   }
-  function aStar(x0,y0,z0,x1,y1,z1,canPass) {
-    canPass = canPass || defaultPassable;
-    var abs = Math.abs;
-    //squares already checked
-    var checked = {};
-    //square that need to be checked
-    //three-dimensional coordinate, and estimated distance
-    var tocheck = [[x0,y0,z0,abs(x0-x1)+abs(y0-y1)+abs(z0-z1)]];
-    var dirs = ROT.DIRS[8];
+
+  var abs = Math.abs;
+  function h1(x0,y0,z0,x1,y1,z1) {
+    return abs(x1-x0)+abs(y1-y0)+abs(z1-z0);
+  }
+  function h2(x0,y0,z0,x1,y1,z1) {
+    return Math.sqrt((x1-x0)*(x1-x0)+(y1-y0)*(y1-y0)+(z1-x0)*(z1-z0));
+  }
+  var h = h2;
+  var _fastgrid;
+  //function aStar(x0,y0,z0,x1,y1,z1,canPass) {
+  function aStar(x0,y0,z0,x1,y1,z1,options) {
+
+    if (x0+y0+z0+x1+y1+z1===undefined) {
+      alert("bad path arguments!");
+    }
+    console.log("finding path...");
+    //_fastgrid = HTomb.World._fastgrid;
+    options = options || {};
+    var useFirst = options.useFirst || false;
+    var useLast = options.useLast || true;
+    var canPass = options.canPass || defaultPassable;
+
+    // fastest possible lookup
+    // random bias should be okay
+    var dirs = [
+      [ 0, -1],
+      [ 1, -1],
+      [ 1,  0],
+      [ 1,  1],
+      [ 0,  1],
+      [-1,  1],
+      [-1,  0],
+      [-1, -1]
+    ].randomize();
+    var current, next, this_score, h_score, coord;
+    var checked = {}, scores = {}, retrace = {}, path = [];
     // it costs zero to get to the starting square
-    var scores = {};
     scores[x0*LEVELW*LEVELH+y0*LEVELH+z0] = 0;
-    var retrace = {};
-    var path = [];
-    var current;
-    var next;
-    var this_score;
-    var coord;
+    //square that need to be checked
+    //three-dimensional coordinate, and estimated (heuristic) distance
+    var tocheck = [[x0,y0,z0,this_score+h(x0,y0,z0,x1,y1,z1)]];
+
     while (tocheck.length>0) {
       // choose the highest-priority square
-      current = tocheck.unshift();
+      current = tocheck.shift();
+      // calculate the fast lookup
       coord = current[0]*LEVELW*LEVELH+current[1]*LEVELH+current[2];
       // check if we have found the target square (or maybe distance==1?)
-      if (current[6]===0) {
+      if (current[0]===x1 && current[1]===y1 && current[2]===z1) {
       // if (current[6]===1) {
         // start with the goal square
         path = [[current[0],current[1],current[2]]];
@@ -71,16 +92,26 @@ HTomb = (function(HTomb) {
         while (current[0]!==x0 || current[1]!==y0 || current[2]!==z0) {
           // retrace the path by one step
           current = retrace[coord];
+          // calculate the fast coordinate
           coord = current[0]*LEVELW*LEVELH+current[1]*LEVELH+current[2];
+          // add the next square to the returnable path
           path.unshift([current[0],current[1],current[2]]);
         }
         // return the complete path
+        if (path.length>0 && useFirst===false) {
+          path.shift();
+        }
+        if (path.length>0 && useLast===false) {
+          path.pop();
+        }  
         return path;
       }
       // we are now checking this square
       checked[coord] = true;
       // loop through neighboring cells
-      for (var i=-1; i<8; i++) {
+      //for (var i=-1; i<8; i++) {
+      // for testing, skip the portals for now
+      for (var i=0; i<8; i++) {
         if (i===-1) {
           // if there are any portals here, check them first
             // right now cannot handle multiple portals in one square
@@ -90,39 +121,54 @@ HTomb = (function(HTomb) {
             continue;
           }
         } else {
+          // grab a neighboring square
           next = [current[0]+dirs[i][0],current[1]+dirs[i][1],current[2]];
         }
-        coord = checked[next[0]*LEVELW*LEVELH+next[1]*LEVELH+next[2]];
+        coord = next[0]*LEVELW*LEVELH+next[1]*LEVELH+next[2];
         // if this one has been checked already then skip it
         if (checked[coord]) {
+          continue;
+        }
+        // otherwise set the score equal to the distance from the starting square
+          // this assumes a uniform edge cost of 1
+        this_score = scores[current[0]*LEVELW*LEVELH+current[1]*LEVELH+current[2]]+1;
+        // if there is already a better score for this square then skip it
+        if (scores[coord]!==undefined && scores[coord]<=this_score) {
           continue;
         }
         // if the move is not valid then skip it
         if (canPass(next[0],next[1],next[2])===false) {
           continue;
         }
-        // otherwise set the score equal to the distance from the starting square
-        this_score = scores[current[0]*LEVELW*LEVELH+current[1]*LEVELH+current[2]]+1;
+        h_score = this_score + h(next[0],next[1],next[2],x1,y1,z1);
         // now add it to the to-do list unless it already has a better score on there
         for (var j=0; j<tocheck.length; j++) {
           // if this score is better than the one being checked...
-          if (this_score<tocheck[j][3]) {
+          if (h_score<=tocheck[j][3]) {
+            if (j===0) {
+            }
             // insert it into the priority queue based on estimated distance
-            tocheck.splice(j,0,[next[0],next[1],next[2],abs(next[0]-x1)+abs(next[1]-y1)+abs(next[2]-z1)]);
-            retrace[key] = current[0]*LEVELW*LEVELH+current[1]*LEVELH+current[2];
-            // flag it as inserted
-            this_score = -1;
+            //tocheck.splice(j,0,[next[0],next[1],next[2],this_score+abs(next[0]-x1)+abs(next[1]-y1)+abs(next[2]-z1)]);
+            tocheck.splice(j,0,[next[0],next[1],next[2],h_score]);
             break;
           }
         }
         // if it is worse than the worst score on the list, add to the end
-        if (this_score>tocheck[tocheck.length-1][3]) {
-          tocheck.push([next[0],next[1],next[2],this_score]);
+        if (tocheck.length===0 || this_score>tocheck[tocheck.length-1][3]) {
+          //tocheck.push([next[0],next[1],next[2],this_score+abs(next[0]-x1)+abs(next[1]-y1)+abs(next[2]-z1)]);
+          tocheck.push([next[0],next[1],next[2],h_score]);
         }
+        // set the parent square in the potential path
+        retrace[coord] = [current[0],current[1],current[2]];
+        // save the new best score for this square
+        scores[coord] = this_score;
       }
     }
+    console.log("path failed");
+    return [];
   }
 
+  HTomb.Path.aStar = aStar;
 return HTomb;
 })(HTomb);
 

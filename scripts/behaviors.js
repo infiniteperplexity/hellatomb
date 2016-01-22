@@ -91,11 +91,16 @@ HTomb = (function(HTomb) {
       // for now, assume a straight line...later do pathfinding
       var x0 = this.entity._x;
       var y0 = this.entity._y;
-      var line = HTomb.Path.line(x0,y0,x,y);
+      //var line = HTomb.Path.line(x0,y0,x,y);
       // need to handle errors somehow
-      var dx = line[1][0] - x0;
-      var dy = line[1][1] - y0;
-      return this.tryStep(dx,dy);
+      //var dx = line[1][0] - x0;
+      //var dy = line[1][1] - y0;
+      var path = HTomb.Path.aStar(this.entity._x,this.entity._y,this.entity._z,x,y,this.entity._z);
+      if (path) {
+        var square = path[0];
+        return this.tryStep(square[0]-x0,square[1]-y0);
+      }
+      //return this.tryStep(dx,dy);
     },
     walkAway: function(x,y) {
       var x0 = this.entity._x;

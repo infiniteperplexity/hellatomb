@@ -69,11 +69,13 @@ HTomb = (function(HTomb) {
   };
   GUI.drawAt = function(
     x,y,ch,fg,bg) {
+    var xoffset = Controls.context.xoffset || 0;
+    var yoffset = Controls.context.yoffset || 0;
     fg = fg || "white"  ;
     bg = bg || "black";
     display.draw(
-      x-screen.xoffset,
-      y-screen.yoffset,
+      x-xoffset,
+      y-yoffset,
       ch,
       fg,
       bg
@@ -206,7 +208,7 @@ HTomb = (function(HTomb) {
     "G to pick up,",
     "F to drop.",
     ", or . to go down or up.",
-    "Z to cast a spell",
+    "P to cast a spell",
     "Click to examine a square."
   ];
   menu.render = function() {

@@ -95,7 +95,20 @@ HTomb = (function(HTomb) {
         }
       }
     }
+    createFastGrid();
   };
+  function createFastGrid() {
+    var levels = HTomb.World.levels;
+    HTomb.World._fastgrid = [];
+    for (var k=0; k<NLEVELS; k++) {
+      for (var i=0; i<LEVELW; i++) {
+        //portals.push([]);
+        for (var j=0; j<LEVELH; j++) {
+          HTomb.World._fastgrid.push(levels[k].grid[i][j]);
+        }
+      }
+    }
+  }
   HTomb.World.neighbors = function(x,y) {
     var squares = [];
     var xs = [0];
