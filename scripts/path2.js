@@ -26,7 +26,7 @@ HTomb = (function(HTomb) {
     }
   }
   // default passability function
-  var t;
+  var t;    
   function defaultPassable(x,y,z) {
     if (x<0 || x>=LEVELW || y<0 || y>=LEVELH || z<0 || z>=NLEVELS) {
       return false;
@@ -103,7 +103,7 @@ HTomb = (function(HTomb) {
         }
         if (path.length>0 && useLast===false) {
           path.pop();
-        }  
+        }
         return path;
       }
       // we are now checking this square
@@ -164,7 +164,8 @@ HTomb = (function(HTomb) {
         scores[coord] = this_score;
       }
     }
-    console.log("path failed");
+    console.log([x1,y1,z1]);
+    console.log(canPass(x1,y1,z1));
     return [];
   }
 

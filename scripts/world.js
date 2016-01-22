@@ -90,6 +90,8 @@ HTomb = (function(HTomb) {
             if (slope===true) {
               HTomb.Entity.create("UpSlope").place(x,y,z);
               HTomb.Entity.create("DownSlope").place(x,y,z+1);
+              // is making this a floor the best way to handle this?
+              levels[z+1].grid[x][y] = FLOORTILE;
             }
           }
         }

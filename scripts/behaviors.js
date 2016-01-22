@@ -95,7 +95,7 @@ HTomb = (function(HTomb) {
       // need to handle errors somehow
       //var dx = line[1][0] - x0;
       //var dy = line[1][1] - y0;
-      var path = HTomb.Path.aStar(this.entity._x,this.entity._y,this.entity._z,x,y,this.entity._z);
+      var path = HTomb.Path.aStar(this.entity._x,this.entity._y,this.entity._z,x,y,this.entity._z,{useLast: false});
       if (path) {
         var square = path[0];
         return this.tryStep(square[0]-x0,square[1]-y0);
@@ -175,11 +175,11 @@ HTomb = (function(HTomb) {
       if (square.terrain.solid===true && this.phases===undefined) {
         return false;
       } else if (square.terrain.fallable===true && this.flies===undefined) {
-        if (square.feature!==undefined && square.feature.template==="DownSlope") {
-          return true;
-        } else {
+        //if (square.feature!==undefined && square.feature.template==="DownSlope") {
+        //  return true;
+        //} else {
           return false;
-        }
+        //}
       } else if (this.walks===true) {
         return true;
       } else {
