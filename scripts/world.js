@@ -191,6 +191,9 @@ HTomb = (function(HTomb) {
     }
     return false;
   };
+  HTomb.World.coord = function(x,y,z) {
+    return x*LEVELW*LEVELH + y*LEVELH + z;
+  };
   // should this be part of a factory or something eventually?
   return HTomb;
 })(HTomb);

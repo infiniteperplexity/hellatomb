@@ -21,14 +21,16 @@ HTomb = (function(HTomb) {
     return (t.solid===undefined && t.fallable===undefined);
   }
 
+  // choose between absolute grid distance or euclidean diagonal distance
   var abs = Math.abs;
   function h1(x0,y0,z0,x1,y1,z1) {
     return abs(x1-x0)+abs(y1-y0)+abs(z1-z0);
   }
   function h2(x0,y0,z0,x1,y1,z1) {
-    return Math.sqrt((x1-x0)*(x1-x0)+(y1-y0)*(y1-y0)+(z1-x0)*(z1-z0));
+    return Math.sqrt((x1-x0)*(x1-x0)+(y1-y0)*(y1-y0)+(z1-z0)*(z1-z0));
   }
-  var h = h2;
+  var h = h1;
+
   var _fastgrid;
   //function aStar(x0,y0,z0,x1,y1,z1,canPass) {
   HTomb.Path.aStar = function(x0,y0,z0,x1,y1,z1,options) {
@@ -113,6 +115,7 @@ HTomb = (function(HTomb) {
         coord = next[0]*LEVELW*LEVELH+next[1]*LEVELH+next[2];
         // if this one has been checked already then skip it
         if (checked[coord]) {
+          //HTomb.GUI.drawAt(next[0],next[1],"X","purple","black");
           continue;
         }
         // otherwise set the score equal to the distance from the starting square
@@ -120,27 +123,32 @@ HTomb = (function(HTomb) {
         this_score = scores[current[0]*LEVELW*LEVELH+current[1]*LEVELH+current[2]]+1;
         // if there is already a better score for this square then skip it
         if (scores[coord]!==undefined && scores[coord]<=this_score) {
+          //HTomb.GUI.drawAt(next[0],next[1],"X","yellow","black");
           continue;
         }
         // if the move is not valid then skip it
         if (canPass(next[0],next[1],next[2])===false) {
+          //HTomb.GUI.drawAt(next[0],next[1],"X","red","black");
           continue;
         }
         h_score = this_score + h(next[0],next[1],next[2],x1,y1,z1);
+        if (h_score===NaN) {
+          alert("scoring failed!");
+        }
+        //HTomb.GUI.drawAt(next[0],next[1],"X","green","black");
         // now add it to the to-do list unless it already has a better score on there
         for (var j=0; j<tocheck.length; j++) {
           // if this score is better than the one being checked...
           if (h_score<=tocheck[j][3]) {
-            if (j===0) {
-            }
             // insert it into the priority queue based on estimated distance
-            //tocheck.splice(j,0,[next[0],next[1],next[2],this_score+abs(next[0]-x1)+abs(next[1]-y1)+abs(next[2]-z1)]);
             tocheck.splice(j,0,[next[0],next[1],next[2],h_score]);
+            // use this as a flag
+            h_score = -1;
             break;
           }
         }
         // if it is worse than the worst score on the list, add to the end
-        if (tocheck.length===0 || this_score>tocheck[tocheck.length-1][3]) {
+        if (h_score>-1) {
           //tocheck.push([next[0],next[1],next[2],this_score+abs(next[0]-x1)+abs(next[1]-y1)+abs(next[2]-z1)]);
           tocheck.push([next[0],next[1],next[2],h_score]);
         }
@@ -150,10 +158,54 @@ HTomb = (function(HTomb) {
         scores[coord] = this_score;
       }
     }
-    console.log([x1,y1,z1]);
-    console.log(canPass(x1,y1,z1));
+
+    console.log("path failed");
     return [];
   }
+
+  //bresenham's line drawing algorithm
+  HTomb.Path.line = function(x0, y0, x1, y1){
+    var path = [];
+    var dx = Math.abs(x1-x0);
+    var dy = Math.abs(y1-y0);
+    var sx = (x0 < x1) ? 1 : -1;
+    var sy = (y0 < y1) ? 1 : -1;
+    var err = dx-dy;
+    while(true){
+      path.push([x0,y0]);
+      if ((x0==x1) && (y0==y1)) break;
+      var e2 = 2*err;
+      if (e2 >-dy){ err -= dy; x0  += sx; }
+      if (e2 < dx){ err += dx; y0  += sy; }
+    }
+    return path;
+  };
+
+  HTomb.Path.distance = function(x0, y0, x1, y1) {
+    var line = HTomb.Path.line(x0,y0,x1,y1);
+    return line.length;
+  };
+
+  HTomb.Path.FloodFill = function(callb) {
+    this._callback = callb;
+    this.filled = {};
+    this.compute = function(x,y) {
+      if (this._callback(x,y) === true && this.filled[x+","+y] === undefined) {
+        this.filled[x+","+y] = true;
+        this.compute(x+1,y);
+        this.compute(x-1,y);
+        this.compute(x,y+1);
+        this.compute(x,y-1);
+      }
+    };
+  };
+
+  HTomb.Path.flood = function(x,y,z) {
+    grid0 = levels[z].grid;
+    var f = new HTomb.Path.FloodFill(passable);
+    f.compute(x,y);
+    return f.grid;
+  };
 return HTomb;
 })(HTomb);
 
