@@ -21,7 +21,7 @@ HTomb = (function(HTomb) {
         return false;
       }
       if (this.entity.minion) {
-        this.patrol(this.entity.minion.master._x,this.entity.minion.master._y);
+        this.patrol(this.entity.minion.master._x,this.entity.minion.master._y,this.entity.minion.master._z);
       }
       if (this.acted===false) {
         this.wander();
@@ -30,7 +30,7 @@ HTomb = (function(HTomb) {
         console.log("creature failed to act!");
       }
     },
-    patrol: function(x,y,min,max) {
+    patrol: function(x,y,z,min,max) {
       min = min || 3;
       max = max || 6;
       if (!this.entity.movement) {
@@ -38,9 +38,9 @@ HTomb = (function(HTomb) {
       }
       var dist = HTomb.Path.distance(this.entity._x,this.entity._y,x,y);
       if (dist<min) {
-        this.acted = this.entity.movement.walkAway(x,y);
+        this.acted = this.entity.movement.walkAway(x,y,z);
       } else if (dist>max) {
-        this.acted = this.entity.movement.walkToward(x,y);
+        this.acted = this.entity.movement.walkToward(x,y,z);
       } else {
         this.acted = this.entity.movement.walkRandom();
       }
@@ -87,19 +87,21 @@ HTomb = (function(HTomb) {
       var dy = ROT.DIRS[8][r][1];
       return this.tryStep(dx,dy);
     },
-    walkToward: function(x,y) {
+    walkToward: function(x,y,z) {
       // for now, assume a straight line...later do pathfinding
       var x0 = this.entity._x;
       var y0 = this.entity._y;
+      var z0 = this.entity._z;
       //var line = HTomb.Path.line(x0,y0,x,y);
       // need to handle errors somehow
       //var dx = line[1][0] - x0;
       //var dy = line[1][1] - y0;
-      var path = HTomb.Path.aStar(this.entity._x,this.entity._y,this.entity._z,x,y,this.entity._z,{useLast: false});
+      var path = HTomb.Path.aStar(x0,y0,z0,x,y,z,{useLast: false});
       if (path) {
         var square = path[0];
-        return this.tryStep(square[0]-x0,square[1]-y0);
+        return this.tryStep(square[0]-x0,square[1]-y0,square[2]-z0);
       }
+      return false;
       //return this.tryStep(dx,dy);
     },
     walkAway: function(x,y) {

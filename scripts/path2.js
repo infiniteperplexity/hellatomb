@@ -4,29 +4,14 @@ HTomb = (function(HTomb) {
   var LEVELH = HTomb.Constants.LEVELH;
   var NLEVELS = HTomb.Constants.NLEVELS;
   var World = HTomb.World;
-  var features = HTomb.World.features;
+  var features = World.features;
 
-  var terrain = HTomb.World.terrain;
-  var levels = HTomb.World.levels;
-  var portals;
-  function portalMap() {
-    portals = [];
-    for (var i=0; i<LEVELW; i++) {
-      for (var j=0; j<LEVELW; j++) {
-        portals.push([]);
-        for (var k=0; k<NLEVELS; k++) {
-          if (features[i*LEVELW*LEVELH + j*LEVELH + k] && features[i*LEVELW*LEVELH + j*LEVELH + k].portalTo) {
-            portals.push(features[i*LEVELW*LEVELH + j*LEVELH + k].portalTo);
-          }
-          else {
-            portals.push(false);
-          }
-        }
-      }
-    }
+  var terrain = World.terrain;
+  var levels = World.levels;
+  var portals =World.portals;
   }
   // default passability function
-  var t;    
+  var t;
   function defaultPassable(x,y,z) {
     if (x<0 || x>=LEVELW || y<0 || y>=LEVELH || z<0 || z>=NLEVELS) {
       return false;
@@ -46,8 +31,7 @@ HTomb = (function(HTomb) {
   var h = h2;
   var _fastgrid;
   //function aStar(x0,y0,z0,x1,y1,z1,canPass) {
-  function aStar(x0,y0,z0,x1,y1,z1,options) {
-
+  HTomb.Path.aStar = function(x0,y0,z0,x1,y1,z1,options) {
     if (x0+y0+z0+x1+y1+z1===undefined) {
       alert("bad path arguments!");
     }
@@ -77,7 +61,7 @@ HTomb = (function(HTomb) {
     //square that need to be checked
     //three-dimensional coordinate, and estimated (heuristic) distance
     var tocheck = [[x0,y0,z0,this_score+h(x0,y0,z0,x1,y1,z1)]];
-
+    // keep checking until the algorithm finishes
     while (tocheck.length>0) {
       // choose the highest-priority square
       current = tocheck.shift();
@@ -111,12 +95,12 @@ HTomb = (function(HTomb) {
       // loop through neighboring cells
       //for (var i=-1; i<8; i++) {
       // for testing, skip the portals for now
-      for (var i=0; i<8; i++) {
+      for (var i=-1; i<8; i++) {
         if (i===-1) {
           // if there are any portals here, check them first
             // right now cannot handle multiple portals in one square
           if (portals[coord]) {
-            next = portals.coord;
+            next = portals[coord];
           } else {
             continue;
           }
@@ -168,8 +152,6 @@ HTomb = (function(HTomb) {
     console.log(canPass(x1,y1,z1));
     return [];
   }
-
-  HTomb.Path.aStar = aStar;
 return HTomb;
 })(HTomb);
 

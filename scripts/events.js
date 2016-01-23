@@ -17,6 +17,5 @@ HTomb = (function(HTomb) {
   Events.unsubscribe = function(listener, etype) {
     Events[etype].splice(Events[etype].indexOf(listener));
   };
-
   return HTomb;
 })(HTomb);

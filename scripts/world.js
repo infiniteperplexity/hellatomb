@@ -4,15 +4,17 @@ HTomb = (function(HTomb) {
   var LEVELH = HTomb.Constants.LEVELH;
   var NLEVELS = HTomb.Constants.NLEVELS;
   var levels = [];
-  var VOIDTILE = -1;
-  var EMPTYTILE = 0;
-  var FLOORTILE = 1;
-  var WALLTILE = 2;
+
   var terrain = [];
-  terrain[VOIDTILE] = {name: "boundary", symbol: " ", opaque: true, solid: true};
-  terrain[EMPTYTILE] = {name: "empty", symbol: "_", fallable: true};
-  terrain[FLOORTILE] = {name: "floor", symbol: "."};
-  terrain[WALLTILE]  = {name: "wall", symbol: "#", opaque: true, solid: true};
+  function defineTerrain(n, cons, definition) {
+    HTomb.Constants[cons] = n;
+    terrain[n] = definition;
+  }
+
+  defineTerrain(-1,"VOIDTILE",{name: "boundary", symbol: " ", opaque: true, solid: true});
+  defineTerrain(0,"EMPTYTILE",{name: "empty", symbol: "_", fallable: true});
+  defineTerrain(1,"FLOORTILE",{name: "floor", symbol: "."});
+  defineTerrain(2,"WALLTILE",{name: "wall", symbol: "#", opaque: true, solid: true});
 
   function addLevel(z) {
     var level = {};
@@ -27,9 +29,9 @@ HTomb = (function(HTomb) {
       level.explored.push([]);
       for (var y=0; y<LEVELH; y++) {
         if (x===0 || x===LEVELW-1 || y===0 || y===LEVELH-1 || z===0 || z===NLEVELS-1) {
-          level.grid[x][y] = VOIDTILE;
+          level.grid[x][y] = HTomb.Constants.VOIDTILE;
         } else {
-          level.grid[x][y] = EMPTYTILE;
+          level.grid[x][y] = HTomb.Constants.EMPTYTILE;
         }
         level.explored[x][y] = false;
       }
@@ -39,6 +41,7 @@ HTomb = (function(HTomb) {
   HTomb.World.levels = levels;
   HTomb.World.terrain = terrain;
   HTomb.World.init = function() {
+
     for (var z=0; z<NLEVELS; z++) {
       addLevel();
     }
@@ -62,10 +65,10 @@ HTomb = (function(HTomb) {
         mn = Math.min(mn,grid[x][y]);
         if (x>0 && x<LEVELW-1 && y>0 && y<LEVELH-1) {
           for (var z=grid[x][y]; z>=0; z--) {
-            levels[z].grid[x][y] = WALLTILE;
+            levels[z].grid[x][y] = HTomb.Constants.WALLTILE;
           }
           z = grid[x][y]+1;
-          levels[z].grid[x][y] = FLOORTILE;
+          levels[z].grid[x][y] = HTomb.Constants.FLOORTILE;
         }
       }
     }
@@ -92,20 +95,20 @@ HTomb = (function(HTomb) {
     for (var x=0; x<LEVELW; x++) {
       for (var y=0; y<LEVELH; y++) {
         for (var z=0; z<NLEVELS-1; z++) {
-          if (levels[z].grid[x][y]===FLOORTILE && levels[z+1].grid[x][y]===EMPTYTILE) {
+          if (levels[z].grid[x][y]===HTomb.Constants.FLOORTILE && levels[z+1].grid[x][y]===HTomb.Constants.EMPTYTILE) {
             squares = HTomb.World.neighbors(x,y);
             slope = false;
             for (var i=0; i<squares.length; i++) {
               square = squares[i];
-              if (levels[z].grid[square[0]][square[1]]===WALLTILE && levels[z+1].grid[square[0]][square[1]]===FLOORTILE) {
+              if (levels[z].grid[square[0]][square[1]]===HTomb.Constants.WALLTILE && levels[z+1].grid[square[0]][square[1]]===HTomb.Constants.FLOORTILE) {
                 slope = true;
               }
             }
             if (slope===true) {
               HTomb.Entity.create("UpSlope").place(x,y,z);
-              HTomb.Entity.create("DownSlope").place(x,y,z+1);
+              //HTomb.Entity.create("DownSlope").place(x,y,z+1);
               // is making this a floor the best way to handle this?
-              levels[z+1].grid[x][y] = FLOORTILE;
+              //levels[z+1].grid[x][y] = FLOORTILE;
             }
           }
         }
@@ -147,6 +150,7 @@ HTomb = (function(HTomb) {
   HTomb.World.creatures = {};
   HTomb.World.items = {};
   HTomb.World.features = {};
+  HTomb.World.portals = {};
   HTomb.World.getSquare = function(x,y,z) {
     var square = {};
     var coord = x*LEVELW*LEVELH + y*LEVELH + z;
@@ -155,6 +159,7 @@ HTomb = (function(HTomb) {
     square.creature = HTomb.World.creatures[coord];
     square.items = HTomb.World.items[coord];
     square.feature = HTomb.World.features[coord];
+    square.portals = HTomb.World.portals[coord];
     square.x = x;
     square.y = y;
     square.z = z;
@@ -167,7 +172,7 @@ HTomb = (function(HTomb) {
     // not finished yet...I don't even really know what this is for
   };
   HTomb.World.randomEmptyNeighbor = function(x,y,z) {
-    var dirs = [
+    var d = [
       [ 0, -1],
       [ 1, -1],
       [ 1,  0],
@@ -186,6 +191,6 @@ HTomb = (function(HTomb) {
     }
     return false;
   };
-
+  // should this be part of a factory or something eventually?
   return HTomb;
 })(HTomb);

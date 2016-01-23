@@ -61,6 +61,9 @@ HTomb = (function(HTomb) {
     this._x = x;
     this._y = y;
     this._z = z;
+    if (this.onPlace) {
+      this.onPlace(x,y,z);
+    }
   };
   entity.remove = function() {
     var x = this._x;
@@ -162,6 +165,5 @@ HTomb = (function(HTomb) {
   };
   //http://unicode-table.com/en/
   //"\u02C4" is upward Slope, 5 is downward
-
   return HTomb;
 })(HTomb);
