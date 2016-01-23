@@ -81,6 +81,7 @@ HTomb = (function(HTomb) {
     template: "Movement",
     name: "movement",
     walks: true,
+    climbs: true,
     walkRandom: function() {
       var r = Math.floor(Math.random()*8);
       var dx = ROT.DIRS[8][r][0];
@@ -97,7 +98,7 @@ HTomb = (function(HTomb) {
       //var dx = line[1][0] - x0;
       //var dy = line[1][1] - y0;
       var path = HTomb.Path.aStar(x0,y0,z0,x,y,z,{useLast: false});
-      if (path) {
+      if (path.length>0) {
         var square = path[0];
         return this.tryStep(square[0]-x0,square[1]-y0,square[2]-z0);
       }
@@ -113,11 +114,23 @@ HTomb = (function(HTomb) {
       var dy = line[1][1] - y0;
       return this.tryStep(-dx,-dy);
     },
-    tryStep: function(dx, dy) {
+    tryStep: function(dx, dy, dz) {
       // this should deal with slopes eventually
       var x = this.entity._x;
       var y = this.entity._y;
       var z = this.entity._z;
+      if (dz) {
+        if(this.climbs===undefined) {
+          return false;
+        }
+        var p = HTomb.World.portals[x*LEVELW*LEVELH+y*LEVELH+z];
+        if (p) {
+          if (p[0]===x+dx && p[1]===y+dy && p[2]===z+dz) {
+            this.entity.place(x+dx,y+dy,z+dz);
+            return true;
+          }
+        }
+      }
       var i0;
       var one;
       var two;

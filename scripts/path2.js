@@ -9,7 +9,7 @@ HTomb = (function(HTomb) {
   var terrain = World.terrain;
   var levels = World.levels;
   var portals =World.portals;
-  }
+
   // default passability function
   var t;
   function defaultPassable(x,y,z) {
@@ -41,6 +41,7 @@ HTomb = (function(HTomb) {
     var useFirst = options.useFirst || false;
     var useLast = options.useLast || true;
     var canPass = options.canPass || defaultPassable;
+    var usePortals = options.usePortals || true;
 
     // fastest possible lookup
     // random bias should be okay
@@ -93,12 +94,13 @@ HTomb = (function(HTomb) {
       // we are now checking this square
       checked[coord] = true;
       // loop through neighboring cells
-      //for (var i=-1; i<8; i++) {
-      // for testing, skip the portals for now
       for (var i=-1; i<8; i++) {
+        // -1 is the place where we check for portals
         if (i===-1) {
-          // if there are any portals here, check them first
-            // right now cannot handle multiple portals in one square
+          if (usePortals===false) {
+            continue;
+          }
+          // right now cannot handle multiple portals in one square
           if (portals[coord]) {
             next = portals[coord];
           } else {
