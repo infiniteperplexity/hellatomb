@@ -82,6 +82,18 @@ HTomb = (function(HTomb) {
         if (Math.random() <= 0.025) {
           HTomb.Entity.create("Rock").place(x,y,z);
         }
+        if (Math.random() <= 0.025) {
+          var ok = true;
+          var n = HTomb.World.neighbors(x,y,z);
+          for (var i=0; i<n.length; i++) {
+            if (HTomb.World.groundLevel(n[i][0],n[i][1])!==z-1) {
+              ok = false;
+            }
+          }
+          if (ok) {
+            HTomb.Entity.create("Tombstone").place(x,y,z);
+          }
+        }
         if (Math.random() <= 0.005) {
           HTomb.Entity.create("Zombie").place(x,y,z);
         }

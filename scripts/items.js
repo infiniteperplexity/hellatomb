@@ -11,5 +11,13 @@ HTomb = (function(HTomb) {
     behaviors: [b.Stackable()]
   });
 
+  HTomb.Entity.define({
+    template: "Corpse",
+    name: "corpse",
+    isItem: true,
+    symbol: "%",
+    fg: "brown"
+  });
+
   return HTomb;
 })(HTomb);
