@@ -3,6 +3,7 @@ HTomb = (function(HTomb) {
   var creatures = HTomb.World.creatures;
   var items = HTomb.World.items;
   var features = HTomb.World.features;
+  var zones = HTomb.World.zones;
   var LEVELW = HTomb.Constants.LEVELW;
   var LEVELH = HTomb.Constants.LEVELH;
 
@@ -23,6 +24,7 @@ HTomb = (function(HTomb) {
     isCreature: false,
     isItem: false,
     isFeature: false,
+    isZone: false,
     _x: null,
     _y: null,
     _z: null,
@@ -57,6 +59,10 @@ HTomb = (function(HTomb) {
     if (this.isFeature) {
       delete features[this._x*LEVELW*LEVELH + this._y*LEVELH + this._z];
       features[x*LEVELW*LEVELH + y*LEVELH + z] = this;
+    }
+    if (this.isZone) {
+      delete zones[this._x*LEVELW*LEVELH + this._y*LEVELH + this._z];
+      zones[x*LEVELW*LEVELH + y*LEVELH + z] = this;
     }
     this._x = x;
     this._y = y;

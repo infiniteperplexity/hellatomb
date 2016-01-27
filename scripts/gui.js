@@ -131,18 +131,20 @@ HTomb = (function(HTomb) {
     var creatures = HTomb.World.creatures;
     var items = HTomb.World.items;
     var features = HTomb.World.features;
+    var zones = HTomb.World.zones;
     var sym;
     var fg;
     var bg;
     var coord;
     var below;
     var thing;
+    var sqbg;
     // I am not sure if this is the best way
     for (var x = xoffset; x < xoffset+SCREENW; x++) {
       for (var y = yoffset; y < yoffset+SCREENH; y++) {
         coord = x*LEVELW*LEVELH + y*LEVELH + z;
         fg = "white";
-        bg = "black";
+        bg = (zones[coord]===undefined) ? "black" : zones[coord].bg;
         // testing
         // explored[x][y] = true;
         // end testing
@@ -150,7 +152,7 @@ HTomb = (function(HTomb) {
           sym = " ";
         } else if (vis[x][y]===false) {
           fg = SHADOW;
-          bg = "black";
+          //bg = "black";
           if (items[coord]) {
             thing = items[coord][items[coord].length-1];
             sym = thing.symbol || "X";
@@ -165,22 +167,22 @@ HTomb = (function(HTomb) {
             thing = creatures[coord];
             sym = thing.symbol || "X";
             fg = thing.fg || "white";
-            bg = thing.bg || "black";
+            //bg = thing.bg || "black";
           } else if (items[coord]) {
             thing = items[coord][items[coord].length-1];
             sym = thing.symbol || "X";
             fg = thing.fg || "white";
-            bg = thing.bg || "black";
+            //bg = thing.bg || "black";
           } else if (features[coord]) {
             thing = features[coord];
             sym = thing.symbol || "X";
             fg = thing.fg || EARTHTONE;
-            bg = thing.bg || "black";
+            //bg = thing.bg || "black";
           } else {
             thing = terrain[grid[x][y]];
             sym = thing.symbol || "X";
             fg = thing.fg || EARTHTONE;
-            bg = thing.bg || "black";
+            //bg = thing.bg || "black";
           }
         }
         display.draw(this.x0+x-xoffset,this.y0+y-yoffset, sym, fg, bg);
@@ -209,6 +211,7 @@ HTomb = (function(HTomb) {
     "F to drop.",
     ", or . to go down or up.",
     "P to cast a spell",
+    "J to assign a job",
     "Click to examine a square."
   ];
   menu.render = function() {
@@ -265,6 +268,7 @@ HTomb = (function(HTomb) {
     VK_COMMA: Commands.tryMoveUp,
     VK_G: Commands.pickup,
     VK_F: Commands.drop,
+    VK_J: Commands.showJobs,
     VK_P: Commands.showSpells
   });
   main.xoffset = 0;
@@ -287,6 +291,23 @@ HTomb = (function(HTomb) {
   GUI.updateMenu = function(txt) {
     menu.text = txt;
     menu.render();
+  };
+
+
+  GUI.choosingMenu = function(s,arr) {
+    var alpha = "abcdefghijklmnopqrstuvwxyz";
+    var controls = {};
+    var choices = [s];
+    // there is probably a huge danger of memory leaks here
+    for (var i=0; i<arr.length; i++) {
+      var desc = arr[i].describe();
+      controls["VK_" + alpha[i].toUpperCase()] = function() {GUI.pushMessage("You chose " + desc);};
+      choices.push(alpha[i]+") " + arr[i].describe());
+    }
+    controls.VK_ESC = GUI.reset;
+    choices.push("Esc to cancel");
+    Controls.context = new ControlContext(controls);
+    GUI.updateMenu(choices);
   };
 
   //Controls.stack = [];

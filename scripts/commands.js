@@ -159,5 +159,15 @@ HTomb = (function(HTomb) {
       p.master.addMinion(z);
     }
   };
+
+  Commands.showJobs = function() {
+    var dummy_list_of_jobs =
+    [
+      HTomb.Entity.create("DigTask"),
+      HTomb.Entity.create("DigTask"),
+      HTomb.Entity.create("DigTask")
+    ];
+    GUI.choosingMenu("Choose a job to assign:", dummy_list_of_jobs);
+  };
   return HTomb;
 })(HTomb);
