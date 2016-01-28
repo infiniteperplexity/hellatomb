@@ -62,6 +62,21 @@ HTomb = (function(HTomb) {
     fg: "#0088DD"
   });
 
+  HTomb.Entity.define({
+    template: "IncompletePit",
+    name: "pit (under contruction)",
+    isFeature: true,
+    symbol: "\u2202"
+    //behaviors: [incomplete]
+  });
+
+  HTomb.Entity.define({
+    template: "IncompleteWall",
+    name: "wall (under contruction)",
+    isFeature: true,
+    symbol: "\u25AB"
+    //behaviors: [incomplete]
+  });
 
   return HTomb;
 })(HTomb);

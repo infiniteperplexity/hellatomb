@@ -14,7 +14,7 @@ HTomb = (function(HTomb) {
   defineTerrain(-1,"VOIDTILE",{name: "boundary", symbol: " ", opaque: true, solid: true});
   defineTerrain(0,"EMPTYTILE",{name: "empty", symbol: "\u25CB", fg: "#6666DD", fallable: true});
   defineTerrain(1,"FLOORTILE",{name: "floor", symbol: "."});
-  defineTerrain(2,"WALLTILE",{name: "wall", symbol: /*"\u25C7"/ /*"\u25AB"*/ /*"\u25A6"*/ "#", opaque: true, solid: true});
+  defineTerrain(2,"WALLTILE",{name: "wall", symbol: /*"\u25C7"/ /*"\u25A6"*/ "#", opaque: true, solid: true});
 
   function addLevel(z) {
     var level = {};

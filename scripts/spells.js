@@ -21,6 +21,17 @@ HTomb = (function(HTomb) {
     b.spells.templates[properties.template] = template;
   };
 
+  b.spells.create = function(template) {
+    if (!template) {
+      console.log("invalid template definition");
+      return;
+    }
+    var sp = b.spells.templates[template];
+    for (var p in beh) {
+      this[beh.name][p] = beh[p];
+    }
+  };
+
 
   b.spells.define({
     template: "RaiseZombie",
@@ -42,16 +53,6 @@ HTomb = (function(HTomb) {
     }
   });
 
-  b.spells.create = function(template) {
-    if (!template) {
-      console.log("invalid template definition");
-      return;
-    }
-    var sp = b.spells.templates[template];
-    for (var p in beh) {
-      this[beh.name][p] = beh[p];
-    }
-  };
 
   return HTomb;
 })(HTomb);
