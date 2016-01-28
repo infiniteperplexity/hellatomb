@@ -11,7 +11,16 @@ HTomb = (function(HTomb) {
       isCreature: true,
       symbol: "@",
       fg: "#D888FF",
-      behaviors: [b.AI(), b.Movement(), b.Inventory(), b.Sight(), b.Master({tasks: [t.DigTask()]}), b.SpellCaster({spells: [s.RaiseZombie]})]
+      behaviors: [b.AI(), b.Movement(), b.Inventory(), b.Sight(),
+        b.Master({tasks: [
+          t.DigTask(),
+          t.BuildTask(),
+          t.Undesignate()
+        ]}),
+        b.SpellCaster({spells: [
+          s.RaiseZombie
+        ]})
+      ]
   });
 
   HTomb.Entity.define({
