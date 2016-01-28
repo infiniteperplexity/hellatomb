@@ -2,6 +2,7 @@ HTomb = (function(HTomb) {
   "use strict";
 
   var b = HTomb.Behavior;
+  var s = HTomb.Behavior.spells.templates;
 
   HTomb.Entity.define({
       template: "Necromancer",
@@ -9,7 +10,7 @@ HTomb = (function(HTomb) {
       isCreature: true,
       symbol: "@",
       fg: "#D888FF",
-      behaviors: [b.AI(), b.Movement(), b.Inventory(), b.Sight()]
+      behaviors: [b.AI(), b.Movement(), b.Inventory(), b.Sight(), b.Master(), b.SpellCaster({spells: [s.RaiseZombie]})]
   });
 
   HTomb.Entity.define({

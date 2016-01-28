@@ -27,6 +27,25 @@ HTomb = (function(HTomb) {
         HTomb.World.portals[x*LEVELW*LEVELH+y*LEVELH+z] = [x,y,z-1];
       }
   });
+  HTomb.Entity.define({
+    template: "Tombstone",
+    name: "tombstone",
+    isFeature: true,
+    symbol: "\u2229",
+    fg: "gray",
+    onPlace: function(x,y,z) {
+      HTomb.Entity.create("Corpse").place(x,y,z-1);
+    }
+  });
+
+  HTomb.Entity.define({
+    template: "Tree",
+    name: "tree",
+    isFeature: true,
+    symbol: "\u03D4",
+    fg: "green"
+  });
+
 
   return HTomb;
 })(HTomb);

@@ -46,8 +46,8 @@ HTomb = (function(HTomb) {
       addLevel();
     }
     assignElevation();
-    populateStuff();
     addSlopes();
+    populateStuff();
     //createFastGrid();
   };
   function assignElevation() {
@@ -81,6 +81,16 @@ HTomb = (function(HTomb) {
         z = HTomb.World.groundLevel(x,y)+1;
         if (Math.random() <= 0.025) {
           HTomb.Entity.create("Rock").place(x,y,z);
+        }
+        if (Math.random() <= 0.025) {
+          if (HTomb.World.features[x*LEVELW*LEVELH+y*LEVELH+z]===undefined) {
+            HTomb.Entity.create("Tombstone").place(x,y,z);
+          }
+        }
+        if (Math.random() <= 0.025) {
+          if (HTomb.World.features[x*LEVELW*LEVELH+y*LEVELH+z]===undefined) {
+            HTomb.Entity.create("Tree").place(x,y,z);
+          }
         }
         if (Math.random() <= 0.005) {
           HTomb.Entity.create("Zombie").place(x,y,z);
@@ -151,6 +161,7 @@ HTomb = (function(HTomb) {
   HTomb.World.items = {};
   HTomb.World.features = {};
   HTomb.World.portals = {};
+  HTomb.World.zones = {};
   HTomb.World.getSquare = function(x,y,z) {
     var square = {};
     var coord = x*LEVELW*LEVELH + y*LEVELH + z;
@@ -160,6 +171,7 @@ HTomb = (function(HTomb) {
     square.items = HTomb.World.items[coord];
     square.feature = HTomb.World.features[coord];
     square.portals = HTomb.World.portals[coord];
+    square.zone = HTomb.World.zones[coord];
     square.x = x;
     square.y = y;
     square.z = z;

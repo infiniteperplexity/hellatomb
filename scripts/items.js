@@ -8,7 +8,16 @@ HTomb = (function(HTomb) {
     name: "rock",
     isItem: true,
     symbol: "*",
+    fg: "#CCCCCC",
     behaviors: [b.Stackable()]
+  });
+
+  HTomb.Entity.define({
+    template: "Corpse",
+    name: "corpse",
+    isItem: true,
+    symbol: "%",
+    fg: "brown"
   });
 
   return HTomb;
