@@ -31,8 +31,8 @@ HTomb = (function(HTomb) {
     template: "Tombstone",
     name: "tombstone",
     isFeature: true,
-    symbol: "\u2229",
-    fg: "gray",
+    symbol: "\u271F" /*"\u2229"*/ /*"\u26FC"*/,
+    fg: "#AAAAAA",
     onPlace: function(x,y,z) {
       HTomb.Entity.create("Corpse").place(x,y,z-1);
     }
@@ -42,8 +42,24 @@ HTomb = (function(HTomb) {
     template: "Tree",
     name: "tree",
     isFeature: true,
-    symbol: "\u03D4",
-    fg: "green"
+    symbol: /*"\u03D4"*/ /*"\u262B"*/ "\u2663",
+    fg: "#559900"
+  });
+
+  HTomb.Entity.define({
+    template: "Shrub",
+    name: "shrub",
+    isFeature: true,
+    symbol: /*"\u03D4"*/ "\u262B",
+    fg: "#779922"
+  });
+
+  HTomb.Entity.define({
+    template: "Puddle",
+    name: "puddle",
+    isFeature: true,
+    symbol: "~",
+    fg: "#0088DD"
   });
 
 
