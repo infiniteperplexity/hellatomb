@@ -54,6 +54,7 @@ var HTomb = (function() {
   var GUI = {};
   var Behavior = {};
   var Controls = {};
+  var Tasks = {};
 
   return {
     Constants: Constants,
@@ -68,7 +69,8 @@ var HTomb = (function() {
     GUI: GUI,
     Player: Player,
     Behavior: Behavior,
-    Controls: Controls
+    Controls: Controls,
+    Tasks: Tasks
   };
 })();
 window.onload = HTomb.init;

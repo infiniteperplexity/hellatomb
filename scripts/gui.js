@@ -282,7 +282,7 @@ HTomb = (function(HTomb) {
   var splash = new ControlContext();
   var spells = new ControlContext({
       VK_Z: function() {Commands.raiseZombie();GUI.reset();},
-      VK_ESC: GUI.reset
+      VK_ESCAPE: GUI.reset
   });
   Controls.contexts = {};
   Controls.contexts.splash = splash;
@@ -294,19 +294,20 @@ HTomb = (function(HTomb) {
   };
 
 
-  GUI.choosingMenu = function(s,arr) {
+  GUI.choosingMenu = function(s,arr, func) {
     var alpha = "abcdefghijklmnopqrstuvwxyz";
-    var controls = {};
+    var contrls = {};
     var choices = [s];
     // there is probably a huge danger of memory leaks here
     for (var i=0; i<arr.length; i++) {
       var desc = arr[i].describe();
-      controls["VK_" + alpha[i].toUpperCase()] = function() {GUI.pushMessage("You chose " + desc);};
+      var choice = arr[i];
+      contrls["VK_" + alpha[i].toUpperCase()] = func(choice);
       choices.push(alpha[i]+") " + arr[i].describe());
     }
-    controls.VK_ESC = GUI.reset;
+    contrls.VK_ESCAPE = GUI.reset;
     choices.push("Esc to cancel");
-    Controls.context = new ControlContext(controls);
+    Controls.context = new ControlContext(contrls);
     GUI.updateMenu(choices);
   };
 

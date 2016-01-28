@@ -139,8 +139,14 @@ HTomb = (function(HTomb) {
     }
   };
   Commands.showSpells = function() {
-    GUI.updateMenu(["Press Z to raise zombie","Press Esc to go back."]);
-    Controls.context = Controls.contexts.spells;
+    GUI.choosingMenu("Choose a spell:", HTomb.Player.caster.spells,
+      function(sp) {
+        return function() {
+          HTomb.Player.caster.cast(sp);
+          HTomb.turn();
+          HTomb.GUI.reset();
+        };
+      });
   };
   Commands.returnToMain = function() {
     GUI.reset();
@@ -163,9 +169,9 @@ HTomb = (function(HTomb) {
   Commands.showJobs = function() {
     var dummy_list_of_jobs =
     [
-      HTomb.Entity.create("DigTask"),
-      HTomb.Entity.create("DigTask"),
-      HTomb.Entity.create("DigTask")
+      HTomb.Entity.menuItem("DigTask"),
+      HTomb.Entity.menuItem("DigTask"),
+      HTomb.Entity.menuItem("DigTask")
     ];
     GUI.choosingMenu("Choose a job to assign:", dummy_list_of_jobs);
   };

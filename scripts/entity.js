@@ -107,6 +107,9 @@ HTomb = (function(HTomb) {
     });
   };
   entity.describe = function() {
+    if (this.isZone) {
+      return this.name;
+    }
     if (this.isItem && this.stack && this.stack.n>1) {
       return (this.stack.n + " " +this.name+"s");
     } else {
@@ -147,18 +150,19 @@ HTomb = (function(HTomb) {
       return;
     }
     HTomb.Behavior[properties.template] = function(options) {
-      options = options || {};
       var beh = {};
       for (var p in properties) {
         beh[p] = properties[p];
       }
-      for (var o in options) {
-        beh[o] = options[o];
-      }
+      //for (var o in options) {
+      //  beh[o] = options[o];
+      //}
+      beh.options = options;
       return beh;
     };
   };
   entity.addBehavior = function(beh) {
+    var options = beh.options || {};
     this[beh.name] = {entity: this};
     for (var p in beh) {
       if (p!=="name") {
@@ -166,8 +170,17 @@ HTomb = (function(HTomb) {
       }
     }
     if (this[beh.name].init) {
-      this[beh.name].init();
+      this[beh.name].init(options);
     }
+  };
+  HTomb.Entity.menuItem = function(template) {
+    var item = {};
+    //item.describe = ;
+    for (var p in HTomb.Entity.templates[template]) {
+      item[p] = HTomb.Entity.templates[template][p];
+    }
+    item.describe = function() {return entity.describe.call(item)};
+    return item;
   };
   //http://unicode-table.com/en/
   //"\u02C4" is upward Slope, 5 is downward

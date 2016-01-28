@@ -3,11 +3,22 @@ HTomb = (function(HTomb) {
 
 //  var b = HTomb.Behavior;
 
-  HTomb.Entity.define({
-      template: "DigTask",
-      name: "digging task",
+  var Tasks = HTomb.Tasks;
+  var Entity = HTomb.Entity;
+
+  HTomb.Tasks.define = function() {};
+  HTomb.Tasks.define({
+    template: "DigTask",
+    name: "dig",
+    zone: {
+      template: "DigZone",
+      name: "dig",
       isZone: true,
       bg: "brown"
+    }
+  });
+  HTomb.Entity.define({
+
   });
 
   return HTomb;

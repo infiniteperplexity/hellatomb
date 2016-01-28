@@ -269,5 +269,21 @@ HTomb = (function(HTomb) {
     }
   });
 
+  HTomb.Behavior.define({
+    template: "SpellCaster",
+    name: "caster",
+    init: function(options) {
+      options = options || {};
+      options.spells = options.spells || [];
+      this.spells = [];
+      for (var i=0; i<options.spells.length; i++) {
+        this.spells.push(options.spells[i]);
+      }
+    },
+    cast: function(sp) {
+      // is this a good way to do it?
+      sp.cast.call(this);
+    }
+  });
   return HTomb;
 })(HTomb);
