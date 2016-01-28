@@ -87,6 +87,7 @@ HTomb = (function(HTomb) {
     GUI.render();
   };
   GUI.reset = function() {
+    console.log("resetting gui");
     GUI.panels = {
       main: gameScreen,
       middle: status,
@@ -199,7 +200,7 @@ HTomb = (function(HTomb) {
   scroll.render = function() {
     for (var s=0; s<this.buffer.length; s++) {
       //black out the entire line with solid blocks
-      display.drawText(this.x0,this.y0+s+1,"%c{black}"+(UNIBLOCK.repeat(SCREENW-2)));
+      display.drawText(this.x0,this.y0+s+1,"%c{black}"+(UNIBLOCK.repeat(SCREENW+MENUW-2)));
       display.drawText(this.x0,this.y0+s+1,this.buffer[s]);
     }
   };
@@ -319,7 +320,8 @@ HTomb = (function(HTomb) {
     var context = new ControlContext({VK_ESCAPE: GUI.reset});
     HTomb.Controls.context = context;
     context.clickAt = function (x,y) {
-      HTomb.pushMessage("Select the second corner.");
+      HTomb.GUI.drawAt(x,y,"X","red","black");
+      HTomb.GUI.pushMessage("Select the second corner.");
       context.clickAt = secondSquare(x,y);
     };
     var secondSquare = function(x0,y0) {
@@ -332,7 +334,7 @@ HTomb = (function(HTomb) {
         } else {
           xs = [];
           for (var i=0; i<Math.abs(x1-x0)+1; i++) {
-            xs[i] = [x0+i*Math.sign(x1-x0)];
+            xs[i] = x0+i*Math.sign(x1-x0);
           }
         }
         if (y0===y1) {
@@ -342,16 +344,16 @@ HTomb = (function(HTomb) {
         } else {
           ys = [];
           for (var j=0; j<Math.abs(y1-y0)+1; j++) {
-            ys[j] = [y0+j*Math.sign(y1-y0)];
+            ys[j] = y0+j*Math.sign(y1-y0);
           }
         }
         var squares = [];
         for (var x=0; x<xs.length; x++) {
           for (var y=0; y<ys.length; y++) {
-            squares.push([x,y,z]);
+            squares.push([xs[x],ys[y],z]);
           }
         }
-        callb(squares, options);
+        callb(squares);
         GUI.reset();
       };
     };

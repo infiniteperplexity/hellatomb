@@ -224,18 +224,31 @@ HTomb = (function(HTomb) {
     }
   });
 
+  // Is it actually a good idea to have task assignment in this behavior?
   HTomb.Behavior.define({
     template: "Master",
     name: "master",
     minions: null,
-    init: function() {
+    init: function(options) {
       this.minions = [];
+      options = options || {};
+      options.tasks = options.tasks || [];
+      this.tasks = [];
+      for (var i=0; i<options.tasks.length; i++) {
+        this.tasks.push(options.tasks[i]);
+      }
     },
     addMinion: function(cr) {
       this.minions.push(cr);
     },
     removeMinion: function(cr) {
       this.minions.splice(this.minions.indexOf(cr,1));
+    },
+    designate: function(tsk) {
+      tsk.designate.call(this);
+    },
+    assign: function(tsk) {
+      tsk.assign.call(this);
     }
   });
 

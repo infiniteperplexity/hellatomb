@@ -146,34 +146,18 @@ HTomb = (function(HTomb) {
           HTomb.turn();
           HTomb.GUI.reset();
         };
-      });
-  };
-  Commands.returnToMain = function() {
-    GUI.reset();
-  };
-  Commands.raiseZombie = function() {
-    var p = HTomb.Player;
-    var sq = HTomb.World.randomEmptyNeighbor(p._x,p._y,p._z);
-    if (sq) {
-      var z = HTomb.Entity.create("Zombie");
-      z.place(sq[0],sq[1],sq[2]);
-      if (!p.master) {
-        p.addBehavior(HTomb.Behavior.Master());
       }
-      z.addBehavior(HTomb.Behavior.Minion());
-      z.minion.setMaster(p);
-      p.master.addMinion(z);
-    }
+    );
   };
-
   Commands.showJobs = function() {
-    var dummy_list_of_jobs =
-    [
-      HTomb.Entity.menuItem("DigTask"),
-      HTomb.Entity.menuItem("DigTask"),
-      HTomb.Entity.menuItem("DigTask")
-    ];
-    GUI.choosingMenu("Choose a job to assign:", dummy_list_of_jobs);
+    GUI.choosingMenu("Choose a task:", HTomb.Player.master.tasks,
+      function(task) {
+        return function() {
+          HTomb.Player.master.designate(task);
+          //HTomb.turn();
+        };
+      }
+    );
   };
   return HTomb;
 })(HTomb);
