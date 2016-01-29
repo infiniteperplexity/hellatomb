@@ -33,6 +33,7 @@ var HTomb = (function() {
   };
   var turn = function() {
     var Player = HTomb.Player;
+    Tasks.assignTasks();
     for (var creature in World.creatures) {
       if (World.creatures[creature].ai) {
         World.creatures[creature].ai.act();

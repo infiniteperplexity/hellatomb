@@ -6,24 +6,29 @@ HTomb = (function(HTomb) {
 
   var Tasks = HTomb.Tasks;
   var Entity = HTomb.Entity;
-
   Tasks.templates = {};
-  Tasks.zones = {};
+  Tasks.taskList = [];
 
   var task = {
       describe: function() {return this.name;},
-  };
-
-  HTomb.Tasks.createZone = function(zn,x,y,z) {
-    var zone = {};
-    for (var p in zn) {
-      zone[p] = zn[p];
-    }
-    zone.master = this.entity;
-    zone.x = x;
-    zone.y = y;
-    zone.z = z;
-    return zone;
+      assignedTo: null,
+      assignTo: function(cr) {
+        if (cr.minion===undefined) {
+          alert("not good!");
+        } else {
+          this.assignedTo = cr;
+          cr.minion.onAssign(this);
+        }
+      },
+      unassign: function() {
+        var cr = this.assignedTo;
+        if (cr.minion===undefined) {
+          alert("not good!");
+        } else {
+          this.assignedTo = null;
+          cr.minion.unassign();
+        }
+      }
   };
   HTomb.Tasks.define = function(properties) {
     if (!properties || !properties.template) {
@@ -36,11 +41,35 @@ HTomb = (function(HTomb) {
         tsk[p] = properties[p];
       }
       if (tsk.zone) {
-        Tasks.zones[tsk.zone.name] = tsk.zone;
+        var z = tsk.zone;
+        z.isZone = true;
+        HTomb.Entity.define(z);
       }
       return tsk;
     };
   };
+
+  Tasks.assignTasks = function() {
+    for(var i=0; i<Tasks.taskList.length; i++) {
+      var tsk = HTomb.Tasks.taskList[i];
+      if (tsk.assignedTo!==null) {
+        continue;
+      }
+      var master = tsk.master;
+      var minions = master.minions;
+      // maybe should shuffle this only once per turn?
+      minions = minions.randomize();
+      for (var j=0; j<minions.length; j++) {
+        if (minions[j].minion.task!==null) {
+          continue;
+        }
+        tsk.assignTo(minions[j]);
+      }
+    }
+  };
+
+
+
   HTomb.Tasks.define({
     template: "DigTask",
     name: "dig",
@@ -50,15 +79,35 @@ HTomb = (function(HTomb) {
       isZone: true,
       bg: "brown"
     },
-    designate: function() {
-      if (this.entity===HTomb.Player) {
+    designate: function(master) {
+      var self = this;
+      if (master.entity===HTomb.Player) {
         var digSquares = function(squares) {
           for (var i=0; i<squares.length; i++) {
             var coord = squares[i];
-            HTomb.World.zones[coord[0]*LEVELW*LEVELH+coord[1]*LEVELH+coord[2]] = HTomb.Tasks.createZone(Tasks.zones.dig,coord[0],coord[1],coord[2]);
+            var z = HTomb.Entity.create("DigZone");
+            z.task = self;
+            self.zone = z;
+            z.place(coord[0],coord[1],coord[2]);
           }
+          self.master = master;
+          Tasks.taskList.push(self);
         };
         HTomb.GUI.selectSquareZone(HTomb.Player._z,digSquares,{outline: false});
+      }
+    },
+    ai: function() {
+      var cr = this.assignedTo;
+      if (cr.movement) {
+        var zone = this.zone;
+        var x = zone._x;
+        var y = zone._y;
+        var z = zone._z;
+        if (HTomb.Path.distance(cr._x,cr._y,cr._z,x,y,z)>2) {
+          cr.movement.walkToward(x,y,z);
+        } else {
+          cr.wander();
+        }
       }
     }
   });
@@ -71,27 +120,50 @@ HTomb = (function(HTomb) {
       isZone: true,
       bg: "gray"
     },
-    designate: function() {
-      if (this.entity===HTomb.Player) {
+    designate: function(master) {
+      var self = this;
+      if (master.entity===HTomb.Player) {
         var buildSquares = function(squares) {
           for (var i=0; i<squares.length; i++) {
             var coord = squares[i];
-            HTomb.World.zones[coord[0]*LEVELW*LEVELH+coord[1]*LEVELH+coord[2]] = HTomb.Tasks.createZone(Tasks.zones.build,coord[0],coord[1],coord[2]);
+            var z = HTomb.Entity.create("BuildZone");
+            z.task = self;
+            self.zone = z;
+            z.place(coord[0],coord[1],coord[2]);
           }
+          self.master = master;
+          Tasks.taskList.push(self);
         };
         HTomb.GUI.selectSquareZone(HTomb.Player._z,buildSquares,{outline: true});
+      }
+    },
+    ai: function() {
+      var cr = this.assignedTo;
+      if (cr.movement) {
+        var zone = this.zone;
+        var x = zone._x;
+        var y = zone._y;
+        var z = zone._z;
+        if (HTomb.Path.distance(cr._x,cr._y,cr._z,x,y,z)>2) {
+          cr.movement.walkToward(x,y,z);
+        } else {
+          cr.wander();
+        }
       }
     }
   });
   HTomb.Tasks.define({
     template: "Undesignate",
     name: "undesignate",
-    designate: function() {
-      if (this.entity===HTomb.Player) {
+    designate: function(master) {
+      if (master.entity===HTomb.Player) {
         var deleteZones = function(squares) {
           for (var i=0; i<squares.length; i++) {
             var coord = squares[i];
-            delete HTomb.World.zones[coord[0]*LEVELW*LEVELH+coord[1]*LEVELH+coord[2]];
+            var z = HTomb.World.zones[coord[0]*LEVELW*LEVELH+coord[1]*LEVELH+coord[2]];
+            if (z) {
+              z.remove();
+            }
           }
         };
         HTomb.GUI.selectSquareZone(HTomb.Player._z,deleteZones,{outline: false});

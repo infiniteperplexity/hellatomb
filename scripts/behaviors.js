@@ -21,7 +21,11 @@ HTomb = (function(HTomb) {
         return false;
       }
       if (this.entity.minion) {
-        this.patrol(this.entity.minion.master._x,this.entity.minion.master._y,this.entity.minion.master._z);
+        if (this.entity.minion.task) {
+          this.entity.minion.task.ai();
+        } else {
+          this.patrol(this.entity.minion.master._x,this.entity.minion.master._y,this.entity.minion.master._z);
+        }
       }
       if (this.acted===false) {
         this.wander();
@@ -221,6 +225,15 @@ HTomb = (function(HTomb) {
     master: null,
     setMaster: function(cr) {
       this.master = cr;
+    },
+    task: null,
+    onAssign: function(tsk) {
+      this.task = tsk;
+      console.log(this.entity.describe() + " was assigned " + tsk.describe());
+    },
+    unassign: function() {
+      console.log(this.entity.describe() + " was unassigned from " + this.task.describe());
+      this.task = null;
     }
   });
 
@@ -245,11 +258,9 @@ HTomb = (function(HTomb) {
       this.minions.splice(this.minions.indexOf(cr,1));
     },
     designate: function(tsk) {
-      tsk.designate.call(this);
+      tsk.designate(this);
+      //tsk.designate.call(tsk,this);
     },
-    assign: function(tsk) {
-      tsk.assign.call(this);
-    }
   });
 
   HTomb.Behavior.define({

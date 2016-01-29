@@ -47,8 +47,9 @@ HTomb = (function(HTomb) {
         Commands.tryMoveUp();
       } else if (square0.feature!==undefined && square0.feature.template==="DownSlope" && square1.terrain.fallable===true) {
         Commands.tryMoveDown();
+      } else {
+        HTomb.GUI.pushMessage("Can't go that way.");
       }
-      HTomb.GUI.pushMessage("Can't go that way.");
     } else {
       Commands.movePlayer(newx,newy,z);
     }

@@ -93,6 +93,15 @@ HTomb = (function(HTomb) {
     if (this.isFeature) {
       delete features[this._x*LEVELW*LEVELH + this._y*LEVELH + this._z];
     }
+    if (this.isZone) {
+      // maybe should deal with unassignment here?
+      var tsk = this.task;
+      if (tsk.assignedTo) {
+        tsk.unassign();
+      }
+      HTomb.Tasks.taskList.splice(HTomb.Tasks.taskList.indexOf(tsk),1);
+      delete zones[this._x*LEVELW*LEVELH + this._y*LEVELH + this._z];
+    }
     this._x = null;
     this._y = null;
     this._z = null;
@@ -120,7 +129,7 @@ HTomb = (function(HTomb) {
         return ("a " + this.name);
       }
     }
-  }
+  };
   blockProperty(entity,'x');
   blockProperty(entity,'y');
   blockProperty(entity,'z');
