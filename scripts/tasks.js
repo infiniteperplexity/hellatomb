@@ -58,7 +58,7 @@ HTomb = (function(HTomb) {
       var master = tsk.master;
       var minions = master.minions;
       // maybe should shuffle this only once per turn?
-      minions = minions.randomize();
+      //minions = minions.randomize(); //this randomization function erases the original
       for (var j=0; j<minions.length; j++) {
         if (minions[j].minion.task!==null) {
           continue;
@@ -103,10 +103,18 @@ HTomb = (function(HTomb) {
         var x = zone._x;
         var y = zone._y;
         var z = zone._z;
-        if (HTomb.Path.distance(cr._x,cr._y,cr._z,x,y,z)>2) {
+        // the Z issue is a problem
+        var dist = HTomb.Path.distance(cr._x,cr._y,x,y);
+        if (dist>1 || cr._z!==z) {
           cr.movement.walkToward(x,y,z);
+        } else if (dist===0) {
+          cr.movement.walkRandom();
+        } else if (dist===1) {
+          console.log(cr.describe() + " digs.");
+          cr.worker.dig(x,y,z);
         } else {
-          cr.wander();
+          //wtf?
+          alert(dist);
         }
       }
     }
@@ -144,10 +152,17 @@ HTomb = (function(HTomb) {
         var x = zone._x;
         var y = zone._y;
         var z = zone._z;
-        if (HTomb.Path.distance(cr._x,cr._y,cr._z,x,y,z)>2) {
+        var dist = HTomb.Path.distance(cr._x,cr._y,x,y);
+        if (dist>1 || cr._z!==z) {
           cr.movement.walkToward(x,y,z);
+        } else if (dist===0) {
+          cr.movement.walkRandom();
+        } else if (dist===1) {
+          console.log(cr.describe() + " builds.");
+          cr.worker.build(x,y,z);
         } else {
-          cr.wander();
+          //wtf?
+          alert(dist);
         }
       }
     }

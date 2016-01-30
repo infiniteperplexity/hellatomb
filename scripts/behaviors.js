@@ -35,8 +35,8 @@ HTomb = (function(HTomb) {
       }
     },
     patrol: function(x,y,z,min,max) {
-      min = min || 3;
-      max = max || 6;
+      min = min || 2;
+      max = max || 5;
       if (!this.entity.movement) {
         return false;
       }
@@ -308,6 +308,70 @@ HTomb = (function(HTomb) {
       // is this a good way to do it?
       sp.cast.call(this);
     }
+  });
+
+  HTomb.Behavior.define({
+    template: "Worker",
+    name: "worker",
+    dig: function(x,y,z) {
+      var coord = x*LEVELW*LEVELH + y*LEVELH + z;
+      var feature = HTomb.World.features[coord];
+      if (feature) {
+        if (feature.template==="IncompletePit") {
+          feature.construction.stepsLeft-=1;
+          if (feature.construction.stepsLeft<=0) {
+            feature.remove();
+            if (HTomb.World.levels[z].grid[x][y]===HTomb.Constants.FLOORTILE) {
+              z-=1;
+            }
+            HTomb.World.emptySquare(x,y,z);
+            var zone = HTomb.World.zones[coord];
+            if (zone && zone.template==="DigZone") {
+              zone.remove();
+            }
+          }
+        } else {
+          console.log(this.entity.describe() + " removes " + feature.describe() + " to make room for digging.");
+          feature.remove();
+        }
+      } else {
+        console.log("no feature");
+        HTomb.Entity.create("IncompletePit").place(x,y,z);
+      }
+      this.entity.ai.acted = true;
+    },
+    build: function(x,y,z) {
+      //options = options || {};
+      //if (options.below===true) {}
+      var coord = x*LEVELW*LEVELH + y*LEVELH + z;
+      var feature = HTomb.World.features[coord];
+      if (feature) {
+        if (feature.template==="IncompleteWall") {
+          feature.construction.stepsLeft-=1;
+          if (feature.construction.stepsLeft<=0) {
+            feature.remove();
+            HTomb.World.fillSquare(x,y,z);
+            var zone = HTomb.World.zones[coord];
+            if (zone && zone.template==="BuildZone") {
+              zone.remove();
+            }
+          }
+        } else {
+          console.log(this.entity.describe() + " removes " + feature.describe() + " to make room for building.");
+          feature.remove();
+        }
+      } else {
+        HTomb.Entity.create("IncompleteWall").place(x,y,z);
+      }
+      this.entity.ai.acted = true;
+    }
+  });
+
+  // should this take a callback for completion?
+  HTomb.Behavior.define({
+    template: "Construction",
+    name: "construction",
+    stepsLeft: 10
   });
   return HTomb;
 })(HTomb);

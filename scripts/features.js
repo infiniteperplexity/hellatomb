@@ -66,16 +66,16 @@ HTomb = (function(HTomb) {
     template: "IncompletePit",
     name: "pit (under contruction)",
     isFeature: true,
-    symbol: "\u2202"
-    //behaviors: [incomplete]
+    symbol: "\u2022",
+    behaviors: [b.Construction()]
   });
 
   HTomb.Entity.define({
     template: "IncompleteWall",
     name: "wall (under contruction)",
     isFeature: true,
-    symbol: "\u25AB"
-    //behaviors: [incomplete]
+    symbol: "\u25AB",
+    behaviors: [b.Construction()]
   });
 
   return HTomb;

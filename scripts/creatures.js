@@ -29,7 +29,7 @@ HTomb = (function(HTomb) {
     isCreature: true,
     symbol: "z",
     fg: "#99FF66",
-    behaviors: [b.AI(), b.Movement()]
+    behaviors: [b.AI(), b.Movement(), b.Worker()]
   });
 
   return HTomb;

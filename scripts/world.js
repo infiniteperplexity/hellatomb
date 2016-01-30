@@ -216,6 +216,26 @@ HTomb = (function(HTomb) {
   HTomb.World.coord = function(x,y,z) {
     return x*LEVELW*LEVELH + y*LEVELH + z;
   };
-  // should this be part of a factory or something eventually?
+  HTomb.World.fillSquare = function(x,y,z) {
+    // check for more stuff in a while
+    if (HTomb.World.features[x*LEVELW*LEVELH+y*LEVELH+z]) {
+      HTomb.World.features[x*LEVELW*LEVELH+y*LEVELH+z].remove();
+    }
+    HTomb.World.levels[z].grid[x][y] = HTomb.Constants.WALLTILE;
+    if (HTomb.World.levels[z+1].grid[x][y]===HTomb.Constants.EMPTYTILE) {
+      HTomb.World.levels[z+1].grid[x][y] = HTomb.Constants.FLOORTILE;
+    }
+  };
+  HTomb.World.emptySquare = function(x,y,z) {
+    if (HTomb.World.levels[z-1].grid[x][y]===HTomb.Constants.WALLTILE) {
+      HTomb.World.levels[z].grid[x][y] = HTomb.Constants.FLOORTILE;
+    } else {
+      HTomb.World.levels[z].grid[x][y] = HTomb.Constants.EMPTYTILE;
+    }
+    if (HTomb.World.levels[z+1].grid[x][y]===HTomb.Constants.FLOORTILE) {
+      HTomb.World.levels[z+1].grid[x][y] = HTomb.Constants.EMPTYTILE;
+    }
+  };
+
   return HTomb;
 })(HTomb);

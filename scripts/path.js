@@ -183,7 +183,8 @@ HTomb = (function(HTomb) {
 
   HTomb.Path.distance = function(x0, y0, x1, y1) {
     var line = HTomb.Path.line(x0,y0,x1,y1);
-    return line.length;
+    // should be length-1?
+    return line.length-1;
   };
 
   HTomb.Path.FloodFill = function(callb) {
