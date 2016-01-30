@@ -90,7 +90,8 @@ HTomb = (function(HTomb) {
     },
     tryAssign: function(cr) {
       var zone = this.zone;
-      var path = HTomb.Path.aStar(cr._x,cr._y,cr._z,zone._z,zone._y,zone._z);
+      // run the path backwards for faster failure
+      var path = HTomb.Path.aStar(zone._z,zone._y,zone._z,cr._x,cr._y,cr._z);
       if (path!==false) {
         this.assignTo(cr);
         return true;
@@ -149,7 +150,8 @@ HTomb = (function(HTomb) {
     },
     tryAssign: function(cr) {
       var zone = this.zone;
-      var path = HTomb.Path.aStar(cr._x,cr._y,cr._z,zone._z,zone._y,zone._z);
+      // run the path backwards for faster failure
+      var path = HTomb.Path.aStar(zone._z,zone._y,zone._z,cr._x,cr._y,cr._z);
       if (path!==false) {
         this.assignTo(cr);
         return true;
