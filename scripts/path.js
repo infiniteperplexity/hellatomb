@@ -132,7 +132,7 @@ HTomb = (function(HTomb) {
           continue;
         }
         h_score = this_score + h(next[0],next[1],next[2],x1,y1,z1);
-        if (h_score===NaN) {
+        if (isNan(h_score)) {
           alert("scoring failed!");
         }
         //HTomb.GUI.drawAt(next[0],next[1],"X","green","black");
@@ -161,7 +161,7 @@ HTomb = (function(HTomb) {
 
     console.log("path failed");
     return false;
-  }
+  };
 
   //bresenham's line drawing algorithm
   HTomb.Path.line = function(x0, y0, x1, y1){

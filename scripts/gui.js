@@ -12,6 +12,7 @@ HTomb = (function(HTomb) {
   var SCREENH = HTomb.Constants.SCREENH;
   var LEVELW = HTomb.Constants.LEVELW;
   var LEVELH = HTomb.Constants.LEVELH;
+  var NLEVELS = HTomb.Constants.NLEVELS;
   var SCROLLH = HTomb.Constants.SCROLLH;
   var MENUW = HTomb.Constants.MENUW;
   var STATUSH = HTomb.Constants.STATUSH;
@@ -21,6 +22,7 @@ HTomb = (function(HTomb) {
   var SHADOW = HTomb.Constants.SHADOW;
   // set up GUI and display
   var GUI = HTomb.GUI;
+  GUI.panels = {};
   var Controls = HTomb.Controls;
   var Commands = HTomb.Commands;
   var display = new ROT.Display({width: SCREENW+MENUW, height: SCREENH+STATUSH+SCROLLH, fontsize: FONTSIZE});
@@ -81,9 +83,14 @@ HTomb = (function(HTomb) {
       bg
     );
   };
-  GUI.init = function() {
-    GUI.panels = {overlay: intro};
-    Controls.context = splash;
+
+  GUI.splash = function(txt) {
+    Controls.context = new ControlContext();
+    var splash = new Panel(0,0);
+    splash.render = function() {
+      display.drawText(splash.x0+1,splash.y0+1, txt);
+    };
+    GUI.panels.overlay = splash;
     GUI.render();
   };
   GUI.reset = function() {
@@ -111,19 +118,23 @@ HTomb = (function(HTomb) {
   // I should probably have some way of altering how this works for surveying
   gameScreen.render = function() {
     var Player = HTomb.Player;
-    var z = Controls.context.z = Player._z;
+    // In the main context, but not the survey context, center the view on the player
+    if (Controls.context===main) {
+      Controls.context.z = Player._z;
+      if (Player._x >= xoffset+SCREENW-2) {
+        Controls.context.xoffset = Player._x-SCREENW+2;
+      } else if (Player._x <= xoffset) {
+        Controls.context.xoffset = Player._x-1;
+      }
+      if (Player._y >= yoffset+SCREENH-2) {
+        Controls.context.yoffset = Player._y-SCREENH+2;
+      } else if (Player._y <= yoffset) {
+        Controls.context.yoffset = Player._y-1;
+      }
+    }
+    var z = Controls.context.z;
     var xoffset = Controls.context.xoffset;
     var yoffset = Controls.context.yoffset;
-    if (Player._x >= xoffset+SCREENW-2) {
-      xoffset = Controls.context.xoffset = Player._x-SCREENW+2;
-    } else if (Player._x <= xoffset) {
-      xoffset = Controls.context.xoffset = Player._x-1;
-    }
-    if (Player._y >= yoffset+SCREENH-2) {
-      yoffset = Controls.context.yoffset = Player._y-SCREENH+2;
-    } else if (Player._y <= yoffset) {
-      yoffset = Controls.context.yoffset = Player._y-1;
-    }
     var level = HTomb.World.levels[z];
     var grid = level.grid;
     var terrain = HTomb.World.terrain;
@@ -213,7 +224,8 @@ HTomb = (function(HTomb) {
     ", or . to go down or up.",
     "P to cast a spell",
     "J to assign a job",
-    "Click to examine a square."
+    "Click to examine a square.",
+    "Shift to enter survey mode."
   ];
   menu.render = function() {
     for (var i=0; i<SCREENH; i++) {
@@ -233,11 +245,13 @@ HTomb = (function(HTomb) {
   };
 
   function ControlContext(bindings) {
-    bindings = bindings || {};
-    this.boundKeys = [];
-    for (var b in bindings) {
-      // maybe make "clickat work here too?"
-      bindKey(this,b,bindings[b]);
+    if (bindings===undefined) {
+      this.keydown = GUI.reset;
+    } else {
+      this.boundKeys = [];
+      for (var b in bindings) {
+        bindKey(this,b,bindings[b]);
+      }
     }
   }
   ControlContext.prototype.keydown = function(key) {
@@ -250,6 +264,19 @@ HTomb = (function(HTomb) {
   ControlContext.prototype.clickAt = function() {
     GUI.reset();
   };
+
+
+
+  GUI.surveyMode = function() {
+    Controls.context = survey;
+    survey.xoffset = main.xoffset;
+    survey.yoffset = main.yoffset;
+    survey.z = main.z;
+    GUI.updateMenu(["You are now in survey mode.","Use movement keys to navigate.","Comma go down.","Period to go up.","Escape to exit."]);
+  };
+
+
+
   var main = new ControlContext({
     // bind number pad movement
     VK_LEFT: Commands.tryMoveWest,
@@ -271,7 +298,8 @@ HTomb = (function(HTomb) {
     VK_G: Commands.pickup,
     VK_F: Commands.drop,
     VK_J: Commands.showJobs,
-    VK_P: Commands.showSpells
+    VK_P: Commands.showSpells,
+    VK_SHIFT: GUI.surveyMode
   });
   main.xoffset = 0;
   main.yoffset = 0;
@@ -281,20 +309,12 @@ HTomb = (function(HTomb) {
     var square = HTomb.World.getSquare(x+this.xoffset,y+this.yoffset,this.z);
     Commands.look(square);
   };
-  var splash = new ControlContext();
-  var spells = new ControlContext({
-      VK_Z: function() {Commands.raiseZombie();GUI.reset();},
-      VK_ESCAPE: GUI.reset
-  });
+
   Controls.contexts = {};
-  Controls.contexts.splash = splash;
-  Controls.contexts.main = main;
-  Controls.contexts.spells = spells;
   GUI.updateMenu = function(txt) {
     menu.text = txt;
     menu.render();
   };
-
 
   GUI.choosingMenu = function(s,arr, func) {
     var alpha = "abcdefghijklmnopqrstuvwxyz";
@@ -352,6 +372,43 @@ HTomb = (function(HTomb) {
       };
     };
   };
+
+  var surveyMove = function(dx,dy,dz) {
+    var f = function() {
+      if (survey.z+dz < NLEVELS || survey.z+dz >= 0) {
+        survey.z+=dz;
+      }
+      if (survey.xoffset+dx < LEVELW-SCREENW && survey.xoffset+dx >= 0) {
+        survey.xoffset+=dx;
+      }
+      if (survey.yoffset+dy < LEVELH-SCREENH && survey.yoffset+dy >= 0) {
+        survey.yoffset+=dy;
+      }
+      GUI.render();
+    };
+    return f;
+  };
+
+  var survey = new ControlContext({
+    VK_LEFT: surveyMove(-1,0,0),
+    VK_RIGHT: surveyMove(+1,0,0),
+    VK_UP: surveyMove(0,-1,0),
+    VK_DOWN: surveyMove(0,+1,0),
+    // bind keyboard movement
+    VK_Z: surveyMove(-1,+1,0),
+    VK_S: surveyMove(0,+1,0),
+    VK_X: surveyMove(0,+1,0),
+    VK_C: surveyMove(+1,+1,0),
+    VK_A: surveyMove(-1,0,0),
+    VK_D: surveyMove(+1,0,0),
+    VK_Q: surveyMove(-1,-1,0),
+    VK_W: surveyMove(0,-1,0),
+    VK_E: surveyMove(+1,-1,0),
+    VK_PERIOD: surveyMove(0,0,-1),
+    VK_COMMA: surveyMove(0,0,+1),
+    VK_ESCAPE: GUI.reset
+  });
+  survey.clickAt = main.clickAt;
 
   return HTomb;
 })(HTomb);

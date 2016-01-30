@@ -29,7 +29,7 @@ var HTomb = (function() {
     if (Player.sight) {
       FOV.findVisible(Player._x, Player._y, Player._z, Player.sight.range);
     }
-    GUI.init();
+    GUI.splash("Welcome to HellaTomb!");
   };
   var turn = function() {
     var Player = HTomb.Player;
