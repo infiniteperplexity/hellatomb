@@ -20,5 +20,13 @@ HTomb = (function(HTomb) {
     fg: "brown"
   });
 
+  HTomb.Entity.define({
+    template: "Stick",
+    name: "stick",
+    isItem: true,
+    symbol: "-",
+    fg: "brown"
+  });
+
   return HTomb;
 })(HTomb);

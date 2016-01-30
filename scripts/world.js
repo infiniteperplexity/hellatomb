@@ -83,6 +83,9 @@ HTomb = (function(HTomb) {
           HTomb.Entity.create("Rock").place(x,y,z);
         }
         if (Math.random() <= 0.025) {
+          HTomb.Entity.create("Stick").place(x,y,z);
+        }
+        if (Math.random() <= 0.025) {
           if (HTomb.World.features[x*LEVELW*LEVELH+y*LEVELH+z]===undefined) {
             HTomb.Entity.create("Tombstone").place(x,y,z);
           }

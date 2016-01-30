@@ -62,6 +62,19 @@ HTomb = (function(HTomb) {
     name: "inventory",
     capacity: 10,
     init: function() {this.items = [];},
+    pickup: function(item) {
+      item.remove();
+      this.add(item);
+      HTomb.GUI.pushMessage(this.entity.describe() + " picks up " + item.describe());
+      this.entity.ai.acted = true;
+    },
+    drop: function(item) {
+      var e = this.entity;
+      this.remove(item);
+      item.place(e._x,e._y,e._z);
+      HTomb.GUI.pushMessage(this.entity.describe() + " drops " + item.describe());
+      this.entity.ai.acted = true;
+    },
     add: function(item) {
       if (this.items.length>=this.capacity) {
         HTomb.GUI.pushMessage("Can't pick that up.");

@@ -117,12 +117,20 @@ HTomb = (function(HTomb) {
     } else if (HTomb.Player.inventory.n >= HTomb.Player.inventory.capacity) {
       HTomb.GUI.pushMessage("You cannot carry any more items.");
     } else {
-      // just pick up the first item for now
-      var item = square.items[0];
-      item.remove();
-      HTomb.Player.inventory.add(item);
-      HTomb.GUI.pushMessage("You pick up " + item.describe() + ".");
-      HTomb.turn();
+      if (square.items.length===1) {
+        HTomb.Player.inventory.pickup(square.items[0]);
+        HTomb.turn();
+      } else {
+        GUI.choosingMenu("Choose an item:",square.items,
+          function(item) {
+            return function() {
+              HTomb.Player.inventory.pickup(item);
+              HTomb.turn();
+              HTomb.GUI.reset();
+            };
+          }
+        );
+      }
     }
   };
   Commands.drop = function() {
@@ -132,11 +140,19 @@ HTomb = (function(HTomb) {
     } else if (p.inventory.items.length===0) {
       HTomb.GUI.pushMessage("You have no items.");
     } else {
-      var item = p.inventory.items[0];
-      p.inventory.remove(item);
-      item.place(p._x,p._y,p._z);
-      HTomb.GUI.pushMessage("You drop " + item.describe() + ".");
-      HTomb.turn();
+      if (p.inventory.items.length===1) {
+        p.inventory.drop(p.inventory.items[0]);
+      } else {
+        GUI.choosingMenu("Choose an item:",p.inventory.items,
+          function(item) {
+            return function() {
+              HTomb.Player.inventory.drop(item);
+              HTomb.turn();
+              HTomb.GUI.reset();
+            };
+          }
+        );
+      }
     }
   };
   Commands.showSpells = function() {
