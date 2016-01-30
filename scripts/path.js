@@ -160,7 +160,7 @@ HTomb = (function(HTomb) {
     }
 
     console.log("path failed");
-    return [];
+    return false;
   }
 
   //bresenham's line drawing algorithm

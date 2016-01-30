@@ -12,6 +12,11 @@ HTomb = (function(HTomb) {
   var task = {
       describe: function() {return this.name;},
       assignedTo: null,
+      tryAssign: function(cr) {
+        console.log("shouldn't use this default");
+        this.assignTo(cr);
+        return true;
+      },
       assignTo: function(cr) {
         if (cr.minion===undefined) {
           alert("not good!");
@@ -63,7 +68,11 @@ HTomb = (function(HTomb) {
         if (minions[j].minion.task!==null) {
           continue;
         }
-        tsk.assignTo(minions[j]);
+        var assigned = tsk.tryAssign(minions[j]);
+        if (assigned) {
+          break;
+        }
+        //tsk.assignTo(minions[j]);
       }
     }
   };
@@ -78,6 +87,15 @@ HTomb = (function(HTomb) {
       name: "dig",
       isZone: true,
       bg: "brown"
+    },
+    tryAssign: function(cr) {
+      var zone = this.zone;
+      var path = HTomb.Path.aStar(cr._x,cr._y,cr._z,zone._z,zone._y,zone._z);
+      if (path!==false) {
+        this.assignTo(cr);
+        return true;
+      }
+      return false;
     },
     designate: function(master) {
       var self = this;
@@ -122,11 +140,21 @@ HTomb = (function(HTomb) {
   HTomb.Tasks.define({
     template: "BuildTask",
     name: "build",
+    // I don't like reusing this name
     zone: {
       template: "BuildZone",
       name: "build",
       isZone: true,
       bg: "gray"
+    },
+    tryAssign: function(cr) {
+      var zone = this.zone;
+      var path = HTomb.Path.aStar(cr._x,cr._y,cr._z,zone._z,zone._y,zone._z);
+      if (path!==false) {
+        this.assignTo(cr);
+        return true;
+      }
+      return false;
     },
     designate: function(master) {
       var self = this;

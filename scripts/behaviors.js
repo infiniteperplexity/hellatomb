@@ -115,7 +115,7 @@ HTomb = (function(HTomb) {
       //var dx = line[1][0] - x0;
       //var dy = line[1][1] - y0;
       var path = HTomb.Path.aStar(x0,y0,z0,x,y,z,{useLast: false});
-      if (path.length>0) {
+      if (path!==false) {
         var square = path[0];
         return this.tryStep(square[0]-x0,square[1]-y0,square[2]-z0);
       }
