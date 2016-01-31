@@ -104,6 +104,10 @@ HTomb = (function(HTomb) {
         var digSquares = function(squares) {
           for (var i=0; i<squares.length; i++) {
             var coord = squares[i];
+            if (HTomb.World.levels[coord[2]].grid[coord[0]][coord[1]]!==HTomb.Constants.FLOORTILE
+                && HTomb.World.levels[coord[2]].grid[coord[0]][coord[1]]!==HTomb.Constants.WALLTILE) {
+              continue;
+            }
             var z = HTomb.Entity.create("DigZone");
             z.task = self;
             self.zone = z;
@@ -164,6 +168,9 @@ HTomb = (function(HTomb) {
         var buildSquares = function(squares) {
           for (var i=0; i<squares.length; i++) {
             var coord = squares[i];
+            if (HTomb.World.levels[coord[2]].grid[coord[0]][coord[1]]!==HTomb.Constants.FLOORTILE) {
+              continue;
+            }
             var z = HTomb.Entity.create("BuildZone");
             z.task = self;
             self.zone = z;
