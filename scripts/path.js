@@ -132,7 +132,7 @@ HTomb = (function(HTomb) {
           continue;
         }
         h_score = this_score + h(next[0],next[1],next[2],x1,y1,z1);
-        if (isNan(h_score)) {
+        if (isNaN(h_score)) {
           alert("scoring failed!");
         }
         //HTomb.GUI.drawAt(next[0],next[1],"X","green","black");

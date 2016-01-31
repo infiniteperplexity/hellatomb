@@ -119,7 +119,8 @@ HTomb = (function(HTomb) {
   gameScreen.render = function() {
     var Player = HTomb.Player;
     // In the main context, but not the survey context, center the view on the player
-    if (Controls.context===main) {
+    //if (Controls.context===main) {
+    if (Controls.context!==survey) {
       Controls.context.z = Player._z;
       if (Player._x >= xoffset+SCREENW-2) {
         Controls.context.xoffset = Player._x-SCREENW+2;
@@ -333,7 +334,15 @@ HTomb = (function(HTomb) {
     GUI.updateMenu(choices);
   };
 
-
+  HTomb.GUI.selectSquare = function(z, callb, options) {
+    options = options || {};
+    HTomb.GUI.pushMessage("Select a square.");
+    var context = new ControlContext({VK_ESCAPE: GUI.reset});
+    HTomb.Controls.context = context;
+    context.clickAt = function(x,y) {
+      callb(x,y,z);
+    };
+  };
   HTomb.GUI.selectSquareZone = function(z, callb, options) {
     options = options || {};
     HTomb.GUI.pushMessage("Select the first corner.");

@@ -15,6 +15,7 @@ HTomb = (function(HTomb) {
         b.Master({tasks: [
           t.DigTask(),
           t.BuildTask(),
+          t.PatrolTask(),
           t.Undesignate()
         ]}),
         b.SpellCaster({spells: [

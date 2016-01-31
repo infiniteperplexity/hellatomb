@@ -215,6 +215,46 @@ HTomb = (function(HTomb) {
       }
     }
   });
+  HTomb.Tasks.define({
+    template: "PatrolTask",
+    name: "patrol",
+    zone: {
+      template: "PatrolZone",
+      name: "patrol",
+      isZone: true,
+      bg: "pink"
+    },
+    designate: function(master) {
+      var self = this;
+      if (master.entity===HTomb.Player) {
+        var _z = HTomb.Player._z;
+        var createZone = function(x,y,z) {
+          var zone = HTomb.Entity.create("PatrolZone");
+          zone.task = self;
+          self.zone = zone;
+          zone.place(x,y,z);
+          self.master = master;
+          Tasks.taskList.push(self);
+          HTomb.GUI.reset();
+        };
+        HTomb.GUI.selectSquare(_z,createZone);
+      }
+    },
+    ai: function() {
+      var cr = this.assignedTo;
+      cr.ai.patrol(this.zone._x,this.zone._y,this.zone._z);
+    },
+    tryAssign: function(cr) {
+      var zone = this.zone;
+      // run the path backwards for faster failure
+      var path = HTomb.Path.aStar(zone._x,zone._y,zone._z,cr._x,cr._y,cr._z);
+      if (path!==false) {
+        this.assignTo(cr);
+        return true;
+      }
+      return false;
+    },
+  });
 
   return HTomb;
 })(HTomb);
