@@ -86,7 +86,7 @@ HTomb = (function(HTomb) {
       template: "DigZone",
       name: "dig",
       isZone: true,
-      bg: "brown"
+      bg: "#553300"
     },
     tryAssign: function(cr) {
       var zone = this.zone;
@@ -99,7 +99,6 @@ HTomb = (function(HTomb) {
       return false;
     },
     designate: function(master) {
-      var self = this;
       if (master.entity===HTomb.Player) {
         var digSquares = function(squares) {
           for (var i=0; i<squares.length; i++) {
@@ -117,7 +116,7 @@ HTomb = (function(HTomb) {
             Tasks.taskList.push(t);
           }
         };
-        HTomb.GUI.selectSquareZone(HTomb.Player._z,digSquares,{outline: false});
+        HTomb.GUI.selectSquareZone(HTomb.Player._z,digSquares,{outline: false, bg: this.zone.bg});
       }
     },
     ai: function() {
@@ -136,9 +135,6 @@ HTomb = (function(HTomb) {
         } else if (dist===1) {
           console.log(cr.describe() + " digs.");
           cr.worker.dig(x,y,z);
-        } else {
-          //wtf?
-          alert(dist);
         }
       }
     }
@@ -151,7 +147,7 @@ HTomb = (function(HTomb) {
       template: "BuildZone",
       name: "build",
       isZone: true,
-      bg: "gray"
+      bg: "#444444"
     },
     tryAssign: function(cr) {
       var zone = this.zone;
@@ -164,7 +160,6 @@ HTomb = (function(HTomb) {
       return false;
     },
     designate: function(master) {
-      var self = this;
       if (master.entity===HTomb.Player) {
         var buildSquares = function(squares) {
           for (var i=0; i<squares.length; i++) {
@@ -181,7 +176,7 @@ HTomb = (function(HTomb) {
             Tasks.taskList.push(t);
           }
         };
-        HTomb.GUI.selectSquareZone(HTomb.Player._z,buildSquares,{outline: true});
+        HTomb.GUI.selectSquareZone(HTomb.Player._z,buildSquares,{outline: true, bg: this.zone.bg});
       }
     },
     ai: function() {
@@ -199,9 +194,6 @@ HTomb = (function(HTomb) {
         } else if (dist===1) {
           console.log(cr.describe() + " builds.");
           cr.worker.build(x,y,z);
-        } else {
-          //wtf?
-          alert(dist);
         }
       }
     }
@@ -231,19 +223,19 @@ HTomb = (function(HTomb) {
       template: "PatrolZone",
       name: "patrol",
       isZone: true,
-      bg: "pink"
+      bg: "#880000"
     },
     designate: function(master) {
-      var self = this;
       if (master.entity===HTomb.Player) {
         var _z = HTomb.Player._z;
         var createZone = function(x,y,z) {
           var zone = HTomb.Entity.create("PatrolZone");
           zone.place(x,y,z);
-          zone.task = self;
-          self.zone = zone;
-          self.master = master;
-          Tasks.taskList.push(self);
+          var t = HTomb.Tasks.PatrolTask();
+          zone.task = t;
+          t.zone = zone;
+          t.master = master;
+          Tasks.taskList.push(t);
           HTomb.GUI.reset();
         };
         HTomb.GUI.selectSquare(_z,createZone);

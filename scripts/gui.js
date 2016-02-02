@@ -224,7 +224,7 @@ HTomb = (function(HTomb) {
       GUI.panels.main.render();
     }
     if (x>=0 && x<SCREENW && y>=0 && y<SCREENH) {
-      GUI.highlight(x,y,"red");
+      GUI.highlight(x,y,"#0000FF");
     }
   };
 
@@ -309,12 +309,13 @@ HTomb = (function(HTomb) {
     if (options.line!==undefined) {
       var x0 = options.line.x || HTomb.Player._x;
       var y0 = options.line.y || HTomb.Player._y;
+      var bg = options.line.bg || "#550000";
       context.mouseOver = function(x,y) {
         gameScreen.render();
         var line = HTomb.Path.line(x0,y0,x,y);
         for (var i in line) {
           var sq = line[i];
-          HTomb.GUI.highlight(sq[0],sq[1],"red");
+          HTomb.GUI.highlight(sq[0],sq[1],bg);
         }
       };
     }
@@ -325,12 +326,13 @@ HTomb = (function(HTomb) {
     var context = new ControlContext({VK_ESCAPE: GUI.reset});
     HTomb.Controls.context = context;
     context.clickAt = function (x,y) {
-      HTomb.GUI.drawAt(x,y,"X","red","black");
+      //HTomb.GUI.drawAt(x,y,"X","red","black");
       HTomb.GUI.pushMessage("Select the second corner.");
       context.clickAt = secondSquare(x,y);
       context.mouseOver = drawSquareBox(x,y);
     };
     var drawSquareBox = function(x0,y0) {
+      var bg = options.bg || "#550000";
       return function(x1,y1) {
         gameScreen.render();
         var xs = [];
@@ -358,7 +360,7 @@ HTomb = (function(HTomb) {
           if (coord[1]===undefined) {
             alert(coord);
           }
-          GUI.highlight(coord[0],coord[1],"red");
+          GUI.highlight(coord[0],coord[1],bg);
         }
       };
     };
