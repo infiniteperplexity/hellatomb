@@ -41,8 +41,8 @@ HTomb = (function(HTomb) {
       newx+=1;
     }
     if (HTomb.Player.movement===undefined || HTomb.Player.movement.canPass(newx,newy,z)===false) {
-      var square0 = HTomb.World.getSquare(x,y,z);
-      var square1 = HTomb.World.getSquare(newx,newy,z);
+      var square0 = HTomb.Tiles.getSquare(x,y,z);
+      var square1 = HTomb.Tiles.getSquare(newx,newy,z);
       if (square0.feature!==undefined && square0.feature.template==="UpSlope" && square1.terrain.solid===true) {
         Commands.tryMoveUp();
       } else if (square0.feature!==undefined && square0.feature.template==="DownSlope" && square1.terrain.fallable===true) {
@@ -58,7 +58,7 @@ HTomb = (function(HTomb) {
     var x = HTomb.Player._x;
     var y = HTomb.Player._y;
     var z = HTomb.Player._z;
-    var square = HTomb.World.getSquare(x,y,z);
+    var square = HTomb.Tiles.getSquare(x,y,z);
     if (square.feature!==undefined && square.feature.template==="UpSlope") {
       HTomb.GUI.pushMessage("You scramble up the slope.");
       Commands.movePlayer(x,y,z+1);
@@ -70,7 +70,7 @@ HTomb = (function(HTomb) {
     var x = HTomb.Player._x;
     var y = HTomb.Player._y;
     var z = HTomb.Player._z;
-    var square = HTomb.World.getSquare(x,y,z);
+    var square = HTomb.Tiles.getSquare(x,y,z);
     if (square.feature!==undefined && square.feature.template==="DownSlope") {
       HTomb.GUI.pushMessage("You scramble down the slope.");
       Commands.movePlayer(x,y,z-1);
@@ -104,7 +104,7 @@ HTomb = (function(HTomb) {
   };
   Commands.movePlayer = function(x,y,z) {
     HTomb.Player.place(x,y,z);
-    var square = HTomb.World.getSquare(x,y,z);
+    var square = HTomb.Tiles.getSquare(x,y,z);
     Commands.glance(square);
     HTomb.turn();
   };

@@ -104,8 +104,8 @@ HTomb = (function(HTomb) {
         var digSquares = function(squares) {
           for (var i=0; i<squares.length; i++) {
             var coord = squares[i];
-            if (HTomb.World.levels[coord[2]].grid[coord[0]][coord[1]]!==HTomb.Constants.FLOORTILE
-                && HTomb.World.levels[coord[2]].grid[coord[0]][coord[1]]!==HTomb.Constants.WALLTILE) {
+            if (HTomb.World.levels[coord[2]].grid[coord[0]][coord[1]]!==HTomb.Tiles.FLOORTILE
+                && HTomb.World.levels[coord[2]].grid[coord[0]][coord[1]]!==HTomb.Tiles.WALLTILE) {
               continue;
             }
             var z = HTomb.Entity.create("DigZone");
@@ -168,7 +168,7 @@ HTomb = (function(HTomb) {
         var buildSquares = function(squares) {
           for (var i=0; i<squares.length; i++) {
             var coord = squares[i];
-            if (HTomb.World.levels[coord[2]].grid[coord[0]][coord[1]]!==HTomb.Constants.FLOORTILE) {
+            if (HTomb.World.levels[coord[2]].grid[coord[0]][coord[1]]!==HTomb.Tiles.FLOORTILE) {
               continue;
             }
             var z = HTomb.Entity.create("BuildZone");

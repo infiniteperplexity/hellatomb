@@ -72,7 +72,7 @@ HTomb = (function(HTomb) {
     var z;
     for (var x=1; x<LEVELW-1; x++) {
       for (var y=1; y<LEVELH-1; y++) {
-        z = HTomb.Tiles.groundLevel(x,y)+1;
+        z = HTomb.World.groundLevel(x,y)+1;
         if (Math.random() <= 0.025) {
           HTomb.Entity.create("Rock").place(x,y,z);
         }
@@ -113,7 +113,7 @@ HTomb = (function(HTomb) {
       for (var y=0; y<LEVELH; y++) {
         for (var z=0; z<NLEVELS-1; z++) {
           if (levels[z].grid[x][y]===HTomb.Tiles.FLOORTILE && levels[z+1].grid[x][y]===HTomb.Tiles.EMPTYTILE) {
-            squares = HTomb.Tiles.neighbors(x,y);
+            squares = HTomb.World.neighbors(x,y);
             slope = false;
             for (var i=0; i<squares.length; i++) {
               square = squares[i];

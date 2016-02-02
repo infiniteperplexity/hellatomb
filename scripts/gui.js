@@ -105,6 +105,7 @@ HTomb = (function(HTomb) {
     };
     menu.text = defaultText;
     Controls.context = main;
+    GUI.recenter();
     GUI.render();
   };
 
@@ -115,93 +116,22 @@ HTomb = (function(HTomb) {
   }
   Panel.prototype.render = function() {};
   var gameScreen = new Panel(0,0);
-  // I should probably have some way of altering how this works for surveying
+  gameScreen.xoffset = 0;
+  gameScreen.yoffset = 0;
+  gameScreen.z = 0;
   gameScreen.render = function() {
-    var Player = HTomb.Player;
-    // In the main context, but not the survey context, center the view on the player
-    //if (Controls.context===main) {
-    if (Controls.context!==survey) {
-      Controls.context.z = Player._z;
-      if (Player._x >= xoffset+SCREENW-2) {
-        Controls.context.xoffset = Player._x-SCREENW+2;
-      } else if (Player._x <= xoffset) {
-        Controls.context.xoffset = Player._x-1;
-      }
-      if (Player._y >= yoffset+SCREENH-2) {
-        Controls.context.yoffset = Player._y-SCREENH+2;
-      } else if (Player._y <= yoffset) {
-        Controls.context.yoffset = Player._y-1;
-      }
-    }
-    var z = Controls.context.z;
-    var xoffset = Controls.context.xoffset;
-    var yoffset = Controls.context.yoffset;
-    var level = HTomb.World.levels[z];
-    var grid = level.grid;
-    var terrain = HTomb.World.terrain;
-    var vis = HTomb.FOV.visible;
-    var explored = level.explored;
-    var creatures = HTomb.World.creatures;
-    var items = HTomb.World.items;
-    var features = HTomb.World.features;
-    var zones = HTomb.World.zones;
-    var sym;
-    var fg;
-    var bg;
-    var coord;
-    var below;
-    var thing;
-    var sqbg;
+    var z = gameScreen.z;
+    var xoffset = gameScreen.xoffset;
+    var yoffset = gameScreen.yoffset;
     // I am not sure if this is the best way
     for (var x = xoffset; x < xoffset+SCREENW; x++) {
       for (var y = yoffset; y < yoffset+SCREENH; y++) {
-        coord = x*LEVELW*LEVELH + y*LEVELH + z;
-        fg = "white";
-        bg = (zones[coord]===undefined) ? "black" : zones[coord].bg;
-        // testing
-        // explored[x][y] = true;
-        // end testing
-        if (!explored[x][y]) {
-          sym = " ";
-        } else if (vis[x][y]===false) {
-          fg = SHADOW;
-          //bg = "black";
-          if (items[coord]) {
-            thing = items[coord][items[coord].length-1];
-            sym = thing.symbol || "X";
-          } else if (features[coord]) {
-            thing = features[coord];
-            sym = thing.symbol || "X";
-          } else {
-            sym = terrain[grid[x][y]].symbol || "X";
-          }
-        } else {
-          if (creatures[coord]) {
-            thing = creatures[coord];
-            sym = thing.symbol || "X";
-            fg = thing.fg || "white";
-            //bg = thing.bg || "black";
-          } else if (items[coord]) {
-            thing = items[coord][items[coord].length-1];
-            sym = thing.symbol || "X";
-            fg = thing.fg || "white";
-            //bg = thing.bg || "black";
-          } else if (features[coord]) {
-            thing = features[coord];
-            sym = thing.symbol || "X";
-            fg = thing.fg || EARTHTONE;
-            //bg = thing.bg || "black";
-          } else {
-            thing = terrain[grid[x][y]];
-            sym = thing.symbol || "X";
-            fg = thing.fg || EARTHTONE;
-            //bg = thing.bg || "black";
-          }
-        }
-        display.draw(this.x0+x-xoffset,this.y0+y-yoffset, sym, fg, bg);
+        var sym = HTomb.Tiles.getSymbol(x,y,z);
+        display.draw(this.x0+x-xoffset,this.y0+y-yoffset, sym[0], sym[1], sym[2]);
       }
     }
   };
+
   var status = new Panel(1,SCREENH);
   status.render = function() {
     display.drawText(this.x0,this.y0+1,"HP: " + 5 + "/" + 5);
@@ -270,6 +200,9 @@ HTomb = (function(HTomb) {
 
   GUI.surveyMode = function() {
     Controls.context = survey;
+    survey.saveX = gameScreen.xoffset;
+    survey.saveY = gameScreen.yoffset;
+    survey.saveZ = gameScreen.z;
     survey.xoffset = main.xoffset;
     survey.yoffset = main.yoffset;
     survey.z = main.z;
@@ -307,7 +240,7 @@ HTomb = (function(HTomb) {
   main.z = 1;
 
   main.clickAt = function(x,y) {
-    var square = HTomb.World.getSquare(x+this.xoffset,y+this.yoffset,this.z);
+    var square = HTomb.Tiles.getSquare(x+this.xoffset,y+this.yoffset,this.z);
     Commands.look(square);
   };
 
@@ -384,18 +317,34 @@ HTomb = (function(HTomb) {
 
   var surveyMove = function(dx,dy,dz) {
     var f = function() {
-      if (survey.z+dz < NLEVELS || survey.z+dz >= 0) {
-        survey.z+=dz;
+      if (gameScreen.z+dz < NLEVELS || gameScreen.z+dz >= 0) {
+        gameScreen.z+=dz;
       }
-      if (survey.xoffset+dx < LEVELW-SCREENW && survey.xoffset+dx >= 0) {
-        survey.xoffset+=dx;
+      if (gameScreen.xoffset+dx < LEVELW-SCREENW && gameScreen.xoffset+dx >= 0) {
+        gameScreen.xoffset+=dx;
       }
-      if (survey.yoffset+dy < LEVELH-SCREENH && survey.yoffset+dy >= 0) {
-        survey.yoffset+=dy;
+      if (gameScreen.yoffset+dy < LEVELH-SCREENH && gameScreen.yoffset+dy >= 0) {
+        gameScreen.yoffset+=dy;
       }
       GUI.render();
     };
     return f;
+  };
+
+
+  GUI.recenter = function() {
+    var Player = HTomb.Player;
+    gameScreen.z = Player._z;
+    if (Player._x >= gameScreen.xoffset+SCREENW-2) {
+      gameScreen.xoffset = Player._x-SCREENW+2;
+    } else if (Player._x <= gameScreen.xoffset) {
+      gameScreen.xoffset = Player._x-1;
+    }
+    if (Player._y >= gameScreen.yoffset+SCREENH-2) {
+      gameScreen.yoffset = Player._y-SCREENH+2;
+    } else if (Player._y <= gameScreen.yoffset) {
+      gameScreen.yoffset = Player._y-1;
+    }
   };
 
   var survey = new ControlContext({
@@ -415,7 +364,12 @@ HTomb = (function(HTomb) {
     VK_E: surveyMove(+1,-1,0),
     VK_PERIOD: surveyMove(0,0,-1),
     VK_COMMA: surveyMove(0,0,+1),
-    VK_ESCAPE: GUI.reset
+    VK_ESCAPE: function() {
+      main.xoffset = survey.saveX;
+      main.yoffset = survey.saveY;
+      main.z = survey.saveZ;
+      GUI.reset();
+    }
   });
   survey.clickAt = main.clickAt;
 

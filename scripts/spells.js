@@ -39,7 +39,7 @@ HTomb = (function(HTomb) {
     cast: function() {
       var c = this.entity;
       HTomb.GUI.pushMessage(c.describe() + " raises a zombie.");
-      var sq = HTomb.World.randomEmptyNeighbor(c._x,c._y,c._z);
+      var sq = HTomb.Tiles.randomEmptyNeighbor(c._x,c._y,c._z);
       if (sq) {
         var z = HTomb.Entity.create("Zombie");
         z.place(sq[0],sq[1],sq[2]);

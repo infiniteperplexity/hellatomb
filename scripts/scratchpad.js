@@ -1,39 +1,68 @@
-var survey = new ControlContext({
-  VK_LEFT: surveyMove(-1,0,0),
-  VK_RIGHT: surveyMove(+1,0,0),
-  VK_UP: surveyMove(0,-1,0),
-  VK_DOWN: surveyMove(0,+1,0),
-  // bind keyboard movement
-  VK_Z: surveyMove(-1,+1,0),
-  VK_S: surveyMove(0,+1,0),
-  VK_X: surveyMove(0,+1,0),
-  VK_C: surveyMove(+1,+1,0),
-  VK_A: surveyMove(-1,0,0),
-  VK_D: surveyMove(+1,0,0),
-  VK_Q: surveyMove(-1,-1,0),
-  VK_W: surveyMove(0,-1,0),
-  VK_E: surveyMove(+1,-1,0),
-  VK_PERIOD: surveyMove(0,0,-1),
-  VK_COMMA: surveyMove(0,0,+1),
-  VK_ESCAPE: GUI.reset
-});
 
-GUI.surveyMode = function() {
-  Controls.context = survey;
-  survey.xoffset = main.xoffset;
-  survey.yoffset = main.yoffset;
-  survey.z = main.z;
+var vis = HTomb.FOV.visible;
+var terrain = HTomb.Tiles.terrain;
+var creatures = HTomb.World.creatures;
+var items = HTomb.World.items;
+var features = HTomb.World.features;
+var zones = HTomb.World.zones;
+Tiles.drawSymbol = function(x,y,z) {
+  var coord = Tiles.coord(x,y,z);
+  var level = HTomb.World.levels[z];
+  var grid = level.grid;
+  var explored = level.explored;
+  var sym, fg, bg, thing;
+  fg = "white";
+  bg = (zones[coord]===undefined) ? "black" : zones[coord].bg;
+  if (!explored[x][y]) {
+    sym = " ";
+  } else if (vis[x][y]===false) {
+    fg = SHADOW;
+    if (items[coord]) {
+      thing = items[coord][items[coord].length-1];
+      sym = thing.symbol || "X";
+    } else if (features[coord]) {
+      thing = features[coord];
+      sym = thing.symbol || "X";
+    } else {
+      sym = terrain[grid[x][y]].symbol || "X";
+    }
+  } else {
+    if (creatures[coord]) {
+      thing = creatures[coord];
+      sym = thing.symbol || "X";
+      fg = thing.fg || "white";
+    } else if (items[coord]) {
+      thing = items[coord][items[coord].length-1];
+      sym = thing.symbol || "X";
+      fg = thing.fg || "white";
+    } else if (features[coord]) {
+      thing = features[coord];
+      sym = thing.symbol || "X";
+      fg = thing.fg || EARTHTONE;
+    } else {
+      thing = terrain[grid[x][y]];
+      sym = thing.symbol || "X";
+      fg = thing.fg || EARTHTONE;
+    }
+  }
+  display.draw(this.x0+x-xoffset,this.y0+y-yoffset, sym, fg, bg);
 };
-var surveyMove = function(dx,dy,dz) {
-  return function() {
-    if (survey.z+dz < NLEVELS || survey.z+dz >= 0) {
-      survey.z+=dz;
+
+gameScreen.render = function() {
+  var z = gameScreen.z;
+  var xoffset = gameScreen.xoffset;
+  var yoffset = gameScreen.yoffset;
+
+  // I am not sure if this is the best way
+  for (var x = xoffset; x < xoffset+SCREENW; x++) {
+    for (var y = yoffset; y < yoffset+SCREENH; y++) {
+      coord = x*LEVELW*LEVELH + y*LEVELH + z;
+      fg = "white";
+
+      // testing
+      // explored[x][y] = true;
+      // end testing
+
     }
-    if (survey.xoffset+dx < LEVELW-SCREENW || survey.xoffset+dx >= 0) {
-      survey.xoffset+=dx;
-    }
-    if (survey.yoffset+dy < LEVELH-SCREENH || survey.yoffset+dy >= 0) {
-      survey.yoffest+=dy;
-    }
-  };
+  }
 };

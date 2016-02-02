@@ -13,7 +13,7 @@ HTomb = (function(HTomb) {
       symbol: "\u02C4",
       onPlace: function(x,y,z) {
         HTomb.Entity.create("DownSlope").place(x,y,z+1);
-        HTomb.World.levels[z+1].grid[x][y] = HTomb.Constants.FLOORTILE;
+        HTomb.World.levels[z+1].grid[x][y] = HTomb.Tiles.FLOORTILE;
         HTomb.World.portals[x*LEVELW*LEVELH+y*LEVELH+z] = [x,y,z+1];
       }
   });

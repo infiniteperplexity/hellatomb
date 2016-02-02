@@ -5,7 +5,7 @@ HTomb = (function(HTomb) {
   var levels = HTomb.World.levels;
   var grid;
   var explored;
-  var terrain = HTomb.World.terrain;
+  var terrain = HTomb.Tiles.terrain;
   var visible = [];
   for (var i=0; i<LEVELW; i++) {
     visible.push([]);

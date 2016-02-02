@@ -24,7 +24,7 @@ var HTomb = (function() {
     World.init();
     var Player = HTomb.Player = Entity.create("Necromancer");
     //Entity.addBehavior(PlayerBehavior,Player);
-    var ground = World.groundLevel(1,1);
+    var ground = Tiles.groundLevel(1,1);
     Player.place(1,1,ground+1);
     if (Player.sight) {
       FOV.findVisible(Player._x, Player._y, Player._z, Player.sight.range);
@@ -43,6 +43,7 @@ var HTomb = (function() {
     if (Player.sight) {
       FOV.findVisible(Player._x, Player._y, Player._z, Player.sight.range);
     }
+    GUI.recenter();
     GUI.render();
   };
   var World = {};
@@ -56,6 +57,7 @@ var HTomb = (function() {
   var Behavior = {};
   var Controls = {};
   var Tasks = {};
+  var Tiles = {};
 
   return {
     Constants: Constants,
@@ -71,7 +73,8 @@ var HTomb = (function() {
     Player: Player,
     Behavior: Behavior,
     Controls: Controls,
-    Tasks: Tasks
+    Tasks: Tasks,
+    Tiles: Tiles
   };
 })();
 window.onload = HTomb.init;

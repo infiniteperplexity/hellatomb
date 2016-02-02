@@ -6,7 +6,7 @@ HTomb = (function(HTomb) {
   var World = HTomb.World;
   var features = World.features;
 
-  var terrain = World.terrain;
+  var terrain = HTomb.Tiles.terrain;
   var levels = World.levels;
   var portals =World.portals;
 

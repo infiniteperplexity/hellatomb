@@ -107,7 +107,7 @@ HTomb = (function(HTomb) {
     this._z = null;
   };
   entity.getSquare = function() {
-    return HTomb.World.getSquare(this._x,this._y,this._z);
+    return HTomb.Tiles.getSquare(this._x,this._y,this._z);
   };
   var blockProperty = function(obj,prop) {
     Object.defineProperty(obj,prop, {
