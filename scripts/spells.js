@@ -49,6 +49,7 @@ HTomb = (function(HTomb) {
         z.addBehavior(HTomb.Behavior.Minion());
         z.minion.setMaster(c);
         c.master.addMinion(z);
+        z.ai.acted = true;
       }
     }
   });

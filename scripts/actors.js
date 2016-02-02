@@ -11,8 +11,11 @@ HTomb = (function(HTomb) {
     acted: false,
     init: function(){this.entity.path = [];},
     act: function() {
-      this.acted = false;
       if (this.entity===HTomb.Player) {
+        return false;
+      }
+      if (this.acted===true) {
+        this.acted = false;
         return false;
       }
       if (this.entity.minion) {
@@ -28,6 +31,7 @@ HTomb = (function(HTomb) {
       if (this.acted===false) {
         console.log("creature failed to act!");
       }
+      this.acted = false;
     },
     patrol: function(x,y,z,min,max) {
       min = min || 2;

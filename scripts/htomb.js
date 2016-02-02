@@ -36,7 +36,7 @@ var HTomb = (function() {
     Tasks.assignTasks();
     for (var creature in World.creatures) {
       if (World.creatures[creature].ai) {
-        World.creatures[creature].ai.act();
+          World.creatures[creature].ai.act();
       }
     }
     FOV.resetVisible();
