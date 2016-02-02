@@ -45,19 +45,19 @@ HTomb = (function(HTomb) {
     if (HTomb.World.features[x*LEVELW*LEVELH+y*LEVELH+z]) {
       HTomb.World.features[x*LEVELW*LEVELH+y*LEVELH+z].remove();
     }
-    HTomb.World.levels[z].grid[x][y] = HTomb.Constants.WALLTILE;
-    if (HTomb.World.levels[z+1].grid[x][y]===HTomb.Constants.EMPTYTILE) {
-      HTomb.World.levels[z+1].grid[x][y] = HTomb.Constants.FLOORTILE;
+    HTomb.World.levels[z].grid[x][y] = HTomb.Tiles.WALLTILE;
+    if (HTomb.World.levels[z+1].grid[x][y]===HTomb.Tiles.EMPTYTILE) {
+      HTomb.World.levels[z+1].grid[x][y] = HTomb.Tiles.FLOORTILE;
     }
   };
   Tiles.emptySquare = function(x,y,z) {
-    if (HTomb.World.levels[z-1].grid[x][y]===HTomb.Constants.WALLTILE) {
-      HTomb.World.levels[z].grid[x][y] = HTomb.Constants.FLOORTILE;
+    if (HTomb.World.levels[z-1].grid[x][y]===HTomb.Tiles.WALLTILE) {
+      HTomb.World.levels[z].grid[x][y] = HTomb.Tiles.FLOORTILE;
     } else {
-      HTomb.World.levels[z].grid[x][y] = HTomb.Constants.EMPTYTILE;
+      HTomb.World.levels[z].grid[x][y] = HTomb.Tiles.EMPTYTILE;
     }
-    if (HTomb.World.levels[z+1].grid[x][y]===HTomb.Constants.FLOORTILE) {
-      HTomb.World.levels[z+1].grid[x][y] = HTomb.Constants.EMPTYTILE;
+    if (HTomb.World.levels[z+1].grid[x][y]===HTomb.Tiles.FLOORTILE) {
+      HTomb.World.levels[z+1].grid[x][y] = HTomb.Tiles.EMPTYTILE;
     }
   };
   Tiles.neighbors = function(x,y) {

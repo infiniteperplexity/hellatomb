@@ -91,7 +91,7 @@ HTomb = (function(HTomb) {
     tryAssign: function(cr) {
       var zone = this.zone;
       // run the path backwards for faster failure
-      var path = HTomb.Path.aStar(zone._z,zone._y,zone._z,cr._x,cr._y,cr._z);
+      var path = HTomb.Path.aStar(zone._x,zone._y,zone._z,cr._x,cr._y,cr._z);
       if (path!==false) {
         this.assignTo(cr);
         return true;
@@ -109,12 +109,13 @@ HTomb = (function(HTomb) {
               continue;
             }
             var z = HTomb.Entity.create("DigZone");
-            z.task = self;
-            self.zone = z;
             z.place(coord[0],coord[1],coord[2]);
+            var t = HTomb.Tasks.DigTask();
+            z.task = t;
+            t.zone = z;
+            t.master = master;
+            Tasks.taskList.push(t);
           }
-          self.master = master;
-          Tasks.taskList.push(self);
         };
         HTomb.GUI.selectSquareZone(HTomb.Player._z,digSquares,{outline: false});
       }
@@ -155,7 +156,7 @@ HTomb = (function(HTomb) {
     tryAssign: function(cr) {
       var zone = this.zone;
       // run the path backwards for faster failure
-      var path = HTomb.Path.aStar(zone._z,zone._y,zone._z,cr._x,cr._y,cr._z);
+      var path = HTomb.Path.aStar(zone._x,zone._y,zone._z,cr._x,cr._y,cr._z);
       if (path!==false) {
         this.assignTo(cr);
         return true;
@@ -172,12 +173,13 @@ HTomb = (function(HTomb) {
               continue;
             }
             var z = HTomb.Entity.create("BuildZone");
-            z.task = self;
-            self.zone = z;
             z.place(coord[0],coord[1],coord[2]);
+            var t = HTomb.Tasks.BuildTask();
+            z.task = t;
+            t.zone = z;
+            t.master = master;
+            Tasks.taskList.push(t);
           }
-          self.master = master;
-          Tasks.taskList.push(self);
         };
         HTomb.GUI.selectSquareZone(HTomb.Player._z,buildSquares,{outline: true});
       }
@@ -237,9 +239,9 @@ HTomb = (function(HTomb) {
         var _z = HTomb.Player._z;
         var createZone = function(x,y,z) {
           var zone = HTomb.Entity.create("PatrolZone");
+          zone.place(x,y,z);
           zone.task = self;
           self.zone = zone;
-          zone.place(x,y,z);
           self.master = master;
           Tasks.taskList.push(self);
           HTomb.GUI.reset();

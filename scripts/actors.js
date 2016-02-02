@@ -114,8 +114,7 @@ HTomb = (function(HTomb) {
         this.entity.place(x+dx,y+dy,z);
         //should subtract actionpoints;
         return true;
-      //} else for (var i=0; i<8; i++) {
-      } else for (var i in dirs) {
+      } else for (var i=0; i<8; i++) {
         if (dx===dirs[i][0] && dy===dirs[i][1]) {
           i0 = i;
           break;
@@ -190,7 +189,7 @@ HTomb = (function(HTomb) {
           feature.construction.stepsLeft-=1;
           if (feature.construction.stepsLeft<=0) {
             feature.remove();
-            if (HTomb.World.levels[z].grid[x][y]===HTomb.Constants.FLOORTILE) {
+            if (HTomb.World.levels[z].grid[x][y]===HTomb.Tiles.FLOORTILE) {
               z-=1;
             }
             HTomb.Tiles.emptySquare(x,y,z);

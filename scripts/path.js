@@ -8,7 +8,7 @@ HTomb = (function(HTomb) {
 
   var terrain = HTomb.Tiles.terrain;
   var levels = World.levels;
-  var portals =World.portals;
+  var portals = World.portals;
 
   // default passability function
   var t;

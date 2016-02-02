@@ -306,6 +306,18 @@ HTomb = (function(HTomb) {
     context.clickAt = function(x,y) {
       callb(x,y,z);
     };
+    if (options.line!==undefined) {
+      var x0 = options.line.x || HTomb.Player._x;
+      var y0 = options.line.y || HTomb.Player._y;
+      context.mouseOver = function(x,y) {
+        gameScreen.render();
+        var line = HTomb.Path.line(x0,y0,x,y);
+        for (var i in line) {
+          var sq = line[i];
+          HTomb.GUI.highlight(sq[0],sq[1],"red");
+        }
+      };
+    }
   };
   HTomb.GUI.selectSquareZone = function(z, callb, options) {
     options = options || {};
@@ -341,8 +353,11 @@ HTomb = (function(HTomb) {
             }
           }
         }
-        for (var sq in squares) {
-          var coord = squares[sq];
+        for (var k =0; k<squares.length; k++) {
+          var coord = squares[k];
+          if (coord[1]===undefined) {
+            alert(coord);
+          }
           GUI.highlight(coord[0],coord[1],"red");
         }
       };
