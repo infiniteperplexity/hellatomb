@@ -6,26 +6,39 @@ HTomb = (function(HTomb) {
   var b = HTomb.Behavior;
 
   HTomb.Entity.define({
-      template: "UpSlope",
-      name: "upward slope",
-      isFeature: true,
-      portalTo: null,
-      symbol: "\u02C4",
-      onPlace: function(x,y,z) {
-        HTomb.Entity.create("DownSlope").place(x,y,z+1);
-        HTomb.World.levels[z+1].grid[x][y] = HTomb.Tiles.FLOORTILE;
-        HTomb.World.portals[x*LEVELW*LEVELH+y*LEVELH+z] = [x,y,z+1];
-      }
+    template: "UpSlope",
+    name: "upward slope",
+    isFeature: true,
+    portalTo: null,
+    symbol: "\u02C4",
+    zView: +1,
+    fg: HTomb.Constants.ABOVE,
+    onPlace: function(x,y,z) {
+      HTomb.Entity.create("DownSlope").place(x,y,z+1);
+      HTomb.World.levels[z+1].grid[x][y] = HTomb.Tiles.FLOORTILE;
+      HTomb.World.portals[x*LEVELW*LEVELH+y*LEVELH+z] = [x,y,z+1];
+    }
   });
   HTomb.Entity.define({
-      template: "DownSlope",
-      name: "downward slope",
-      isFeature: true,
-      portalTo: null,
-      symbol: "\u02C5",
-      onPlace: function(x,y,z) {
-        HTomb.World.portals[x*LEVELW*LEVELH+y*LEVELH+z] = [x,y,z-1];
-      }
+    template: "DownSlope",
+    name: "downward slope",
+    isFeature: true,
+    portalTo: null,
+    zView: -1,
+    symbol: "\u02C5",
+    fg: HTomb.Constants.BELOW,
+    onPlace: function(x,y,z) {
+      HTomb.World.portals[x*LEVELW*LEVELH+y*LEVELH+z] = [x,y,z-1];
+    }
+  });
+  HTomb.Entity.define({
+    template: "Pit",
+    name: "pit",
+    isFeature: true,
+    zView: -1,
+    symbol: "\u25CB",
+    //bg: "#444444"
+    fg: HTomb.Constants.BELOW
   });
   HTomb.Entity.define({
     template: "Tombstone",

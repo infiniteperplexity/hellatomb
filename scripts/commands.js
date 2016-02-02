@@ -85,6 +85,46 @@ HTomb = (function(HTomb) {
     if (square.creature) {
       HTomb.GUI.pushMessage("There is " + square.creature.describe() + " here.");
     }
+    if (square.feature) {
+      var seeSquare = null;
+      var mesg = null;
+      var i;
+      if (square.feature.zView===+1) {
+        seeSquare = HTomb.Tiles.getSquare(square.x,square.y,square.z+1);
+        if (seeSquare.creature) {
+          HTomb.GUI.pushMessage("There is " + square.creature.describe() + " above here.");
+        }
+        if (seeSquare.items) {
+          mesg = "The square above contains";
+          for (i = 0; i<seeSquare.items.length; i++) {
+            mesg = mesg + " " + seeSquare.items[i].describe();
+            if (i===seeSquare.items.length-2) {
+              mesg = mesg + ", and";
+            } else if (i<seeSquare.items.length-1) {
+              mesg = mesg + ",";
+            }
+          }
+          HTomb.GUI.pushMessage(mesg+".");
+        }
+      } else if (square.feature.zView===-1) {
+        seeSquare = HTomb.Tiles.getSquare(square.x,square.y,square.z-1);
+        if (seeSquare.creature) {
+          HTomb.GUI.pushMessage("There is " + square.creature.describe() + " below here.");
+        }
+        if (seeSquare.items) {
+          mesg = "The square below contains";
+          for (i = 0; i<seeSquare.items.length; i++) {
+            mesg = mesg + " " + seeSquare.items[i].describe();
+            if (i===seeSquare.items.length-2) {
+              mesg = mesg + ", and";
+            } else if (i<seeSquare.items.length-1) {
+              mesg = mesg + ",";
+            }
+          }
+          HTomb.GUI.pushMessage(mesg+".");
+        }
+      }
+    }
     HTomb.GUI.pushMessage(square.terrain.name + " square at " + square.x +", " + square.y + ", " + square.z + ".");
     Commands.glance(square);
   };

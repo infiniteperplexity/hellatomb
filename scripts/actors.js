@@ -194,6 +194,7 @@ HTomb = (function(HTomb) {
           if (feature.construction.stepsLeft<=0) {
             feature.remove();
             if (HTomb.World.levels[z].grid[x][y]===HTomb.Tiles.FLOORTILE) {
+              HTomb.Entity.create("Pit").place(x,y,z);
               z-=1;
             }
             HTomb.Tiles.emptySquare(x,y,z);

@@ -272,7 +272,7 @@ HTomb = (function(HTomb) {
   main.z = 1;
 
   main.clickAt = function(x,y) {
-    var square = HTomb.Tiles.getSquare(x+this.xoffset,y+this.yoffset,this.z);
+    var square = HTomb.Tiles.getSquare(x+this.xoffset,y+this.yoffset,gameScreen.z);
     Commands.look(square);
   };
 
