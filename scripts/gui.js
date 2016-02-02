@@ -316,7 +316,9 @@ HTomb = (function(HTomb) {
         var line = HTomb.Path.line(x0,y0,x,y);
         for (var i in line) {
           var sq = line[i];
-          HTomb.GUI.highlight(sq[0],sq[1],bg);
+          if (sq[0]>=0 && sq[0]<SCREENW && sq[1]>=0 && sq[1]<SCREENH) {
+            HTomb.GUI.highlight(sq[0],sq[1],bg);
+          }
         }
       };
     }
@@ -358,10 +360,9 @@ HTomb = (function(HTomb) {
         }
         for (var k =0; k<squares.length; k++) {
           var coord = squares[k];
-          if (coord[1]===undefined) {
-            alert(coord);
+          if (coord[0]>=0 && coord[0]<SCREENW && coord[1]>=0 && coord[1]<SCREENH) {
+            GUI.highlight(coord[0],coord[1],bg);
           }
-          GUI.highlight(coord[0],coord[1],bg);
         }
       };
     };
