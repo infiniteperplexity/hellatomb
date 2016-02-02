@@ -329,7 +329,6 @@ HTomb = (function(HTomb) {
     var context = new ControlContext({VK_ESCAPE: GUI.reset});
     HTomb.Controls.context = context;
     context.clickAt = function (x,y) {
-      //HTomb.GUI.drawAt(x,y,"X","red","black");
       HTomb.GUI.pushMessage("Select the second corner.");
       context.clickAt = secondSquare(x,y);
       context.mouseOver = drawSquareBox(x,y);

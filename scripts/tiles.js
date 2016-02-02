@@ -12,7 +12,8 @@ HTomb = (function(HTomb) {
     terrain[n] = definition;
   }
   defineTerrain(-1,"VOIDTILE",{name: "boundary", symbol: " ", opaque: true, solid: true});
-  defineTerrain(0,"EMPTYTILE",{name: "empty", symbol: "\u25CB", fg: "#6666DD", fallable: true});
+  //defineTerrain(0,"EMPTYTILE",{name: "empty", symbol: "\u25CB", fg: "#6666DD", fallable: true});
+  defineTerrain(0,"EMPTYTILE",{name: "empty", symbol: ".", fg: "#444444", fallable: true});
   defineTerrain(1,"FLOORTILE",{name: "floor", symbol: "."});
   defineTerrain(2,"WALLTILE",{name: "wall", symbol: "#", opaque: true, solid: true});
 
@@ -97,7 +98,9 @@ HTomb = (function(HTomb) {
   };
 
 
-  Tiles.getSymbol = function(x,y,z) {
+  Tiles.getSymbol = function(x,y,z,options) {
+    options = options || {};
+    var autovisible = (options.visible===true) ? true : false;
     var vis = HTomb.FOV.visible;
     var creatures = HTomb.World.creatures;
     var items = HTomb.World.items;
@@ -108,12 +111,21 @@ HTomb = (function(HTomb) {
     var level = HTomb.World.levels[z];
     var grid = level.grid;
     var explored = level.explored;
+    // should also check to make sure the current square is empty
+    if (explored[x][y]===true && vis[x][y]===true && grid[x][y]===Tiles.EMPTYTILE && HTomb.World.levels[z-1].grid[x][y]===Tiles.FLOORTILE) {
+      var below = Tiles.getSymbol(x,y,z-1,{visible: true});
+      return [below[0],"#444444","black"];
+    }
+    if (explored[x][y]===true && vis[x][y]===true && grid[x][y]===Tiles.WALLTILE && HTomb.World.levels[z+1].grid[x][y]===Tiles.FLOORTILE) {
+      var above = Tiles.getSymbol(x,y,z+1,{visible: true});
+      return [above[0],"#444444","black"];
+    }
     var sym, fg, bg, thing;
     fg = "white";
     bg = (zones[coord]===undefined) ? "black" : zones[coord].bg;
-    if (!explored[x][y]) {
+    if (!explored[x][y] && autovisible===false) {
       sym = " ";
-    } else if (vis[x][y]===false) {
+    } else if (vis[x][y]===false && autovisible===false) {
       fg = SHADOW;
       if (items[coord]) {
         thing = items[coord][items[coord].length-1];
