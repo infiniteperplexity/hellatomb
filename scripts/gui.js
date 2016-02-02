@@ -32,17 +32,25 @@ HTomb = (function(HTomb) {
     Controls.context.keydown(key);
   };
   var mousedown = function(click) {
-    var xskew = +1;
-    var yskew = +4;
+    var xskew = +3;
+    var yskew = +7;
     var x = Math.floor((click.clientX+xskew)/HTomb.Constants.CHARWIDTH-1);
     var y = Math.floor((click.clientY+yskew)/HTomb.Constants.CHARHEIGHT-1);
     Controls.context.clickAt(x,y);
+  };
+  var mousemove = function(move) {
+    var xskew = +3;
+    var yskew = +7;
+    var x = Math.floor((move.clientX+xskew)/HTomb.Constants.CHARWIDTH-1);
+    var y = Math.floor((move.clientY+yskew)/HTomb.Constants.CHARHEIGHT-1);
+    Controls.context.mouseOver(x,y);
   };
   var bindKey = function(target, key, func) {
     target.boundKeys[ROT[key]] = func;
   };
   window.addEventListener("keydown",keydown);
   display.getContainer().addEventListener("mousedown",mousedown);
+  display.getContainer().addEventListener("mousemove",mousemove);
 
   // set up message buffer
   GUI.pushMessage = function(strng) {
@@ -69,10 +77,9 @@ HTomb = (function(HTomb) {
     //  GUI.panels[i].render();
     //}
   };
-  GUI.drawAt = function(
-    x,y,ch,fg,bg) {
-    var xoffset = Controls.context.xoffset || 0;
-    var yoffset = Controls.context.yoffset || 0;
+  GUI.drawAt = function(x,y,ch,fg,bg) {
+    var xoffset = gameScreen.xoffset || 0;
+    var yoffset = gameScreen.yoffset || 0;
     fg = fg || "white"  ;
     bg = bg || "black";
     display.draw(
@@ -83,12 +90,28 @@ HTomb = (function(HTomb) {
       bg
     );
   };
+  GUI.highlight = function(x,y,bg) {
+    var xoffset = gameScreen.xoffset;
+    var yoffset = gameScreen.yoffset;
+    var z = gameScreen.z;
+    var sym = HTomb.Tiles.getSymbol(x,y,z);
+    display.draw(
+      x-xoffset,
+      y-yoffset,
+      sym[0],
+      sym[1],
+      bg
+    );
+  };
 
   GUI.splash = function(txt) {
     Controls.context = new ControlContext();
     var splash = new Panel(0,0);
     splash.render = function() {
       display.drawText(splash.x0+1,splash.y0+1, txt);
+    };
+    Controls.context.mouseOver = function() {
+      //do nothing
     };
     GUI.panels.overlay = splash;
     GUI.render();
@@ -196,6 +219,14 @@ HTomb = (function(HTomb) {
     GUI.reset();
   };
 
+  ControlContext.prototype.mouseOver = function(x,y) {
+    if (GUI.panels.overlay===null) {
+      GUI.panels.main.render();
+    }
+    if (x>=0 && x<SCREENW && y>=0 && y<SCREENH) {
+      GUI.highlight(x,y,"red");
+    }
+  };
 
 
   GUI.surveyMode = function() {
@@ -285,6 +316,36 @@ HTomb = (function(HTomb) {
       HTomb.GUI.drawAt(x,y,"X","red","black");
       HTomb.GUI.pushMessage("Select the second corner.");
       context.clickAt = secondSquare(x,y);
+      context.mouseOver = drawSquareBox(x,y);
+    };
+    var drawSquareBox = function(x0,y0) {
+      return function(x1,y1) {
+        gameScreen.render();
+        var xs = [];
+        var ys = [];
+        for (var i=0; i<=Math.abs(x1-x0); i++) {
+          xs[i] = x0+i*Math.sign(x1-x0);
+        }
+        for (var j=0; j<=Math.abs(y1-y0); j++) {
+          ys[j] = y0+j*Math.sign(y1-y0);
+        }
+        var squares = [];
+        for (var x=0; x<xs.length; x++) {
+          for (var y=0; y<ys.length; y++) {
+            if (options.outline===true) {
+              if (xs[x]===x0 || xs[x]===x1 || ys[y]===y0 || ys[y]===y1) {
+                squares.push([xs[x],ys[y],z]);
+              }
+            } else {
+              squares.push([xs[x],ys[y],z]);
+            }
+          }
+        }
+        for (var sq in squares) {
+          var coord = squares[sq];
+          GUI.highlight(coord[0],coord[1],"red");
+        }
+      };
     };
     var secondSquare = function(x0,y0) {
       return function(x1,y1) {

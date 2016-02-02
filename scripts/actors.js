@@ -114,7 +114,8 @@ HTomb = (function(HTomb) {
         this.entity.place(x+dx,y+dy,z);
         //should subtract actionpoints;
         return true;
-      } else for (var i=0; i<8; i++) {
+      //} else for (var i=0; i<8; i++) {
+      } else for (var i in dirs) {
         if (dx===dirs[i][0] && dy===dirs[i][1]) {
           i0 = i;
           break;
