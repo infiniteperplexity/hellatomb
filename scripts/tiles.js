@@ -96,36 +96,26 @@ HTomb = (function(HTomb) {
     square.z = z;
     return square;
   };
+  Tiles.explore = function(x,y,z) {
+    HTomb.World.levels[z].explored[x][y] = true;
+  };
 
-
-  Tiles.getSymbol = function(x,y,z,options) {
-    options = options || {};
-    var autovisible = (options.visible===true) ? true : false;
+  Tiles.getSymbol = function(x,y,z) {
     var vis = HTomb.FOV.visible;
     var creatures = HTomb.World.creatures;
     var items = HTomb.World.items;
     var features = HTomb.World.features;
     var zones = HTomb.World.zones;
-    //var coord = Tiles.coord(x,y,z);
     var coord = x*LEVELW*LEVELH + y*LEVELH + z;
     var level = HTomb.World.levels[z];
     var grid = level.grid;
     var explored = level.explored;
-    // should also check to make sure the current square is empty
-    //if (explored[x][y]===true && vis[x][y]===true && grid[x][y]===Tiles.EMPTYTILE && HTomb.World.levels[z-1].grid[x][y]===Tiles.FLOORTILE) {
-    //  var below = Tiles.getSymbol(x,y,z-1,{visible: true});
-    //  return [below[0],"#444444","black"];
-    //}
-    //if (explored[x][y]===true && vis[x][y]===true && grid[x][y]===Tiles.WALLTILE && HTomb.World.levels[z+1].grid[x][y]===Tiles.FLOORTILE) {
-    //  var above = Tiles.getSymbol(x,y,z+1,{visible: true});
-    //  return [above[0],"#444444","black"];
-    //}
     var sym, fg, bg, thing;
     fg = "white";
     bg = (zones[coord]===undefined) ? "black" : zones[coord].bg;
-    if (!explored[x][y] && autovisible===false) {
+    if (!explored[x][y]) {
       sym = " ";
-    } else if (vis[x][y]===false && autovisible===false) {
+    } else if (vis[x][y]===false) {
       fg = SHADOW;
       if (items[coord]) {
         thing = items[coord][items[coord].length-1];
@@ -147,7 +137,7 @@ HTomb = (function(HTomb) {
         fg = thing.fg || "white";
       } else if (features[coord]) {
         thing = features[coord];
-        if (thing.zView===+1) {
+        if (thing.zView===+1 && z+1<NLEVELS && HTomb.World.levels[z+1].explored[x][y]===true) {
           if (creatures[x*LEVELW*LEVELH + y*LEVELH + z+1]) {
             thing = creatures[x*LEVELW*LEVELH + y*LEVELH + z+1];
             sym = thing.symbol || "X";
@@ -161,7 +151,7 @@ HTomb = (function(HTomb) {
             sym = thing.symbol || "X";
             fg = thing.fg || EARTHTONE;
           }
-        } else if (thing.zView===-1) {
+        } else if (thing.zView===-1 && z-1>=0 && HTomb.World.levels[z-1].explored[x][y]===true) {
           if (creatures[x*LEVELW*LEVELH + y*LEVELH + z-1]) {
             thing = creatures[x*LEVELW*LEVELH + y*LEVELH + z-1];
             sym = thing.symbol || "X";
