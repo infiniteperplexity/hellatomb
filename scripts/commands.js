@@ -78,6 +78,9 @@ HTomb = (function(HTomb) {
       HTomb.GUI.pushMessage("Can't go down here.");
     }
   };
+  Commands.wait = function() {
+    HTomb.turn();
+  };
   Commands.look = function(square) {
     if (square.creature) {
       HTomb.GUI.pushMessage("There is " + square.creature.describe() + " here.");

@@ -250,7 +250,7 @@ HTomb = (function(HTomb) {
     VK_DOWN: Commands.tryMoveSouth,
     // bind keyboard movement
     VK_Z: Commands.tryMoveSouthWest,
-    VK_S: Commands.tryMoveSouth,
+    VK_S: Commands.wait,
     VK_X: Commands.tryMoveSouth,
     VK_C: Commands.tryMoveSouthEast,
     VK_A: Commands.tryMoveWest,
@@ -264,7 +264,8 @@ HTomb = (function(HTomb) {
     VK_F: Commands.drop,
     VK_J: Commands.showJobs,
     VK_P: Commands.showSpells,
-    VK_SHIFT: GUI.surveyMode
+    VK_SHIFT: GUI.surveyMode,
+    VK_SPACE: Commands.wait
   });
   main.xoffset = 0;
   main.yoffset = 0;
