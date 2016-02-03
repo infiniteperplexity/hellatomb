@@ -198,6 +198,7 @@ HTomb = (function(HTomb) {
               z-=1;
             }
             HTomb.Tiles.emptySquare(x,y,z);
+            HTomb.Tiles.explore(x,y,z);
             var zone = HTomb.World.zones[coord];
             if (zone && zone.template==="DigZone") {
               zone.remove();

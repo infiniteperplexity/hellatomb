@@ -91,6 +91,7 @@ HTomb = (function(HTomb) {
     square.feature = HTomb.World.features[coord];
     square.portals = HTomb.World.portals[coord];
     square.zone = HTomb.World.zones[coord];
+    square.explored = HTomb.World.levels[z].explored[x][y];
     square.x = x;
     square.y = y;
     square.z = z;

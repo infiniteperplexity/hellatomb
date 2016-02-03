@@ -15,9 +15,9 @@ var HTomb = (function() {
   var CHARWIDTH = Constants.CHARWIDTH = 9;
   var CHARHEIGHT = Constants.CHARHEIGHT = 15;
   var UNIBLOCK = Constants.UNIBLOCK = '\u2588';
-  var EARTHTONE = Constants.EARTHTONE = "#AAAAFF";
+  var EARTHTONE = Constants.EARTHTONE = "#AAAAEE";
   var SHADOW = Constants.SHADOW = "#5555BB";
-  var ABOVE = Constants.ABOVE = "#DDDDFF";
+  var ABOVE = Constants.ABOVE = "#BBBBFF";
   var BELOW = Constants.BELOW = "#8888DD";
 
   //var EARTHTONE = Constants.EARTHTONE = "white";

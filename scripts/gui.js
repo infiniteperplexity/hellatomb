@@ -36,14 +36,22 @@ HTomb = (function(HTomb) {
     var yskew = +7;
     var x = Math.floor((click.clientX+xskew)/HTomb.Constants.CHARWIDTH-1);
     var y = Math.floor((click.clientY+yskew)/HTomb.Constants.CHARHEIGHT-1);
-    Controls.context.clickAt(x,y);
+    if (GUI.panels.overlay!==null || x>=SCREENW || y>=SCREENH) {
+      Controls.context.clickAt(x,y);
+    } else {
+      Controls.context.clickTile(x+gameScreen.xoffset,y+gameScreen.yoffset);
+    }
   };
   var mousemove = function(move) {
     var xskew = +3;
     var yskew = +7;
     var x = Math.floor((move.clientX+xskew)/HTomb.Constants.CHARWIDTH-1);
     var y = Math.floor((move.clientY+yskew)/HTomb.Constants.CHARHEIGHT-1);
-    Controls.context.mouseOver(x,y);
+    if (GUI.panels.overlay!==null || x>=SCREENW || y>=SCREENH) {
+      Controls.context.mouseOver(x,y);
+    } else {
+      Controls.context.mouseTile(x+gameScreen.xoffset,y+gameScreen.yoffset);
+    }
   };
   var bindKey = function(target, key, func) {
     target.boundKeys[ROT[key]] = func;
@@ -73,11 +81,8 @@ HTomb = (function(HTomb) {
       GUI.panels.right.render();
       GUI.panels.corner.render();
     }
-    //for (var i=0; i<GUI.panels.length; i++) {
-    //  GUI.panels[i].render();
-    //}
   };
-  GUI.drawAt = function(x,y,ch,fg,bg) {
+  GUI.drawTile = function(x,y,ch,fg,bg) {
     var xoffset = gameScreen.xoffset || 0;
     var yoffset = gameScreen.yoffset || 0;
     fg = fg || "white"  ;
@@ -90,9 +95,9 @@ HTomb = (function(HTomb) {
       bg
     );
   };
-  GUI.highlight = function(x,y,bg) {
-    var xoffset = gameScreen.xoffset;
-    var yoffset = gameScreen.yoffset;
+  GUI.highlightTile = function(x,y,bg) {
+    var xoffset = gameScreen.xoffset || 0;
+    var yoffset = gameScreen.yoffset || 0;
     var z = gameScreen.z;
     var sym = HTomb.Tiles.getSymbol(x,y,z);
     display.draw(
@@ -109,9 +114,6 @@ HTomb = (function(HTomb) {
     var splash = new Panel(0,0);
     splash.render = function() {
       display.drawText(splash.x0+1,splash.y0+1, txt);
-    };
-    Controls.context.mouseOver = function() {
-      //do nothing
     };
     GUI.panels.overlay = splash;
     GUI.render();
@@ -226,13 +228,12 @@ HTomb = (function(HTomb) {
   ControlContext.prototype.clickAt = function() {
     GUI.reset();
   };
-
-  ControlContext.prototype.mouseOver = function(x,y) {
+  ControlContext.prototype.clickTile = function() {
+    GUI.reset();
+  }
+  ControlContext.prototype.mouseOver = function() {
     if (GUI.panels.overlay===null) {
-      GUI.panels.main.render();
-    }
-    if (x>=0 && x<SCREENW && y>=0 && y<SCREENH) {
-      GUI.highlight(x,y,"#0000FF");
+      gameScreen.render();
     }
   };
   GUI.listItems = function(arr) {
@@ -247,84 +248,81 @@ HTomb = (function(HTomb) {
     }
     return mesg;
   };
-  ControlContext.prototype.mouseOver = function(x,y) {
+  ControlContext.prototype.mouseTile = function(x,y) {
     if (GUI.panels.overlay===null) {
       GUI.panels.main.render();
     }
     var z = gameScreen.z;
-    if (x>=0 && x<SCREENW && y>=0 && y<SCREENH) {
-      GUI.highlight(x,y,"#0000FF");
-      var square = HTomb.Tiles.getSquare(x,y,z);
-      hover.text[1][0] = square.terrain.name + " at " + x +", " + y + ", " + z + ".";
-      if (square.creature) {
-        hover.text[1][1] = square.creature.describe();
-      } else {
-        hover.text[1][1] = "";
-      }
-      var mesg = "";
-      var i;
-      if (square.items) {
-        hover.text[1][2] = GUI.listItems(square.items);
-      } else {
-        hover.text[1][2] = "";
-      }
-      if (square.feature) {
-        hover.text[1][3] = square.feature.describe();
-      } else {
-        hover.text[1][3] = "";
-      }
-      var vis;
-      if (square.feature && square.feature.zView===+1 && z+1<NLEVELS) {
-        hover.text[0][4] = "Above: ";
-        hover.text[0][5] = "Above: ";
-        vis = HTomb.Tiles.getSquare(x,y,z+1);
-        if (vis.creature) {
-          hover.text[1][4] = vis.creature.describe();
-        } else {
-          hover.text[1][4] = "";
-        }
-        if (vis.items) {
-          hover.text[1][5] = GUI.listItems(vis.items);
-        } else {
-          hover.text[1][5] = "";
-        }
-      } else if (square.feature && square.feature.zView===-1 && z-1>=0) {
-        hover.text[0][4] = "Below: ";
-        hover.text[0][5] = "Below: ";
-        vis = HTomb.Tiles.getSquare(x,y,z-1);
-        if (vis.creature) {
-          hover.text[1][4] = vis.creature.describe();
-        } else {
-          hover.text[1][4] = "";
-        }
-        if (vis.items) {
-          hover.text[1][5] = GUI.listItems(vis.items);
-        } else {
-          hover.text[1][5] = "";
-        }
+    GUI.highlightTile(x,y,"#0000FF");
+    var square = HTomb.Tiles.getSquare(x,y,z);
+    if (square.explored===false) {
+      hover.text[0][4] = "";
+      hover.text[0][5] = "";
+      hover.text[1] = ["","","","","",""];
+      hover.render();
+      return;
+    }
+    hover.text[1][0] = square.terrain.name + " at " + x +", " + y + ", " + z + ".";
+    if (square.creature) {
+      hover.text[1][1] = square.creature.describe();
+    } else {
+      hover.text[1][1] = "";
+    }
+    var mesg = "";
+    var i;
+    if (square.items) {
+      hover.text[1][2] = GUI.listItems(square.items);
+    } else {
+      hover.text[1][2] = "";
+    }
+    if (square.feature) {
+      hover.text[1][3] = square.feature.describe();
+    } else {
+      hover.text[1][3] = "";
+    }
+    var vis;
+    if (square.feature && square.feature.zView===+1 && z+1<NLEVELS) {
+      hover.text[0][4] = "Above: ";
+      hover.text[0][5] = "Above: ";
+      vis = HTomb.Tiles.getSquare(x,y,z+1);
+      if (vis.creature) {
+        hover.text[1][4] = vis.creature.describe();
       } else {
         hover.text[1][4] = "";
-        hover.text[1][5] = "";
-        hover.text[0][4] = "";
-        hover.text[0][5] = "";
       }
-      hover.render();
+      if (vis.items) {
+        hover.text[1][5] = GUI.listItems(vis.items);
+      } else {
+        hover.text[1][5] = "";
+      }
+    } else if (square.feature && square.feature.zView===-1 && z-1>=0) {
+      hover.text[0][4] = "Below: ";
+      hover.text[0][5] = "Below: ";
+      vis = HTomb.Tiles.getSquare(x,y,z-1);
+      if (vis.creature) {
+        hover.text[1][4] = vis.creature.describe();
+      } else {
+        hover.text[1][4] = "";
+      }
+      if (vis.items) {
+        hover.text[1][5] = GUI.listItems(vis.items);
+      } else {
+        hover.text[1][5] = "";
+      }
+    } else {
+      hover.text[1][4] = "";
+      hover.text[1][5] = "";
+      hover.text[0][4] = "";
+      hover.text[0][5] = "";
     }
-    else {
-      hover.text[1] = ["","","","","",""];
-    }
+    hover.render();
   };
-
-
 
   GUI.surveyMode = function() {
     Controls.context = survey;
     survey.saveX = gameScreen.xoffset;
     survey.saveY = gameScreen.yoffset;
     survey.saveZ = gameScreen.z;
-    survey.xoffset = main.xoffset;
-    survey.yoffset = main.yoffset;
-    survey.z = main.z;
     GUI.updateMenu(["You are now in survey mode.","Use movement keys to navigate.","Comma go down.","Period to go up.","Escape to exit."]);
   };
 
@@ -355,12 +353,12 @@ HTomb = (function(HTomb) {
     VK_SHIFT: GUI.surveyMode,
     VK_SPACE: Commands.wait
   });
-  main.xoffset = 0;
-  main.yoffset = 0;
-  main.z = 1;
 
   main.clickAt = function(x,y) {
-    var square = HTomb.Tiles.getSquare(x+this.xoffset,y+this.yoffset,gameScreen.z);
+    //do nothing
+  };
+  main.clickTile = function(x,y) {
+    var square = HTomb.Tiles.getSquare(x,y,gameScreen.z);
     Commands.look(square);
   };
 
@@ -392,21 +390,19 @@ HTomb = (function(HTomb) {
     HTomb.GUI.pushMessage("Select a square.");
     var context = new ControlContext({VK_ESCAPE: GUI.reset});
     HTomb.Controls.context = context;
-    context.clickAt = function(x,y) {
+    context.clickTile = function(x,y) {
       callb(x,y,z);
     };
     if (options.line!==undefined) {
       var x0 = options.line.x || HTomb.Player._x;
       var y0 = options.line.y || HTomb.Player._y;
       var bg = options.line.bg || "#550000";
-      context.mouseOver = function(x,y) {
+      context.mouseTile = function(x,y) {
         gameScreen.render();
         var line = HTomb.Path.line(x0,y0,x,y);
         for (var i in line) {
           var sq = line[i];
-          if (sq[0]>=0 && sq[0]<SCREENW && sq[1]>=0 && sq[1]<SCREENH) {
-            HTomb.GUI.highlight(sq[0],sq[1],bg);
-          }
+          HTomb.GUI.highlightSquare(sq[0],sq[1],bg);
         }
       };
     }
@@ -416,10 +412,10 @@ HTomb = (function(HTomb) {
     HTomb.GUI.pushMessage("Select the first corner.");
     var context = new ControlContext({VK_ESCAPE: GUI.reset});
     HTomb.Controls.context = context;
-    context.clickAt = function (x,y) {
+    context.clickTile = function (x,y) {
       HTomb.GUI.pushMessage("Select the second corner.");
-      context.clickAt = secondSquare(x,y);
-      context.mouseOver = drawSquareBox(x,y);
+      context.clickTile = secondSquare(x,y);
+      context.mouseTile = drawSquareBox(x,y);
     };
     var drawSquareBox = function(x0,y0) {
       var bg = options.bg || "#550000";
@@ -447,9 +443,7 @@ HTomb = (function(HTomb) {
         }
         for (var k =0; k<squares.length; k++) {
           var coord = squares[k];
-          if (coord[0]>=0 && coord[0]<SCREENW && coord[1]>=0 && coord[1]<SCREENH) {
-            GUI.highlight(coord[0],coord[1],bg);
-          }
+          GUI.highlightTile(coord[0],coord[1],bg);
         }
       };
     };
@@ -532,13 +526,13 @@ HTomb = (function(HTomb) {
     VK_PERIOD: surveyMove(0,0,-1),
     VK_COMMA: surveyMove(0,0,+1),
     VK_ESCAPE: function() {
-      main.xoffset = survey.saveX;
-      main.yoffset = survey.saveY;
-      main.z = survey.saveZ;
+      gameScreen.xoffset = survey.saveX;
+      gameScreen.yoffset = survey.saveY;
+      gameScreen.z = survey.saveZ;
       GUI.reset();
     }
   });
-  survey.clickAt = main.clickAt;
+  survey.clickTile = main.clickTile;
 
   return HTomb;
 })(HTomb);
