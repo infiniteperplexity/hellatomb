@@ -142,12 +142,14 @@ HTomb = (function(HTomb) {
           if (creatures[x*LEVELW*LEVELH + y*LEVELH + z+1]) {
             thing = creatures[x*LEVELW*LEVELH + y*LEVELH + z+1];
             sym = thing.symbol || "X";
-            fg = HTomb.Constants.ABOVE;
+            //fg = HTomb.Constants.ABOVE;
+            fg = features[coord].fg;
           } else if (items[x*LEVELW*LEVELH + y*LEVELH + z+1]) {
             thing = items[x*LEVELW*LEVELH + y*LEVELH + z+1];
             thing = thing[thing.length-1];
             sym = thing.symbol || "X";
-            fg = HTomb.Constants.ABOVE;
+            //fg = HTomb.Constants.ABOVE;
+            fg = features[coord].fg;
           } else {
             sym = thing.symbol || "X";
             fg = thing.fg || EARTHTONE;
@@ -156,12 +158,14 @@ HTomb = (function(HTomb) {
           if (creatures[x*LEVELW*LEVELH + y*LEVELH + z-1]) {
             thing = creatures[x*LEVELW*LEVELH + y*LEVELH + z-1];
             sym = thing.symbol || "X";
-            fg = HTomb.Constants.BELOW;
+            //fg = HTomb.Constants.BELOW;
+            fg = features[coord].fg;
           } else if (items[x*LEVELW*LEVELH + y*LEVELH + z-1]) {
             thing = items[x*LEVELW*LEVELH + y*LEVELH + z-1];
             thing = thing[thing.length-1];
             sym = thing.symbol || "X";
-            fg = HTomb.Constants.BELOW;
+            //fg = HTomb.Constants.BELOW;
+            fg = features[coord].fg;
           } else {
             sym = thing.symbol || "X";
             fg = thing.fg || EARTHTONE;

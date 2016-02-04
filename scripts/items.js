@@ -32,7 +32,7 @@ HTomb = (function(HTomb) {
     isItem: true,
     symbol: "-",
     fg: "brown",
-    randomColor: 10
+    randomColor: 20
   });
 
   return HTomb;

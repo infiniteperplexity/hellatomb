@@ -16,6 +16,7 @@ HTomb = (function(HTomb) {
     // You can see up this slop
     zView: +1,
     fg: HTomb.Constants.ABOVE,
+    randomColor: 10,
     // Upon placing an upward slope, a downward slope is added above
     onPlace: function(x,y,z) {
       HTomb.Entity.create("DownSlope").place(x,y,z+1);
@@ -33,6 +34,7 @@ HTomb = (function(HTomb) {
     zView: -1,
     symbol: "\u02C5",
     fg: HTomb.Constants.BELOW,
+    randomColor: 10,
     onPlace: function(x,y,z) {
       HTomb.World.portals[x*LEVELW*LEVELH+y*LEVELH+z] = [x,y,z-1];
       // Wait...shouldn't I create a "portalTo"?
@@ -53,6 +55,7 @@ HTomb = (function(HTomb) {
     isFeature: true,
     symbol: "\u271F",
     fg: "#AAAAAA",
+    randomColor: 5,
     onPlace: function(x,y,z) {
       // Bury a corpse beneath the tombstone
       HTomb.Entity.create("Corpse").place(x,y,z-1);
@@ -66,7 +69,7 @@ HTomb = (function(HTomb) {
     //symbol: "\u2663",
     symbol: ["\u2663","\u2660"],
     fg: "#559900",
-    randomColor: 25
+    randomColor: 20
   });
 
   HTomb.Entity.define({
@@ -75,7 +78,7 @@ HTomb = (function(HTomb) {
     isFeature: true,
     symbol: "\u262B",
     fg: "#779922",
-    randomColor: 25
+    randomColor: 20
   });
 
   HTomb.Entity.define({
@@ -84,7 +87,7 @@ HTomb = (function(HTomb) {
     isFeature: true,
     symbol: "~",
     fg: "#0088DD",
-    randomColor: 25
+    randomColor: 20
   });
 
   HTomb.Entity.define({

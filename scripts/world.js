@@ -52,14 +52,15 @@ HTomb = (function(HTomb) {
     populateStuff();
   };
   HTomb.World.generators.newSimplex = function() {
-    colorize(25);
+    colorize(20);
     assignElevation();
     //raise_hill(1);
     simplex_features("Tombstone",{p1: 0.25, p2: 0.1});
     simplex_features("Shrub",{hscale: 40, vthresh: 1, p1: 0.25, p2: 0.1});
     simplex_features("Tree",{vthresh: 1, p1: 0.75, p2: 0.25});
     simplex_features("Rock",{hscale: 10, vtresh: 3, p1: 0.25, p2: 0.1});
-    water_table(24);
+    simplex_features("Stick",{hscale: 10, vtresh: 3, p1: 0.25, p2: 0.1});
+    water_table(23);
     addSlopes();
   };
   function colorize(cscale,hscale) {
