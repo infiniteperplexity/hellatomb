@@ -169,6 +169,10 @@ HTomb = (function(HTomb) {
         // Draw every symbol in the right place
         var sym = HTomb.Tiles.getSymbol(x,y,z);
         display.draw(this.x0+x-xoffset,this.y0+y-yoffset, sym[0], sym[1], sym[2]);
+        //var c = ROT.Color.fromString(sym[1]);
+        //c = ROT.Color.randomize(c,[30,30,30]);
+        //c = ROT.Color.toHex(c);
+        //display.draw(this.x0+x-xoffset,this.y0+y-yoffset, sym[0], c, sym[2]);
       }
     }
   };
