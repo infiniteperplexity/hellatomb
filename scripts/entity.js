@@ -160,6 +160,25 @@ HTomb = (function(HTomb) {
         for (var beh in properties.behaviors) {
           ent.addBehavior(properties.behaviors[beh]);
         }
+      } else if (prop==="fg") {
+        var c;
+        if (Array.isArray(properties.fg)) {
+          c = properties.fg[Math.floor(Math.random()*properties.fg.length)];
+        } else {
+          c = properties.fg;
+        }
+        c = ROT.Color.fromString(properties.fg);
+        if (properties.randomColor>0) {
+          c = ROT.Color.randomize(c,[properties.randomColor,properties.randomColor,properties.randomColor]);
+        }
+        c = ROT.Color.toHex(c);
+        ent.fg = c;
+      } else if (prop==="symbol") {
+        if (Array.isArray(properties.symbol)) {
+          ent.symbol = properties.symbol[Math.floor(Math.random()*properties.symbol.length)];
+        } else {
+          ent.symbol = properties.symbol;
+        }
       } else {
         ent[prop] = properties[prop];
       }

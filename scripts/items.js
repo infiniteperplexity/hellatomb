@@ -13,7 +13,8 @@ HTomb = (function(HTomb) {
     onPlace: function() {
       var r = parseInt(Math.random()*5);
       this.stack.n = r;
-    }
+    },
+    randomColor: 10
   });
 
   HTomb.Entity.define({
@@ -21,7 +22,8 @@ HTomb = (function(HTomb) {
     name: "corpse",
     isItem: true,
     symbol: "%",
-    fg: "brown"
+    fg: "brown",
+    randomColor: 10
   });
 
   HTomb.Entity.define({
@@ -29,7 +31,8 @@ HTomb = (function(HTomb) {
     name: "stick",
     isItem: true,
     symbol: "-",
-    fg: "brown"
+    fg: "brown",
+    randomColor: 10
   });
 
   return HTomb;

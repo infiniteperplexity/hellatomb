@@ -63,8 +63,10 @@ HTomb = (function(HTomb) {
     template: "Tree",
     name: "tree",
     isFeature: true,
-    symbol: "\u2663",
-    fg: "#559900"
+    //symbol: "\u2663",
+    symbol: ["\u2663","\u2660"],
+    fg: "#559900",
+    randomColor: 25
   });
 
   HTomb.Entity.define({
@@ -72,7 +74,8 @@ HTomb = (function(HTomb) {
     name: "shrub",
     isFeature: true,
     symbol: "\u262B",
-    fg: "#779922"
+    fg: "#779922",
+    randomColor: 25
   });
 
   HTomb.Entity.define({
@@ -80,7 +83,8 @@ HTomb = (function(HTomb) {
     name: "puddle",
     isFeature: true,
     symbol: "~",
-    fg: "#0088DD"
+    fg: "#0088DD",
+    randomColor: 25
   });
 
   HTomb.Entity.define({

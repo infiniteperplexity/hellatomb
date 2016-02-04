@@ -174,6 +174,11 @@ HTomb = (function(HTomb) {
         thing = terrain[grid[x][y]];
         sym = thing.symbol || "X";
         fg = thing.fg || EARTHTONE;
+        if (thing.fg === undefined || thing.fg === EARTHTONE) {
+          fg = ROT.Color.fromString(fg);
+          fg = ROT.Color.add(fg,HTomb.World.colors[x][y]);
+          fg = ROT.Color.toHex(fg);
+        }
       }
     }
     return [sym,fg,bg];

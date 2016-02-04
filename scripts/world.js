@@ -40,19 +40,21 @@ HTomb = (function(HTomb) {
 
   //************Concrete methods for populating a world****************
   function populate() {
-    HTomb.World.generators.currentRandom();
-    //HTomb.World.generators.newSimplex();
+    //HTomb.World.generators.currentRandom();
+    HTomb.World.generators.newSimplex();
   }
 
   HTomb.World.generators = {};
   HTomb.World.generators.currentRandom = function() {
+    colorize();
     assignElevation();
     addSlopes();
     populateStuff();
   };
   HTomb.World.generators.newSimplex = function() {
+    colorize(25);
     assignElevation();
-    raise_hill(1);
+    //raise_hill(1);
     simplex_features("Tombstone",{p1: 0.25, p2: 0.1});
     simplex_features("Shrub",{hscale: 40, vthresh: 1, p1: 0.25, p2: 0.1});
     simplex_features("Tree",{vthresh: 1, p1: 0.75, p2: 0.25});
@@ -60,6 +62,25 @@ HTomb = (function(HTomb) {
     water_table(24);
     addSlopes();
   };
+  function colorize(cscale,hscale) {
+    hscale = hscale || 50;
+    cscale = cscale || 0;
+    var rnoise = new ROT.Noise.Simplex();
+    var gnoise = new ROT.Noise.Simplex();
+    var bnoise = new ROT.Noise.Simplex();
+    for (var x=0; x<LEVELW; x++) {
+      HTomb.World.colors.push([]);
+      for (var y=0; y<LEVELH; y++) {
+        var r = parseInt(Math.random()*2*cscale)-cscale;
+        var g = parseInt(Math.random()*2*cscale)-cscale;
+        var b = parseInt(Math.random()*2*cscale)-cscale;
+        //var r = parseInt(rnoise.get(x/hscale,y/hscale)*cscale);
+        //var g = parseInt(gnoise.get(x/hscale,y/hscale)*cscale);
+        //var b = parseInt(bnoise.get(x/hscale,y/hscale)*cscale);
+        HTomb.World.colors[x].push([r,g,b]);
+      }
+    }
+  }
   function assignElevation() {
     var ground = 25;
     var hscale = 100;
@@ -202,6 +223,7 @@ HTomb = (function(HTomb) {
     }
   }
 
+  HTomb.World.colors = [];
   HTomb.World.creatures = {};
   HTomb.World.items = {};
   HTomb.World.features = {};
