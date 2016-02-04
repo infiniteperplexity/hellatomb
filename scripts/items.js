@@ -9,7 +9,11 @@ HTomb = (function(HTomb) {
     isItem: true,
     symbol: "*",
     fg: "#CCCCCC",
-    behaviors: [b.Stackable()]
+    behaviors: [b.Stackable()],
+    onPlace: function() {
+      var r = parseInt(Math.random()*5);
+      this.stack.n = r;
+    }
   });
 
   HTomb.Entity.define({

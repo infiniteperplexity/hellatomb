@@ -1,3 +1,4 @@
+// The Entity submodule defines the basic functionality for entities
 HTomb = (function(HTomb) {
   "use strict";
   var creatures = HTomb.World.creatures;
@@ -8,15 +9,17 @@ HTomb = (function(HTomb) {
   var LEVELH = HTomb.Constants.LEVELH;
 
   HTomb.Entity.templates = {};
+  // Define a new template
   HTomb.Entity.define = function(properties) {
     if (!properties || !properties.template) {
-      console.log("invalid template definition");
+      HTomb.Debug.pushMessage("invalid template definition");
       return;
     }
     var template = {};
     for (var prop in properties) {
       template[prop] = properties[prop];
     }
+    // Maybe instead of .create() we should just provide named methods?
     HTomb.Entity.templates[properties.template] = template;
   };
   //fully generic entity
@@ -32,6 +35,7 @@ HTomb = (function(HTomb) {
     behaviors: [],
     cleanup: function() {}
   };
+  // Place an entity in the play area according to its type flags
   entity.place = function(x,y,z) {
     if (this.isCreature) {
       delete creatures[this._x*LEVELW*LEVELH + this._y*LEVELH + this._z];
@@ -67,10 +71,13 @@ HTomb = (function(HTomb) {
     this._x = x;
     this._y = y;
     this._z = z;
+    // Fire off the onPlace method, if applicable
     if (this.onPlace) {
       this.onPlace(x,y,z);
     }
   };
+  // Remove the entity from the playing area
+  // Eventually this should split from actually destroying an entity
   entity.remove = function() {
     var x = this._x;
     var y = this._y;
@@ -94,7 +101,6 @@ HTomb = (function(HTomb) {
       delete features[this._x*LEVELW*LEVELH + this._y*LEVELH + this._z];
     }
     if (this.isZone) {
-      // maybe should deal with unassignment here?
       var tsk = this.task;
       if (tsk.assignedTo) {
         tsk.unassign();
@@ -106,22 +112,32 @@ HTomb = (function(HTomb) {
     this._y = null;
     this._z = null;
   };
+  // Return the square the entity is on
   entity.getSquare = function() {
     return HTomb.Tiles.getSquare(this._x,this._y,this._z);
   };
+  // This silly function blocks you from directly accessing x, y, and z...why did I do this?
   var blockProperty = function(obj,prop) {
     Object.defineProperty(obj,prop, {
       get: function() {throw new Error("Use underscore when calling " + prop);},
       set: function(val) {throw new Error("Use 'place' instead of setting " + prop + " directly.");}
     });
   };
+  blockProperty(entity,'x');
+  blockProperty(entity,'y');
+  blockProperty(entity,'z');
+
+  // Describe the entity as a human-readable string
   entity.describe = function() {
+    // add options for capitalization?
     if (this.isZone) {
       return this.name;
     }
+    // should I handle this with an "onDescribe" function?
     if (this.isItem && this.stack && this.stack.n>1) {
       return (this.stack.n + " " +this.name+"s");
     } else {
+      // pick the correct article
       var first = this.name[0];
       if (first==="a" || first==="e" || first==="i" || first==="o" || first==="u") {
         return ("an " + this.name);
@@ -130,15 +146,15 @@ HTomb = (function(HTomb) {
       }
     }
   };
-  blockProperty(entity,'x');
-  blockProperty(entity,'y');
-  blockProperty(entity,'z');
 
+  // Create an entity using a template...should it just be a named method like behaviors use?
   HTomb.Entity.create = function(tname) {
+    // There should be a way to pass some additional options
     var ent = Object.create(entity);
     ent.behaviors = [];
     var properties = HTomb.Entity.templates[tname];
     for (var prop in properties) {
+      // Add all the default behaviors
       if (prop==="behaviors") {
         ent.behaviors = [];
         for (var beh in properties.behaviors) {
@@ -151,11 +167,12 @@ HTomb = (function(HTomb) {
     return ent;
   };
 
-  // behaviors
+  // Behaviors define special activities and properties of entities
   HTomb.Behavior.templates = {};
+  // Define a behavior template
   HTomb.Behavior.define = function(properties) {
     if (!properties || !properties.template) {
-      console.log("invalid template definition");
+      HTomb.Debug.pushMessage("invalid template definition");
       return;
     }
     HTomb.Behavior[properties.template] = function(options) {
@@ -163,6 +180,7 @@ HTomb = (function(HTomb) {
       for (var p in properties) {
         beh[p] = properties[p];
       }
+      // should be a way to pass options?
       //for (var o in options) {
       //  beh[o] = options[o];
       //}
@@ -170,6 +188,7 @@ HTomb = (function(HTomb) {
       return beh;
     };
   };
+  // Add a Behavior to an Entity
   entity.addBehavior = function(beh) {
     var options = beh.options || {};
     this[beh.name] = {entity: this};
@@ -182,13 +201,13 @@ HTomb = (function(HTomb) {
       this[beh.name].init(options);
     }
   };
+  // Describe the entity as a menu options
   HTomb.Entity.menuItem = function(template) {
     var item = {};
-    //item.describe = ;
     for (var p in HTomb.Entity.templates[template]) {
       item[p] = HTomb.Entity.templates[template][p];
     }
-    item.describe = function() {return entity.describe.call(item)};
+    item.describe = function() {return entity.describe.call(item);};
     return item;
   };
   //http://unicode-table.com/en/

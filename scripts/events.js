@@ -1,3 +1,4 @@
+// The Events submodule, thus far unused, handles events and messaging
 HTomb = (function(HTomb) {
   "use strict";
   var events = ["TURNEVENT"];

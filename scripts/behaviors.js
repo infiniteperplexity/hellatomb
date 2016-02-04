@@ -1,14 +1,17 @@
+// ****** This module implements Behaviors, which are the basic units of functionality for creatures, items, and features
 HTomb = (function(HTomb) {
   "use strict";
   var LEVELW = HTomb.Constants.LEVELW;
   var LEVELH = HTomb.Constants.LEVELH;
 
+  // The Sight behavior allows a creature to see
   HTomb.Behavior.define({
     template: "Sight",
     name: "sight",
     range: 10
   });
 
+  // The Inventory behavior allows a creature to carry things
   HTomb.Behavior.define({
     template: "Inventory",
     name: "inventory",
@@ -46,11 +49,11 @@ HTomb = (function(HTomb) {
     }
   });
 
+  // Not yet functional
   HTomb.Behavior.define({
     template: "Attacker",
     name: "attack"
   });
-
   HTomb.Behavior.define({
     template: "Defender",
     name: "defend",
@@ -58,6 +61,7 @@ HTomb = (function(HTomb) {
     maxhp: 10
   });
 
+  // The Minion behavior allows a creature to serve a master and take orders
   HTomb.Behavior.define({
     template: "Minion",
     name: "minion",
@@ -68,15 +72,15 @@ HTomb = (function(HTomb) {
     task: null,
     onAssign: function(tsk) {
       this.task = tsk;
-      console.log(this.entity.describe() + " was assigned " + tsk.describe());
+      HTomb.Debug.pushMessage(this.entity.describe() + " was assigned " + tsk.describe());
     },
     unassign: function() {
-      console.log(this.entity.describe() + " was unassigned from " + this.task.describe());
+      HTomb.Debug.pushMessage(this.entity.describe() + " was unassigned from " + this.task.describe());
       this.task = null;
     }
   });
 
-  // Is it actually a good idea to have task assignment in this behavior?
+  // The Master behavior maintains a list of minions and assignable tasks
   HTomb.Behavior.define({
     template: "Master",
     name: "master",
@@ -98,17 +102,16 @@ HTomb = (function(HTomb) {
     },
     designate: function(tsk) {
       tsk.designate(this);
-      //tsk.designate.call(tsk,this);
     },
   });
 
+  // The Stackable behavior allows items to be stacked into piles
   HTomb.Behavior.define({
     template: "Stackable",
     name: "stack",
     maxn: 10,
     n: 1,
     stackInto: function(arr) {
-      // this should divide it into successive stacks as needed
       var one;
       var two;
       for (var i=0; i<arr.length; i++) {
@@ -132,6 +135,7 @@ HTomb = (function(HTomb) {
     }
   });
 
+  // The SpellCaster behavior maintains a list of castable spells
   HTomb.Behavior.define({
     template: "SpellCaster",
     name: "caster",
@@ -144,12 +148,13 @@ HTomb = (function(HTomb) {
       }
     },
     cast: function(sp) {
-      // is this a good way to do it?
+      // Eventually change how this works
       sp.cast.call(this);
+      //sp.cast(this);
     }
   });
 
-  // should this take a callback for completion?
+  // The Construction behavior keeps track of steps until completion
   HTomb.Behavior.define({
     template: "Construction",
     name: "construction",

@@ -40,10 +40,26 @@ HTomb = (function(HTomb) {
 
   //************Concrete methods for populating a world****************
   function populate() {
+    //HTomb.World.generators.currentRandom();
+    HTomb.World.generators.newSimplex();
+  }
+
+  HTomb.World.generators = {};
+  HTomb.World.generators.currentRandom = function() {
     assignElevation();
     addSlopes();
     populateStuff();
-  }
+  };
+  HTomb.World.generators.newSimplex = function() {
+    assignElevation();
+    raise_hill(1);
+    simplex_features("Tombstone",{p1: 0.25, p2: 0.1});
+    simplex_features("Shrub",{hscale: 40, vthresh: 1, p1: 0.25, p2: 0.1});
+    simplex_features("Tree",{vthresh: 1, p1: 0.75, p2: 0.25});
+    simplex_features("Rock",{hscale: 10, vtresh: 3, p1: 0.25, p2: 0.1});
+    water_table(24);
+    addSlopes();
+  };
   function assignElevation() {
     var ground = 25;
     var hscale = 100;
@@ -67,6 +83,50 @@ HTomb = (function(HTomb) {
       }
     }
     console.log("Highest at " + mx + ", lowest at " + mn);
+  }
+  function simplex_features(template,options) {
+    options = options || {};
+    var hscale = options.hscale || 20;
+    var vscale = options.vscale || 4;
+    var vthresh = options.vthresh || 2;
+    var p1 = options.p1 || 0.5;
+    var p2 = options.p2 || 0.25;
+    var noise = new ROT.Noise.Simplex();
+    for (var x=1; x<LEVELW-1; x++) {
+      for (var y=1; y<LEVELH-1; y++) {
+        var z = HTomb.Tiles.groundLevel(x,y)+1;
+        var val = parseInt(noise.get(x/hscale,y/hscale)*vscale);
+        var r = Math.random();
+        if ((val>vthresh && r<p1) || (val===vthresh && r<p2)) {
+          HTomb.Entity.create(template).place(x,y,z);
+        }
+      }
+    }
+  }
+  function raise_hill(height) {
+    height = height || 4;
+    var midpoint = LEVELW/2;
+    var step = Math.ceil(midpoint/height);
+    for (var x=1; x<LEVELW-1; x++) {
+      for (var y=1; y<LEVELH-1; y++) {
+        var z = HTomb.Tiles.groundLevel(x,y)+1;
+        var dist = Math.floor(Math.sqrt((x-midpoint)*(x-midpoint)+(y-midpoint)*(y-midpoint)));
+        var rise = Math.max(0,height-Math.floor(dist/step));
+        for (var i=0; i<rise; i++) {
+          HTomb.Tiles.fillSquare(x,y,z+i);
+        }
+      }
+    }
+  }
+  function water_table(elev) {
+    for (var x=1; x<LEVELW-1; x++) {
+      for (var y=1; y<LEVELH-1; y++) {
+        var z = HTomb.Tiles.groundLevel(x,y)+1;
+        if (z<=elev) {
+            HTomb.Entity.create("Puddle").place(x,y,z);
+        }
+      }
+    }
   }
   function populateStuff() {
     var z;

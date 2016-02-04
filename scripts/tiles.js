@@ -114,9 +114,9 @@ HTomb = (function(HTomb) {
     var sym, fg, bg, thing;
     fg = "white";
     bg = (zones[coord]===undefined) ? "black" : zones[coord].bg;
-    if (!explored[x][y]) {
+    if (!explored[x][y] && HTomb.Debug.explored!==true) {
       sym = " ";
-    } else if (vis[x][y]===false) {
+    } else if (vis[x][y]===false && HTomb.Debug.visible!==true) {
       fg = SHADOW;
       if (items[coord]) {
         thing = items[coord][items[coord].length-1];

@@ -1,12 +1,7 @@
+// The ridiculously huge GUI submodule contains all the display and input functions
+// There must be some logical way to split this without exposing too many properties...
 HTomb = (function(HTomb) {
   "use strict";
-  // create a function for pseudo-classical inheritance
-  function extend(parent) {
-    var obj;
-    obj = Object.create(parent);
-    obj.prototype.constructor = obj;
-    return obj;
-  }
   // break out constants
   var SCREENW = HTomb.Constants.SCREENW;
   var SCREENH = HTomb.Constants.SCREENH;
@@ -27,35 +22,46 @@ HTomb = (function(HTomb) {
   var Commands = HTomb.Commands;
   var display = new ROT.Display({width: SCREENW+MENUW, height: SCREENH+STATUSH+SCROLLH, fontsize: FONTSIZE});
   document.body.appendChild(display.getContainer());
-  // attach input events
+  // Attach input events
   var keydown = function(key) {
+    // Pass the keystroke to the current control context
     Controls.context.keydown(key);
   };
   var mousedown = function(click) {
+    // Due to borders and such, nudge the X and Y slightly
     var xskew = +3;
     var yskew = +7;
+    // Convert X and Y from pixels to characters
     var x = Math.floor((click.clientX+xskew)/HTomb.Constants.CHARWIDTH-1);
     var y = Math.floor((click.clientY+yskew)/HTomb.Constants.CHARHEIGHT-1);
+    // If the click is not on the game screen, pass the actual X and Y positions
     if (GUI.panels.overlay!==null || x>=SCREENW || y>=SCREENH) {
       Controls.context.clickAt(x,y);
+    // If the click is on the game screen, pass the X and Y tile coordinates
     } else {
       Controls.context.clickTile(x+gameScreen.xoffset,y+gameScreen.yoffset);
     }
   };
   var mousemove = function(move) {
+    // Due to borders and such, nudge the X and Y slightly
     var xskew = +3;
     var yskew = +7;
+    // Convert X and Y from pixels to characters
     var x = Math.floor((move.clientX+xskew)/HTomb.Constants.CHARWIDTH-1);
     var y = Math.floor((move.clientY+yskew)/HTomb.Constants.CHARHEIGHT-1);
+    // If the hover is not on the game screen, pass the actual X and Y positions
     if (GUI.panels.overlay!==null || x>=SCREENW || y>=SCREENH) {
       Controls.context.mouseOver(x,y);
     } else {
+      // If the hover is on the game screen, pass the X and Y tile coordinates
       Controls.context.mouseTile(x+gameScreen.xoffset,y+gameScreen.yoffset);
     }
   };
+  // Bind a ROT.js keyboard constant to a function for a particular context
   var bindKey = function(target, key, func) {
     target.boundKeys[ROT[key]] = func;
   };
+  // Set up event listeners
   window.addEventListener("keydown",keydown);
   display.getContainer().addEventListener("mousedown",mousedown);
   display.getContainer().addEventListener("mousemove",mousemove);
@@ -66,15 +72,19 @@ HTomb = (function(HTomb) {
     if (scroll.buffer.length>=SCROLLH-1) {
       scroll.buffer.shift();
     }
+    // Render the message immediatey if the scroll is visible
     if (GUI.panels.bottom===scroll) {
       scroll.render();
     }
   };
-  // rendering
+  // Render display panels
   GUI.render = function() {
     if (GUI.panels.overlay !== null) {
+      // The overlay, if any, obscures all other panels
+      // Shoudl we add one for the minimap?
       GUI.panels.overlay.render();
     } else {
+      // Draw all the panels
       GUI.panels.main.render();
       GUI.panels.middle.render();
       GUI.panels.bottom.render();
@@ -82,6 +92,7 @@ HTomb = (function(HTomb) {
       GUI.panels.corner.render();
     }
   };
+  // Draw a character at the appropriate X and Y tile
   GUI.drawTile = function(x,y,ch,fg,bg) {
     var xoffset = gameScreen.xoffset || 0;
     var yoffset = gameScreen.yoffset || 0;
@@ -95,6 +106,7 @@ HTomb = (function(HTomb) {
       bg
     );
   };
+  // Change the background color of the appropriate X and Y tile
   GUI.highlightTile = function(x,y,bg) {
     var xoffset = gameScreen.xoffset || 0;
     var yoffset = gameScreen.yoffset || 0;
@@ -108,7 +120,7 @@ HTomb = (function(HTomb) {
       bg
     );
   };
-
+  // Display a splash screen
   GUI.splash = function(txt) {
     Controls.context = new ControlContext();
     var splash = new Panel(0,0);
@@ -118,8 +130,8 @@ HTomb = (function(HTomb) {
     GUI.panels.overlay = splash;
     GUI.render();
   };
+  // Reset the GUI
   GUI.reset = function() {
-    console.log("resetting gui");
     GUI.panels = {
       main: gameScreen,
       middle: status,
@@ -135,33 +147,42 @@ HTomb = (function(HTomb) {
   };
 
   // **************** GUI Panels ******************
+  // Each panel knows where it belongs on the screen
   function Panel(leftx,topy) {
     this.x0 = leftx;
     this.y0 = topy;
   }
   Panel.prototype.render = function() {};
+  // The main game screen where you see tiles
   var gameScreen = new Panel(0,0);
+  // Keep track of how many tiles it is offset from 0, 0
   gameScreen.xoffset = 0;
   gameScreen.yoffset = 0;
+  // Keep track of which Z level it is on
   gameScreen.z = 0;
   gameScreen.render = function() {
     var z = gameScreen.z;
     var xoffset = gameScreen.xoffset;
     var yoffset = gameScreen.yoffset;
-    // I am not sure if this is the best way
     for (var x = xoffset; x < xoffset+SCREENW; x++) {
       for (var y = yoffset; y < yoffset+SCREENH; y++) {
+        // Draw every symbol in the right place
         var sym = HTomb.Tiles.getSymbol(x,y,z);
         display.draw(this.x0+x-xoffset,this.y0+y-yoffset, sym[0], sym[1], sym[2]);
       }
     }
   };
-
+  // Show status, currently including hit points and coordinates
   var status = new Panel(1,SCREENH);
   status.render = function() {
+    //black out the entire line with solid blocks
+    display.drawText(this.x0,this.y0+1,"%c{black}"+(UNIBLOCK.repeat(SCREENW-2)));
     display.drawText(this.x0,this.y0+1,"HP: " + 5 + "/" + 5);
-    display.drawText(this.x0+15,this.y0+1,"Depth: " + HTomb.Player._z);
+    display.drawText(this.x0+15,this.y0+1,"X: " + HTomb.Player._x);
+    display.drawText(this.x0+21,this.y0+1,"Y: " + HTomb.Player._y);
+    display.drawText(this.x0+27,this.y0+1,"Elevation: " + gameScreen.z);
   };
+  // Show messages
   var scroll = new Panel(1,SCREENH+STATUSH);
   scroll.buffer = [];
   scroll.render = function() {
@@ -171,6 +192,7 @@ HTomb = (function(HTomb) {
       display.drawText(this.x0,this.y0+s+1,this.buffer[s]);
     }
   };
+  // Provide the player with instructions
   var menu = new Panel(SCREENW+1,1);
   var defaultText = menu.text = [
     "To move use AWSD,",
@@ -191,6 +213,7 @@ HTomb = (function(HTomb) {
       }
     }
   };
+  // Show properties of the tile the mouse is hovering over
   var hover = new Panel(SCREENW+1,SCREENH+1);
   hover.text = [
     ["Square: ","Creature: ","Items: ","Feature: ","",""],
@@ -203,12 +226,10 @@ HTomb = (function(HTomb) {
       display.drawText(this.x0+hover.text[0][i].length, this.y0+i, hover.text[1][i]);
     }
   };
-  var intro = new Panel(0,0);
-  intro.render = function() {
-    display.drawText(this.x0+1,this.y0+1, "Welcome to HellaTomb!");
-  };
 
+  // Prototype for control contexts
   function ControlContext(bindings) {
+    // Pass a map of keystroke / function bindings
     if (bindings===undefined) {
       this.keydown = GUI.reset;
     } else {
@@ -220,22 +241,26 @@ HTomb = (function(HTomb) {
   }
   ControlContext.prototype.keydown = function(key) {
     if (  this.boundKeys[key.keyCode]===undefined) {
-      console.log("No binding for " + key.keyCode);
+      HTomb.Debug.pushMessage("No binding for " + key.keyCode);
     } else {
       this.boundKeys[key.keyCode]();
     }
   };
+  // By default, clicking resets the GUI
   ControlContext.prototype.clickAt = function() {
     GUI.reset();
   };
   ControlContext.prototype.clickTile = function() {
     GUI.reset();
-  }
+  };
+  // By default, dragging the mouse outside the game screen resets the game screen
+  // This clears out highlighted tiles from hovering, for example
   ControlContext.prototype.mouseOver = function() {
     if (GUI.panels.overlay===null) {
       gameScreen.render();
     }
   };
+  // An odd place for this method...formats a list of items
   GUI.listItems = function(arr) {
     var mesg = "";
     for (var i = 0; i<arr.length; i++) {
@@ -248,6 +273,7 @@ HTomb = (function(HTomb) {
     }
     return mesg;
   };
+  // By default, hovering over a tile describes its contents
   ControlContext.prototype.mouseTile = function(x,y) {
     if (GUI.panels.overlay===null) {
       GUI.panels.main.render();
@@ -318,6 +344,7 @@ HTomb = (function(HTomb) {
     hover.render();
   };
 
+  // Survey mode lets to scan the play area independently from the player's position
   GUI.surveyMode = function() {
     Controls.context = survey;
     survey.saveX = gameScreen.xoffset;
@@ -326,8 +353,7 @@ HTomb = (function(HTomb) {
     GUI.updateMenu(["You are now in survey mode.","Use movement keys to navigate.","Comma go down.","Period to go up.","Escape to exit."]);
   };
 
-
-
+  // These are the default controls
   var main = new ControlContext({
     // bind number pad movement
     VK_LEFT: Commands.tryMoveWest,
@@ -354,20 +380,23 @@ HTomb = (function(HTomb) {
     VK_SPACE: Commands.wait
   });
 
+  // Clicking outside the game screen does nothing
   main.clickAt = function(x,y) {
     //do nothing
   };
+  // Clicking a tile looks...this may be obsolete
   main.clickTile = function(x,y) {
     var square = HTomb.Tiles.getSquare(x,y,gameScreen.z);
     Commands.look(square);
   };
 
-  Controls.contexts = {};
+  // Update the right-hand menu instructions
   GUI.updateMenu = function(txt) {
     menu.text = txt;
     menu.render();
   };
 
+  // Display a menu of letter-bound choices
   GUI.choosingMenu = function(s,arr, func) {
     var alpha = "abcdefghijklmnopqrstuvwxyz";
     var contrls = {};
@@ -376,6 +405,7 @@ HTomb = (function(HTomb) {
     for (var i=0; i<arr.length; i++) {
       var desc = arr[i].describe();
       var choice = arr[i];
+      // Bind a callback function and its closure to each keystroke
       contrls["VK_" + alpha[i].toUpperCase()] = func(choice);
       choices.push(alpha[i]+") " + arr[i].describe());
     }
@@ -385,6 +415,7 @@ HTomb = (function(HTomb) {
     GUI.updateMenu(choices);
   };
 
+  // Select a single square with the mouse
   HTomb.GUI.selectSquare = function(z, callb, options) {
     options = options || {};
     HTomb.GUI.pushMessage("Select a square.");
@@ -407,6 +438,8 @@ HTomb = (function(HTomb) {
       };
     }
   };
+
+  // Select a rectangular zone using its two corners
   HTomb.GUI.selectSquareZone = function(z, callb, options) {
     options = options || {};
     HTomb.GUI.pushMessage("Select the first corner.");
@@ -461,6 +494,7 @@ HTomb = (function(HTomb) {
         var squares = [];
         for (var x=0; x<xs.length; x++) {
           for (var y=0; y<ys.length; y++) {
+            // If options.outline = true, use only the outline
             if (options.outline===true) {
               if (xs[x]===x0 || xs[x]===x1 || ys[y]===y0 || ys[y]===y1) {
                 squares.push([xs[x],ys[y],z]);
@@ -470,12 +504,14 @@ HTomb = (function(HTomb) {
             }
           }
         }
+        // Invoke the callback function on the squares selected
         callb(squares);
         GUI.reset();
       };
     };
   };
 
+  // Enter survey mode and save the screen's current position
   var surveyMove = function(dx,dy,dz) {
     var f = function() {
       if (gameScreen.z+dz < NLEVELS || gameScreen.z+dz >= 0) {
@@ -489,10 +525,11 @@ HTomb = (function(HTomb) {
       }
       GUI.render();
     };
+    // Actually this returns a custom function for each type of movement
     return f;
   };
 
-
+  // Recenter the game screen on the player
   GUI.recenter = function() {
     var Player = HTomb.Player;
     gameScreen.z = Player._z;
@@ -508,6 +545,7 @@ HTomb = (function(HTomb) {
     }
   };
 
+  // The control context for surveying
   var survey = new ControlContext({
     VK_LEFT: surveyMove(-1,0,0),
     VK_RIGHT: surveyMove(+1,0,0),
@@ -525,6 +563,7 @@ HTomb = (function(HTomb) {
     VK_E: surveyMove(+1,-1,0),
     VK_PERIOD: surveyMove(0,0,-1),
     VK_COMMA: surveyMove(0,0,+1),
+    // Exit survey mode and return to the original position
     VK_ESCAPE: function() {
       gameScreen.xoffset = survey.saveX;
       gameScreen.yoffset = survey.saveY;
@@ -533,6 +572,24 @@ HTomb = (function(HTomb) {
     }
   });
   survey.clickTile = main.clickTile;
+
+  // Currently implemented, seems slow and I don't know where to put it
+  var minimap = {};
+  minimap.render = function() {
+    var x0 = HTomb.Constants.CHARWIDTH*SCREENW;
+    var y0 = 15*HTomb.Constants.CHARHEIGHT;
+    var gridSize = 1;
+    var ctx = display._context;
+    ctx.fillStyle = "black";
+    ctx.fillRect(x0,y0,x0+LEVELW*gridSize,y0+LEVELH*gridSize);
+    for (var x=0; x<LEVELW; x++) {
+      for (var y=0; y<LEVELH; y++) {
+        var c = HTomb.Tiles.getSymbol(x,y,gameScreen.z)[1];
+        ctx.fillStyle = c;
+        ctx.fillRect(x0+x*gridSize,y0+y*gridSize,gridSize,gridSize);
+      }
+    }
+  };
 
   return HTomb;
 })(HTomb);

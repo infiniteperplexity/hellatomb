@@ -1,3 +1,4 @@
+// This submodule defines the templates for creature Entities
 HTomb = (function(HTomb) {
   "use strict";
 

@@ -1,3 +1,4 @@
+// The FOV submodule contains vision algorithms, which should be highly optimized
 HTomb = (function(HTomb) {
   "use strict";
   var LEVELW = HTomb.Constants.LEVELW;

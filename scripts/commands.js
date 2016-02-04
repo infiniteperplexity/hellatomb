@@ -1,3 +1,4 @@
+// The Commands submodule defines the various things a player can do
 HTomb = (function(HTomb) {
   "use strict";
   var Commands = HTomb.Commands;
@@ -40,17 +41,24 @@ HTomb = (function(HTomb) {
     } else if (dir==='E') {
       newx+=1;
     }
+    // If you can't go that way...
     if (HTomb.Player.movement===undefined || HTomb.Player.movement.canPass(newx,newy,z)===false) {
       var square0 = HTomb.Tiles.getSquare(x,y,z);
       var square1 = HTomb.Tiles.getSquare(newx,newy,z);
+      // If the way is blocked, try to scramble up or down a slope
       if (square0.feature!==undefined && square0.feature.template==="UpSlope" && square1.terrain.solid===true) {
         Commands.tryMoveUp();
       } else if (square0.feature!==undefined && square0.feature.template==="DownSlope" && square1.terrain.fallable===true) {
         Commands.tryMoveDown();
+      // If the mobility debug option is enabled, you can go anywhere
+      } else if (HTomb.GUI.mobility===true) {
+        Commands.movePlayer(newx,newy,z);
       } else {
+        // Tell the player they can't do that
         HTomb.GUI.pushMessage("Can't go that way.");
       }
     } else {
+      // Move successfully
       Commands.movePlayer(newx,newy,z);
     }
   };
@@ -61,6 +69,8 @@ HTomb = (function(HTomb) {
     var square = HTomb.Tiles.getSquare(x,y,z);
     if (square.feature!==undefined && square.feature.template==="UpSlope") {
       HTomb.GUI.pushMessage("You scramble up the slope.");
+      Commands.movePlayer(x,y,z+1);
+    } else if (HTomb.Debug.mobility===true) {
       Commands.movePlayer(x,y,z+1);
     } else {
       HTomb.GUI.pushMessage("Can't go up here.");
@@ -74,13 +84,18 @@ HTomb = (function(HTomb) {
     if (square.feature!==undefined && square.feature.template==="DownSlope") {
       HTomb.GUI.pushMessage("You scramble down the slope.");
       Commands.movePlayer(x,y,z-1);
+    } else if (HTomb.Debug.mobility===true) {
+      Commands.movePlayer(x,y,z-1);
     } else {
       HTomb.GUI.pushMessage("Can't go down here.");
     }
   };
+  // Do nothing
   Commands.wait = function() {
     HTomb.turn();
   };
+  // Describe creatures, items, and features in this square and adjoined slopes
+  // This method may be obsolete now that we have "hover"
   Commands.look = function(square) {
     if (square.creature) {
       HTomb.GUI.pushMessage("There is " + square.creature.describe() + " here.");
@@ -128,8 +143,10 @@ HTomb = (function(HTomb) {
     HTomb.GUI.pushMessage(square.terrain.name + " square at " + square.x +", " + square.y + ", " + square.z + ".");
     Commands.glance(square);
   };
+  // A quick glance for when the player enters the square
   Commands.glance = function(square) {
     if (square.items) {
+      // This should use the listItems method
       var mesg = "This square contains";
       for (var i = 0; i<square.items.length; i++) {
         mesg = mesg + " " + square.items[i].describe();
@@ -145,12 +162,14 @@ HTomb = (function(HTomb) {
       HTomb.GUI.pushMessage("There is " + square.feature.describe() + " here.");
     }
   };
+  // Move the player, glance, and spend an action
   Commands.movePlayer = function(x,y,z) {
     HTomb.Player.place(x,y,z);
     var square = HTomb.Tiles.getSquare(x,y,z);
     Commands.glance(square);
     HTomb.turn();
   };
+  // Try to pick up items
   Commands.pickup = function() {
     var square = HTomb.Player.getSquare();
     if (!square.items) {
@@ -164,6 +183,7 @@ HTomb = (function(HTomb) {
         HTomb.Player.inventory.pickup(square.items[0]);
         HTomb.turn();
       } else {
+        // If there are multiple items, display a menu
         GUI.choosingMenu("Choose an item:",square.items,
           function(item) {
             return function() {
@@ -176,6 +196,7 @@ HTomb = (function(HTomb) {
       }
     }
   };
+  // Try to drop an item
   Commands.drop = function() {
     var p = HTomb.Player;
     if (!p.inventory) {
@@ -186,6 +207,7 @@ HTomb = (function(HTomb) {
       if (p.inventory.items.length===1) {
         p.inventory.drop(p.inventory.items[0]);
       } else {
+        // If the player has multiple items, display a menu
         GUI.choosingMenu("Choose an item:",p.inventory.items,
           function(item) {
             return function() {
@@ -198,6 +220,7 @@ HTomb = (function(HTomb) {
       }
     }
   };
+  // Show a menu of the spells the player can cast
   Commands.showSpells = function() {
     GUI.choosingMenu("Choose a spell:", HTomb.Player.caster.spells,
       function(sp) {
@@ -209,6 +232,7 @@ HTomb = (function(HTomb) {
       }
     );
   };
+  // Show a menu of the tasks the player can assign
   Commands.showJobs = function() {
     GUI.choosingMenu("Choose a task:", HTomb.Player.master.tasks,
       function(task) {
