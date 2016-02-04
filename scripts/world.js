@@ -40,8 +40,8 @@ HTomb = (function(HTomb) {
 
   //************Concrete methods for populating a world****************
   function populate() {
-    //HTomb.World.generators.currentRandom();
-    HTomb.World.generators.newSimplex();
+    HTomb.World.generators.currentRandom();
+    //HTomb.World.generators.newSimplex();
   }
 
   HTomb.World.generators = {};
