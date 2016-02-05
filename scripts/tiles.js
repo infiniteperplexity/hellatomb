@@ -12,7 +12,7 @@ HTomb = (function(HTomb) {
     terrain[n] = definition;
   }
   defineTerrain(-1,"VOIDTILE",{name: "boundary", symbol: " ", opaque: true, solid: true});
-  defineTerrain(0,"EMPTYTILE",{name: "empty", symbol: "\u25CB", fg: HTomb.Constants.BELOW, fallable: true});
+  defineTerrain(0,"EMPTYTILE",{name: "empty", symbol: /*"\u25CB"*/ "\u25BD", fg: HTomb.Constants.BELOW, fallable: true});
   //defineTerrain(0,"EMPTYTILE",{name: "empty", symbol: ".", fg: "#444444", fallable: true});
   defineTerrain(1,"FLOORTILE",{name: "floor", symbol: "."});
   defineTerrain(2,"WALLTILE",{fg: HTomb.Constants.ABOVE, name: "wall", symbol: "#", opaque: true, solid: true});
@@ -202,7 +202,27 @@ HTomb = (function(HTomb) {
             sym = thing.symbol || "X";
             fg = HTomb.Constants.BELOW;
           } else {
+            if (features[x*LEVELW*LEVELH + y*LEVELH + z-1]) {
+              thing = features[x*LEVELW*LEVELH + y*LEVELH + z-1];
+              sym = thing.symbol || "X";
+              fg = HTomb.Constants.BELOW;
+            } else {
+              sym = thing.symbol || "X";
+              fg = HTomb.Constants.BELOW;
+            }
+            fg = HTomb.Constants.BELOW;
+          }
+        } else if (thing.fallable===true && z-1>=0 && HTomb.World.levels[z-1].explored[x][y]===true) {
+          if (features[x*LEVELW*LEVELH + y*LEVELH + z-1]) {
+            thing = features[x*LEVELW*LEVELH + y*LEVELH + z-1];
             sym = thing.symbol || "X";
+            fg = HTomb.Constants.BELOW;
+          } else {
+            thing = terrain[HTomb.World.levels[z-1].grid[x][y]];
+            sym = thing.symbol || "X";
+            if (HTomb.World.levels[z-1].grid[x][y]===HTomb.Tiles.FLOORTILE) {
+              sym = "\u25BF"
+            }
             fg = HTomb.Constants.BELOW;
           }
         } else {
