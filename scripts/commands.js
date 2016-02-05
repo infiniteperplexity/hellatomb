@@ -48,7 +48,11 @@ HTomb = (function(HTomb) {
       // If the way is blocked, try to scramble up or down a slope
       if (square0.feature!==undefined && square0.feature.template==="UpSlope" && square1.terrain.solid===true) {
         Commands.tryMoveUp();
+      } else if (square0.terrain.zmove===+1) {
+        Commands.tryMoveUp();
       } else if (square0.feature!==undefined && square0.feature.template==="DownSlope" && square1.terrain.fallable===true) {
+        Commands.tryMoveDown();
+      } else if (square0.terrain.zmove===-1) {
         Commands.tryMoveDown();
       // If the mobility debug option is enabled, you can go anywhere
       } else if (HTomb.GUI.mobility===true) {
@@ -70,6 +74,9 @@ HTomb = (function(HTomb) {
     if (square.feature!==undefined && square.feature.template==="UpSlope") {
       HTomb.GUI.pushMessage("You scramble up the slope.");
       Commands.movePlayer(x,y,z+1);
+    } else if (square.terrain.zmove===+1) {
+      HTomb.GUI.pushMessage("You scramble up the slope.");
+      Commands.movePlayer(x,y,z+1);
     } else if (HTomb.Debug.mobility===true) {
       Commands.movePlayer(x,y,z+1);
     } else {
@@ -84,7 +91,10 @@ HTomb = (function(HTomb) {
     if (square.feature!==undefined && square.feature.template==="DownSlope") {
       HTomb.GUI.pushMessage("You scramble down the slope.");
       Commands.movePlayer(x,y,z-1);
-    } else if (HTomb.Debug.mobility===true) {
+    } else if (square.terrain.zmove===-1) {
+      HTomb.GUI.pushMessage("You scramble down the slope.");
+      Commands.movePlayer(x,y,z-1);
+    }else if (HTomb.Debug.mobility===true) {
       Commands.movePlayer(x,y,z-1);
     } else {
       HTomb.GUI.pushMessage("Can't go down here.");

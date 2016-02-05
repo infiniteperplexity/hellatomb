@@ -55,14 +55,30 @@ HTomb = (function(HTomb) {
     colorize(20);
     assignElevation();
     //raise_hill(1);
-    simplex_features("Tombstone",{p1: 0.25, p2: 0.1});
+    simplex_features("Tombstone",{p1: 0.25, p2: 0.1, filter: function(x,y,z) {
+      return (HTomb.Tiles.getNeighbors(x,y,z).fallables.length===0);
+    }});
     simplex_features("Shrub",{hscale: 40, vthresh: 1, p1: 0.25, p2: 0.1});
     simplex_features("Tree",{vthresh: 1, p1: 0.75, p2: 0.25});
     simplex_features("Rock",{hscale: 10, vtresh: 3, p1: 0.25, p2: 0.1});
-    simplex_features("Stick",{hscale: 10, vtresh: 3, p1: 0.25, p2: 0.1});
+    simplex_features("Stick",{hscale: 10, vtresh: 3, p1: 0.15, p2: 0.05});
     water_table(23);
+    scatter("Zombie",0.005);
     addSlopes();
   };
+  function scatter(template,p) {
+    for (var x=0; x<LEVELW; x++) {
+      for (var y=0; y<LEVELH; y++) {
+        var z = HTomb.Tiles.groundLevel(x,y)+1;
+        var e = HTomb.Entity.create(template);
+        if (e.isCreature && HTomb.World.creatures[x*LEVELW*LEVELH+y*LEVELH+z]===HTomb.Player) {
+          continue;
+        } else if (Math.random()<p) {
+          e.place(x,y,z);
+        }
+      }
+    }
+  }
   function colorize(cscale,hscale) {
     hscale = hscale || 50;
     cscale = cscale || 0;
@@ -120,7 +136,9 @@ HTomb = (function(HTomb) {
         var val = parseInt(noise.get(x/hscale,y/hscale)*vscale);
         var r = Math.random();
         if ((val>vthresh && r<p1) || (val===vthresh && r<p2)) {
-          HTomb.Entity.create(template).place(x,y,z);
+          if (options.filter===undefined || options.filter(x,y,z)===true) {
+            HTomb.Entity.create(template).place(x,y,z);
+          }
         }
       }
     }
@@ -143,9 +161,17 @@ HTomb = (function(HTomb) {
   function water_table(elev) {
     for (var x=1; x<LEVELW-1; x++) {
       for (var y=1; y<LEVELH-1; y++) {
-        var z = HTomb.Tiles.groundLevel(x,y)+1;
-        if (z<=elev) {
-            HTomb.Entity.create("Puddle").place(x,y,z);
+        for (var z=HTomb.Tiles.groundLevel(x,y)+1; z<=elev; z++) {
+          var square = HTomb.Tiles.getSquare(x,y,z);
+          HTomb.Entity.create("Puddle").place(x,y,z);
+          if (square.items) {
+            for (var i=0; i<square.items.length; i++) {
+              square.items[i].remove();
+            }
+          }
+          if (z===elev) {
+            HTomb.Entity.create("Puddle").place(x,y,z+1);
+          }
         }
       }
     }
@@ -204,7 +230,9 @@ HTomb = (function(HTomb) {
               }
             }
             if (slope===true) {
-              HTomb.Entity.create("UpSlope").place(x,y,z);
+              //HTomb.Entity.create("UpSlope").place(x,y,z);
+              levels[z].grid[x][y] = HTomb.Tiles.UPSLOPE;
+              levels[z+1].grid[x][y] = HTomb.Tiles.DOWNSLOPE;
             }
           }
         }

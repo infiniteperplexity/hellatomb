@@ -302,12 +302,14 @@ HTomb = (function(HTomb) {
       hover.text[1][2] = "";
     }
     if (square.feature) {
+      hover.text[0][3] = "Feature: ";
       hover.text[1][3] = square.feature.describe();
     } else {
       hover.text[1][3] = "";
     }
     var vis;
-    if (square.feature && square.feature.zView===+1 && z+1<NLEVELS) {
+    if (square.terrain.zview===+1 && z+1<NLEVELS) {
+    //if (square.feature && square.feature.zView===+1 && z+1<NLEVELS) {
       hover.text[0][4] = "Above: ";
       hover.text[0][5] = "Above: ";
       vis = HTomb.Tiles.getSquare(x,y,z+1);
@@ -321,7 +323,8 @@ HTomb = (function(HTomb) {
       } else {
         hover.text[1][5] = "";
       }
-    } else if (square.feature && square.feature.zView===-1 && z-1>=0) {
+    //} else if (square.feature && square.feature.zView===-1 && z-1>=0) {
+    } else if (square.terrain.zview===-1 && z-1>=0) {
       hover.text[0][4] = "Below: ";
       hover.text[0][5] = "Below: ";
       vis = HTomb.Tiles.getSquare(x,y,z-1);
@@ -334,6 +337,10 @@ HTomb = (function(HTomb) {
         hover.text[1][5] = GUI.listItems(vis.items);
       } else {
         hover.text[1][5] = "";
+      }
+      if (vis.feature && !square.feature) {
+        hover.text[0][3] = "Below: ";
+        hover.text[1][3] = vis.feature.describe();
       }
     } else {
       hover.text[1][4] = "";

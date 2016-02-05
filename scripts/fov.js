@@ -6,6 +6,8 @@ HTomb = (function(HTomb) {
   var levels = HTomb.World.levels;
   var grid;
   var explored;
+  var above;
+  var below;
   var terrain = HTomb.Tiles.terrain;
   var visible = [];
   for (var i=0; i<LEVELW; i++) {
@@ -33,6 +35,11 @@ HTomb = (function(HTomb) {
   var show = function(x,y,r,v) {
     visible[x][y] = true;
     explored[x][y] = true;
+    if (terrain[grid[x][y]].zview===+1) {
+      above[x][y] = true;
+    } else if (terrain[grid[x][y]].zview===-1) {
+      below[x][y] = true;
+    }
   };
 
   var caster = new ROT.FOV.PreciseShadowcasting(passlight);
@@ -52,6 +59,8 @@ HTomb = (function(HTomb) {
     //end test
     grid = levels[z].grid;
     explored = levels[z].explored;
+    below = levels[z-1].explored;
+    above = levels[z+1].explored;
     caster.compute(x,y,r,show);
   };
   HTomb.FOV.visible = visible;
