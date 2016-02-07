@@ -195,7 +195,7 @@ HTomb = (function(HTomb) {
   // Provide the player with instructions
   var menu = new Panel(SCREENW+1,1);
   var defaultText = menu.text = [
-    "To move use AWSD,",
+    "To move use AWXD,",
     "arrows, or keypad.",
     "G to pick up,",
     "F to drop.",

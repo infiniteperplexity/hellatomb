@@ -5,19 +5,60 @@ HTomb = (function(HTomb) {
   var NLEVELS = HTomb.Constants.NLEVELS;
   var EARTHTONE = HTomb.Constants.EARTHTONE;
   var SHADOW = HTomb.Constants.SHADOW;
+  var ABOVE = HTomb.Constants.ABOVE;
+  var BELOW = HTomb.Constants.BELOW;
+  HTomb.Constants.FLOORBELOW = /*"\u034E "*/ "\u25E6";
   var Tiles = HTomb.Tiles;
   var terrain = [];
-  function defineTerrain(n, cons, definition) {
-    HTomb.Tiles[cons] = n;
-    terrain[n] = definition;
+  function defineTerrain(cons, definition) {
+    HTomb.Tiles[cons] = terrain.length;
+    terrain.push(definition);
   }
-  defineTerrain(-1,"VOIDTILE",{name: "boundary", symbol: " ", opaque: true, solid: true});
-  defineTerrain(0,"EMPTYTILE",{name: "empty", symbol: /*"\u25CB"*/ "\u25BD", fg: HTomb.Constants.BELOW, fallable: true});
-  //defineTerrain(0,"EMPTYTILE",{name: "empty", symbol: ".", fg: "#444444", fallable: true});
-  defineTerrain(1,"FLOORTILE",{name: "floor", symbol: "."});
-  defineTerrain(2,"WALLTILE",{fg: HTomb.Constants.ABOVE, name: "wall", symbol: "#", opaque: true, solid: true});
-  defineTerrain(3,"UPSLOPE",{fg: HTomb.Constants.ABOVE, name: "upward slope", symbol: "\u02C4", zview: +1, zmove: +1});
-  defineTerrain(4,"DOWNSLOPE",{fg: HTomb.Constants.BELOW, name: "downward slope", symbol: "\u02C5", zview: -1, zmove: -1, features: false});
+  defineTerrain(
+    "VOIDTILE",{
+      name: "boundary",
+      symbol: " ",
+      opaque: true,
+      solid: true
+  });
+  defineTerrain(
+    "EMPTYTILE",{
+      name: "empty",
+      symbol: " ",
+      zview: -1,
+      fg: HTomb.Constants.BELOW,
+      fallable: true
+  });
+  defineTerrain(
+    "FLOORTILE",{
+      name: "floor",
+      symbol: "."
+  });
+  defineTerrain(
+    "WALLTILE",{
+      name: "wall",
+      symbol: "#",
+      fg: HTomb.Constants.ABOVE,
+      opaque: true,
+      solid: true
+  });
+  defineTerrain(
+    "UPSLOPE",{
+      fg: HTomb.Constants.ABOVE,
+      name: "upward slope",
+      symbol: "\u02C4",
+      zview: +1,
+      zmove: +1
+  });
+  defineTerrain(
+    "DOWNSLOPE",{
+      name: "downward slope",
+      symbol: "\u02C5",
+      fg: HTomb.Constants.BELOW,
+      zview: -1,
+      zmove: -1,
+      features: false
+  });
 
   Tiles.randomEmptyNeighbor = function(x,y,z) {
     var d = [
@@ -121,126 +162,78 @@ HTomb = (function(HTomb) {
   Tiles.explore = function(x,y,z) {
     HTomb.World.levels[z].explored[x][y] = true;
   };
-
-  Tiles.getSymbol = function(x,y,z) {
-    var vis = HTomb.FOV.visible;
-    var creatures = HTomb.World.creatures;
-    var items = HTomb.World.items;
-    var features = HTomb.World.features;
-    var zones = HTomb.World.zones;
-    var coord = x*LEVELW*LEVELH + y*LEVELH + z;
-    var level = HTomb.World.levels[z];
-    var grid = level.grid;
-    var explored = level.explored;
-    var sym, fg, bg, thing;
-    fg = "white";
-    bg = (zones[coord]===undefined) ? "black" : zones[coord].bg;
-    if (!explored[x][y] && HTomb.Debug.explored!==true) {
-      sym = " ";
-    } else if (vis[x][y]===false && HTomb.Debug.visible!==true) {
-      fg = SHADOW;
-      if (items[coord]) {
-        thing = items[coord][items[coord].length-1];
-        sym = thing.symbol || "X";
-      } else if (features[coord]) {
-        thing = features[coord];
-        sym = thing.symbol || "X";
-      } else {
-        sym = terrain[grid[x][y]].symbol || "X";
-      }
+Tiles.getSymbol = function(x,y,z) {
+  var vis = HTomb.FOV.visible;
+  var coord = x*LEVELW*LEVELH + y*LEVELH + z;
+  var creatures = HTomb.World.creatures;
+  var items = HTomb.World.items;
+  var features = HTomb.World.features;
+  var zones = HTomb.World.zones;
+  var levels = HTomb.World.levels;
+  var level = HTomb.World.levels[z];
+  var grid = level.grid;
+  var explored = level.explored;
+  var zview = terrain[grid[x][y]].zview;
+  // if the square has not been explored, don't show it
+  if (!explored[x][y] && HTomb.Debug.explored!==true) {
+    return [" ","black","black"];
+  }
+  // background color for explored squares is based on zoning
+    // maybe at some point, liquids
+  var fg = "white";
+  var bg = (zones[coord]===undefined) ? "black" : zones[coord].bg;
+  // square explored but not visible
+  if (vis[x][y]===false && HTomb.Debug.visible!==true) {
+    fg = HTomb.Constants.SHADOW;
+    if (features[coord]) {
+      // feature in shadow
+      return [features[coord].symbol || "X",fg,bg];
+    } else if (zview===+1 && features[coord+1]) {
+      // feature on level above
+      return [features[coord+1].symbol || "X",fg,bg];
+    } else if (zview===-1 && features[coord-1]) {
+      // feature on level below
+      return [features[coord-1].symbol || "X",fg,bg];
+      // an empty space with floor below it
+    } else if (grid[x][y]===Tiles.EMPTYTILE && levels[z-1].grid[x][y]===Tiles.FLOORTILE) {
+      return [HTomb.Constants.FLOORBELOW,fg,bg];
     } else {
-      if (creatures[coord]) {
-        thing = creatures[coord];
-        sym = thing.symbol || "X";
-        fg = thing.fg || "white";
-      } else if (items[coord]) {
-        thing = items[coord][items[coord].length-1];
-        sym = thing.symbol || "X";
-        fg = thing.fg || "white";
-      } else if (features[coord]) {
-        thing = features[coord];
-        sym = thing.symbol || "X";
-        if (terrain[grid[x][y]].zview===+1) {
-          fg = HTomb.Constants.ABOVE;
-        } else if (terrain[grid[x][y]].zview===-1) {
-          fg = HTomb.Constants.BELOW;
-        } else {
-          fg = thing.fg || EARTHTONE;
-        }
-      } else {
-        thing = terrain[grid[x][y]];
-        if (thing.zview===+1 && z+1<NLEVELS && HTomb.World.levels[z+1].explored[x][y]===true) {
-          if (creatures[x*LEVELW*LEVELH + y*LEVELH + z+1]) {
-            thing = creatures[x*LEVELW*LEVELH + y*LEVELH + z+1];
-            sym = thing.symbol || "X";
-            fg = HTomb.Constants.ABOVE;
-          } else if (items[x*LEVELW*LEVELH + y*LEVELH + z+1]) {
-            thing = items[x*LEVELW*LEVELH + y*LEVELH + z+1];
-            thing = thing[thing.length-1];
-            sym = thing.symbol || "X";
-            fg = HTomb.Constants.ABOVE;
-          } else if (features[x*LEVELW*LEVELH + y*LEVELH + z+1]) {
-            thing = features[x*LEVELW*LEVELH + y*LEVELH + z+1];
-            sym = thing.symbol || "X";
-            fg = HTomb.Constants.ABOVE;
-          } else {
-            sym = thing.symbol || "X";
-            fg = HTomb.Constants.ABOVE;
-          }
-        } else if (thing.zview===-1 && z-1>=0 && HTomb.World.levels[z-1].explored[x][y]===true) {
-          if (creatures[x*LEVELW*LEVELH + y*LEVELH + z-1]) {
-            thing = creatures[x*LEVELW*LEVELH + y*LEVELH + z-1];
-            sym = thing.symbol || "X";
-            fg = HTomb.Constants.BELOW;
-          } else if (items[x*LEVELW*LEVELH + y*LEVELH + z-1]) {
-            thing = items[x*LEVELW*LEVELH + y*LEVELH + z-1];
-            thing = thing[thing.length-1];
-            sym = thing.symbol || "X";
-            fg = HTomb.Constants.BELOW;
-          } else if (features[x*LEVELW*LEVELH + y*LEVELH + z-1]) {
-            thing = features[x*LEVELW*LEVELH + y*LEVELH + z-1];
-            sym = thing.symbol || "X";
-            fg = HTomb.Constants.BELOW;
-          } else {
-            if (features[x*LEVELW*LEVELH + y*LEVELH + z-1]) {
-              thing = features[x*LEVELW*LEVELH + y*LEVELH + z-1];
-              sym = thing.symbol || "X";
-              fg = HTomb.Constants.BELOW;
-            } else {
-              sym = thing.symbol || "X";
-              fg = HTomb.Constants.BELOW;
-            }
-            fg = HTomb.Constants.BELOW;
-          }
-        } else if (thing.fallable===true && z-1>=0 && HTomb.World.levels[z-1].explored[x][y]===true) {
-          if (features[x*LEVELW*LEVELH + y*LEVELH + z-1]) {
-            thing = features[x*LEVELW*LEVELH + y*LEVELH + z-1];
-            sym = thing.symbol || "X";
-            fg = HTomb.Constants.BELOW;
-          } else {
-            thing = terrain[HTomb.World.levels[z-1].grid[x][y]];
-            sym = thing.symbol || "X";
-            if (HTomb.World.levels[z-1].grid[x][y]===HTomb.Tiles.FLOORTILE) {
-              sym = "\u25BF"
-            }
-            fg = HTomb.Constants.BELOW;
-          }
-        } else {
-          sym = thing.symbol || "X";
-          fg = thing.fg || EARTHTONE;
-        }
-        thing = terrain[grid[x][y]];
-        if (grid[x][y]===HTomb.Tiles.FLOORTILE) {
-        //if (thing.fallable!==true && thing.solid!==true) {
-          fg = ROT.Color.fromString(fg);
-          fg = ROT.Color.add(fg,HTomb.World.colors[x][y]);
-          fg = ROT.Color.toHex(fg);
-        }
-      }
+      // terrain on current level
+      return [terrain[grid[x][y]].symbol || "X",fg,bg];
     }
-    return [sym,fg,bg];
-  };
-
+  } else {
+    // visible square
+    if (creatures[coord]) {
+      return [creatures[coord].symbol || "X", creatures[coord].fg || fg,bg];
+    } else if (zview===+1 && creatures[coord+1]) {
+      return [creatures[coord+1].symbol || "X",ABOVE,bg];
+    } else if (zview===-1 && creatures[coord-1]) {
+      return [creatures[coord-1].symbol || "X",BELOW,bg];
+    } else if (items[coord]) {
+      return [items[coord][items[coord].length-1].symbol || "X",items[coord][items[coord].length-1].fg || fg,bg];
+    } else if (features[coord]) {
+      return [features[coord].symbol || "X", features[coord].fg || fg,bg];
+    } else if (zview===+1 && items[coord+1]) {
+      return [items[coord+1][items[coord+1].length-1].symbol || "X",ABOVE,bg];
+    } else if (zview===-1 && items[coord-1]) {
+      return [items[coord-1][items[coord-1].length-1].symbol || "X",BELOW,bg];
+    } else if (zview===+1 && features[coord+1]) {
+      return [features[coord+1].symbol || "X",ABOVE,bg];
+    } else if (zview===-1 && features[coord-1]) {
+      return [features[coord-1].symbol || "X",BELOW,bg];
+    } else if (grid[x][y]===Tiles.EMPTYTILE && levels[z-1].grid[x][y]===Tiles.FLOORTILE) {
+      return [HTomb.Constants.FLOORBELOW,BELOW,bg];
+    } else if (grid[x][y]===Tiles.FLOORTILE) {
+      fg = ROT.Color.fromString(terrain[grid[x][y].fg] || HTomb.Constants.EARTHTONE);
+      fg = ROT.Color.add(fg,HTomb.World.colors[x][y]);
+      fg = ROT.Color.toHex(fg);
+      return [terrain[grid[x][y]].symbol || "X",fg,bg];
+    } else {
+      return [terrain[grid[x][y]].symbol || "X",terrain[grid[x][y]].fg,bg];
+    }
+  }
+  return ["X","red","black"];
+};
   Tiles.terrain = terrain;
   return HTomb;
 })(HTomb);

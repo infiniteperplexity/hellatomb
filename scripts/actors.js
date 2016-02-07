@@ -218,7 +218,7 @@ HTomb = (function(HTomb) {
             // If the pit was dug in the ground...
             if (HTomb.World.levels[z].grid[x][y]===HTomb.Tiles.FLOORTILE) {
               // ...then place a pit and drop one level...
-              HTomb.Entity.create("Pit").place(x,y,z);
+              //HTomb.Entity.create("Pit").place(x,y,z);
               z-=1;
             }
             // ...otherwise just empty out the current square
