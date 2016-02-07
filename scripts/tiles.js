@@ -7,7 +7,7 @@ HTomb = (function(HTomb) {
   var SHADOW = HTomb.Constants.SHADOW;
   var ABOVE = HTomb.Constants.ABOVE;
   var BELOW = HTomb.Constants.BELOW;
-  HTomb.Constants.FLOORBELOW = /*"\u034E "*/ "\u25E6";
+  HTomb.Constants.FLOORBELOW = "\u25E6";
   var Tiles = HTomb.Tiles;
   var terrain = [];
   function defineTerrain(cons, definition) {
@@ -24,7 +24,7 @@ HTomb = (function(HTomb) {
   defineTerrain(
     "EMPTYTILE",{
       name: "empty",
-      symbol: " ",
+      symbol: "\u25CB",
       zview: -1,
       fg: HTomb.Constants.BELOW,
       fallable: true
@@ -195,6 +195,8 @@ Tiles.getSymbol = function(x,y,z) {
       // feature on level below
       return [features[coord-1].symbol || "X",fg,bg];
       // an empty space with floor below it
+    } else if (grid[x][y]===Tiles.EMPTYTILE && levels[z-1].grid[x][y]===Tiles.FLOORTILE) {
+      return [HTomb.Constants.FLOORBELOW,fg,bg];
     } else if (grid[x][y]===Tiles.EMPTYTILE && levels[z-1].grid[x][y]===Tiles.FLOORTILE) {
       return [HTomb.Constants.FLOORBELOW,fg,bg];
     } else {
