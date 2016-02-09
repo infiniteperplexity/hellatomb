@@ -12,7 +12,8 @@ HTomb = (function(HTomb) {
   Events.publish = function(event) {
     var listeners = Events[event.type] || [];
     for (var j=0; j<listeners.length; j++) {
-      listeners[j].onEvent(event);
+      listeners[j]["on"+event.type](event);
+      //listeners[j].onEvent(event);
     }
   };
   Events.unsubscribe = function(listener, etype) {

@@ -184,7 +184,8 @@ Tiles.getSymbol = function(x,y,z) {
   var bg = (zones[coord]===undefined) ? "black" : zones[coord].bg;
   // square explored but not visible
   if (vis[x][y]===false && HTomb.Debug.visible!==true) {
-    fg = HTomb.Constants.SHADOW;
+    //fg = HTomb.Constants.SHADOW;
+    fg = HTomb.World.dailyCycle.shade(HTomb.Constants.SHADOW);
     if (features[coord]) {
       // feature in shadow
       return [features[coord].symbol || "X",fg,bg];
@@ -205,33 +206,37 @@ Tiles.getSymbol = function(x,y,z) {
     }
   } else {
     // visible square
+    var above = HTomb.World.dailyCycle.shade(ABOVE);
+    var below = HTomb.World.dailyCycle.shade(BELOW);
     if (creatures[coord]) {
       return [creatures[coord].symbol || "X", creatures[coord].fg || fg,bg];
     } else if (zview===+1 && creatures[coord+1]) {
-      return [creatures[coord+1].symbol || "X",ABOVE,bg];
+      return [creatures[coord+1].symbol || "X",above,bg];
     } else if (zview===-1 && creatures[coord-1]) {
-      return [creatures[coord-1].symbol || "X",BELOW,bg];
+      return [creatures[coord-1].symbol || "X",below,bg];
     } else if (items[coord]) {
       return [items[coord][items[coord].length-1].symbol || "X",items[coord][items[coord].length-1].fg || fg,bg];
     } else if (features[coord]) {
       return [features[coord].symbol || "X", features[coord].fg || fg,bg];
     } else if (zview===+1 && items[coord+1]) {
-      return [items[coord+1][items[coord+1].length-1].symbol || "X",ABOVE,bg];
+      return [items[coord+1][items[coord+1].length-1].symbol || "X",above,bg];
     } else if (zview===-1 && items[coord-1]) {
-      return [items[coord-1][items[coord-1].length-1].symbol || "X",BELOW,bg];
+      return [items[coord-1][items[coord-1].length-1].symbol || "X",below,bg];
     } else if (zview===+1 && features[coord+1]) {
-      return [features[coord+1].symbol || "X",ABOVE,bg];
+      return [features[coord+1].symbol || "X",above,bg];
     } else if (zview===-1 && features[coord-1]) {
-      return [features[coord-1].symbol || "X",BELOW,bg];
+      return [features[coord-1].symbol || "X",below,bg];
     } else if (grid[x][y]===Tiles.EMPTYTILE && levels[z-1].grid[x][y]===Tiles.FLOORTILE) {
-      return [HTomb.Constants.FLOORBELOW,BELOW,bg];
+      return [HTomb.Constants.FLOORBELOW,below,bg];
     } else if (grid[x][y]===Tiles.FLOORTILE) {
       fg = ROT.Color.fromString(terrain[grid[x][y].fg] || HTomb.Constants.EARTHTONE);
       fg = ROT.Color.add(fg,HTomb.World.colors[x][y]);
       fg = ROT.Color.toHex(fg);
+      fg = HTomb.World.dailyCycle.shade(fg);
       return [terrain[grid[x][y]].symbol || "X",fg,bg];
     } else {
-      return [terrain[grid[x][y]].symbol || "X",terrain[grid[x][y]].fg,bg];
+      fg = HTomb.World.dailyCycle.shade(terrain[grid[x][y]].fg || fg);
+      return [terrain[grid[x][y]].symbol || "X",fg,bg];
     }
   }
   return ["X","red","black"];

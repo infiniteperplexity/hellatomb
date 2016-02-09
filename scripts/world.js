@@ -259,5 +259,22 @@ HTomb = (function(HTomb) {
   HTomb.World.portals = {};
   HTomb.World.zones = {};
 
+  HTomb.World.dailyCycle = {hour: 8, minute: 0,
+    onTurnBegin: function() {
+      this.minute+=1;
+      if (this.minute>=60) {
+        this.minute = 0;
+        this.hour = (this.hour+1)%24;
+      }},
+    shade: function(color) {
+      color = ROT.Color.fromString(color);
+      //color = ROT.Color.add(color,[0,50,50]); //midday?
+      //color = ROT.Color.add(color,[50,50,0]); //dawn?
+      //color = ROT.Color.add(color,[50,0,0]); //dusk?
+      //color = ROT.Color.add(color,[-50,-50,0]); //night?
+      //at this point we need to add daylight stuff
+      return ROT.Color.toHex(color);
+    }};
+
   return HTomb;
 })(HTomb);

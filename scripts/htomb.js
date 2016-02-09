@@ -38,12 +38,15 @@ var HTomb = (function() {
     }
     // Throw up a welcome splash screen
     GUI.splash("Welcome to HellaTomb!");
+    Events.subscribe(World.dailyCycle,"TurnBegin");
   };
   // Process a turn of play
   var turn = function() {
+    Events.publish({type: "TurnBegin"});
     var Player = HTomb.Player;
     // Assign tasks to minions
     Tasks.assignTasks();
+
     // Run the AI for each creature...should I deal with action points here?
     for (var creature in World.creatures) {
       if (World.creatures[creature].ai) {
@@ -59,6 +62,7 @@ var HTomb = (function() {
     GUI.recenter();
     // Render the GUI
     GUI.render();
+    Events.publish({type: "TurnEnd"});
   };
   // Set up the various submodules that will be used
   var World = {};

@@ -181,6 +181,8 @@ HTomb = (function(HTomb) {
     display.drawText(this.x0+15,this.y0+1,"X: " + HTomb.Player._x);
     display.drawText(this.x0+21,this.y0+1,"Y: " + HTomb.Player._y);
     display.drawText(this.x0+27,this.y0+1,"Elevation: " + gameScreen.z);
+    display.drawText(this.x0+42,this.y0+1,
+      HTomb.World.dailyCycle.hour + ":"+HTomb.World.dailyCycle.minute);
   };
   // Show messages
   var scroll = new Panel(1,SCREENH+STATUSH);
