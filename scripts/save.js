@@ -24,7 +24,6 @@ HTomb = (function(HTomb) {
     saveGame.levels = HTomb.World.levels;
 
     saveGame.creatures = HTomb.World.creatures;
-    console.log(saveGame);
     //var json = JSON.stringify(saveGame);
     saveGame.items = HTomb.World.items;
 
@@ -33,7 +32,7 @@ HTomb = (function(HTomb) {
     console.log("test");
     //saveGame.taskList = HTomb.World.taskList;
     //saveGame.dailyCycle = HTomb.World.dailyCycle;
-    //var json = JSON.stringify(saveGame);
+    var json = JSON.stringify(saveGame,stringifyThings);
 
   };
 
@@ -71,6 +70,42 @@ HTomb = (function(HTomb) {
       for (j in obj) {
         HTomb.World[objects[i]]=obj[j];
       }
+    }
+  };
+
+  HTomb.World.Things = {
+    table: [],
+    assign: function(thing) {
+      var id = this.table.length;
+      thing.thingId = id;
+      this.able.push(thing);
+    },
+    release: function(thing) {
+      this.table.splice(this.table.indexOf(thing),0);
+    }
+  };
+
+  var notThings = [];
+  var HTomb.Save.problems = [];
+  var stringifyThings = function(key, val) {
+    // If the value has a thingId...
+    if (val.thingId) {
+      // ...then serialize it fully only in the thing table
+      if (this===HTomb.World.Things.table) {
+        return val;
+      } else {
+        // ...elsewhere, simply serialize an ID number
+        return {thingId: HTomb.World.Things.table.indexOf(val)};
+      }
+    // If no thingId, check to see if it has been seen before
+    } else if (notThings.indexOf(val)>=0) {
+      // ...if so, skip it and document it on a list of "problems"
+      HTomb.Save.problems.push([this,key,val]);
+      return undefined;
+    } else {
+      // ...otherwise treat it normally
+      notThings.push(val);
+      return val;
     }
   };
 
