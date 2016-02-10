@@ -10,7 +10,7 @@ HTomb = (function(HTomb) {
       template: "Necromancer",
       name: "necromancer",
       isCreature: true,
-      symbol: "@",
+      symbol: "@" /*"\u00D1"*/,
       fg: "#D888FF",
       behaviors: [b.AI(), b.Movement(), b.Inventory(), b.Sight(),
         b.Master({tasks: [

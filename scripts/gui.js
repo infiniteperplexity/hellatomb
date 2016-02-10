@@ -20,7 +20,7 @@ HTomb = (function(HTomb) {
   GUI.panels = {};
   var Controls = HTomb.Controls;
   var Commands = HTomb.Commands;
-  var display = new ROT.Display({width: SCREENW+MENUW, height: SCREENH+STATUSH+SCROLLH, fontsize: FONTSIZE});
+  var display = new ROT.Display({width: SCREENW+MENUW, height: SCREENH+STATUSH+SCROLLH, fontSize: FONTSIZE, fontFamily: "Century wewGothic MS"});
   document.body.appendChild(display.getContainer());
   // Attach input events
   var keydown = function(key) {

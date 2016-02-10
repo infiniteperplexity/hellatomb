@@ -78,6 +78,7 @@ var HTomb = (function() {
   var Tasks = {};
   var Tiles = {};
   var Debug = {};
+  var Save = {};
   // Allow public access to the submodules
   return {
     Constants: Constants,
@@ -95,7 +96,8 @@ var HTomb = (function() {
     Controls: Controls,
     Tasks: Tasks,
     Tiles: Tiles,
-    Debug: Debug
+    Debug: Debug,
+    Save: Save
   };
 })();
 // Start the game when the window loads

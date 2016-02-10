@@ -12,9 +12,9 @@ Game.Display.prototype.setCursor = function(x, y) {
 
 Game.Display.prototype._draw = function(key, clearBefore) {
 	ROT.Display.prototype._draw.call(this, key, clearBefore);
-	if (key == this._cursor) { 
+	if (key == this._cursor) {
 		var parts = this._cursor.split(",");
-		this._backend.drawCursor(parseInt(parts[0]), parseInt(parts[1]), this._data[key][3]); 
+		this._backend.drawCursor(parseInt(parts[0]), parseInt(parts[1]), this._data[key][3]);
 	}
 }
 

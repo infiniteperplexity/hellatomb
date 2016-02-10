@@ -37,7 +37,7 @@ HTomb = (function(HTomb) {
   defineTerrain(
     "WALLTILE",{
       name: "wall",
-      symbol: "#",
+      symbol: "#" /*"\u25B2"*/,
       fg: HTomb.Constants.ABOVE,
       opaque: true,
       solid: true
