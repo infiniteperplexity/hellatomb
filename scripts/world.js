@@ -274,7 +274,19 @@ HTomb = (function(HTomb) {
       //color = ROT.Color.add(color,[-50,-50,0]); //night?
       //at this point we need to add daylight stuff
       return ROT.Color.toHex(color);
-    }};
+  }};
+
+  HTomb.World.Things = {
+    table: [],
+    assign: function(thing) {
+      var id = this.table.length;
+      thing.thingId = id;
+      this.table.push(thing);
+    },
+    release: function(thing) {
+      this.table.splice(this.table.indexOf(thing),0);
+    }
+  };
 
   return HTomb;
 })(HTomb);

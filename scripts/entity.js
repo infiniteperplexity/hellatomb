@@ -183,6 +183,7 @@ HTomb = (function(HTomb) {
         ent[prop] = properties[prop];
       }
     }
+    HTomb.World.Things.assign(ent);
     return ent;
   };
 
