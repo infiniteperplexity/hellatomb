@@ -20,6 +20,7 @@ HTomb = (function(HTomb) {
   }
 
   HTomb.World.init = function() {
+    HTomb.World.things = [];
     HTomb.World.tiles = grid3d(HTomb.Tiles.EmptyTile);
     HTomb.World.explored = grid3d(true);
     HTomb.World.visible = grid3d(true);

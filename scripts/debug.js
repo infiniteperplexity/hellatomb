@@ -10,7 +10,7 @@ HTomb = (function(HTomb) {
   //Debug.messages = true;
   Debug.pushMessage = function(msg) {
     if (Debug.messages===true) {
-      HTomb.GUI.pushMessage(msg);
+      //HTomb.GUI.pushMessage(msg);
       console.log(msg);
     }
   };

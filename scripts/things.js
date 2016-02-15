@@ -3,8 +3,6 @@ HTomb = (function(HTomb) {
   var coord = HTomb.coord;
 
 
-  // The global list of known things
-  HTomb.World.things = [];
   // The global list of known templates
   HTomb.Things.templates = {};
   HTomb.Things.static = [];
@@ -14,14 +12,14 @@ HTomb = (function(HTomb) {
   var thing = {
     spawn: function() {
       // Add to the global things table
-      HTomb.World.Things.push(this);
+      HTomb.World.things.push(this);
       if (this.onSpawn) {
         this.onSpawn();
       }
     },
     despawn: function() {
     // remove from the global things table
-      HTomb.World.Things.splice(this.thingId,0);
+      HTomb.World.things.splice(this.thingId,0);
       if (this.onDespawn) {
         this.onDespawn();
       }
@@ -113,11 +111,8 @@ HTomb = (function(HTomb) {
       HTomb.Debug.pushMessage("Can't create a static thing");
       return;
     }
-    for (var prim in HTomb.Things.templates[template]) {
-      if (t.each.indexOf(prim)>=0) {
-      // if the property is listed as dynamic then copy it
-        t[prim] = HTomb.Things.template[template];
-      }
+    for (var i=0; i<t.each.length; i++) {
+      t[t.each[i]] = HTomb.Things.templates[template][t.each[i]];
     }
     // Copy the arguments onto the thing
     for (var arg in args) {
@@ -149,10 +144,12 @@ HTomb = (function(HTomb) {
     each: ["x","y","z","behaviors"],
     place: function(x,y,z) {
       var c = coord(x,y,z);
+      var creatures = HTomb.World.creatures;
       if (this.isCreature) {
         delete creatures[c];
         creatures[c] = this;
       }
+      var creatures = HTomb.World.items;
       if (this.isItem) {
         var pile = items[c];        // remove it from the old pile
         if (pile) {
@@ -172,10 +169,12 @@ HTomb = (function(HTomb) {
           pile.push(this);
         }
       }
+      var features = HTomb.World.features;
       if (this.isFeature) {
         delete features[c];
         features[c] = this;
       }
+      var zones = HTomb.World.zones;
       if (this.isZone) {
         delete zones[c];
         zones[c] = this;
