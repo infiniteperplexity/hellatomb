@@ -147,6 +147,7 @@ HTomb = (function(HTomb) {
     behaviors: [],
     each: ["x","y","z"],
     place: function(x,y,z) {
+      this.remove();
       var c = coord(x,y,z);
       var creatures = HTomb.World.creatures;
       if (this.isCreature) {
@@ -198,10 +199,11 @@ HTomb = (function(HTomb) {
     remove: function() {
       var c = coord(this.x,this.y,this.z);
       //eventually need to clean up listeners
+      var creatures = HTomb.World.creatures;
       if (this.isCreature) {
         delete creatures[c];
-        creatures[c] = this;
       }
+      var items = HTomb.World.items;
       if (this.isItem) {
         var pile = items[c];
         // remove it from the old pile
@@ -212,9 +214,11 @@ HTomb = (function(HTomb) {
           }
         }
       }
+      var features = HTomb.World.features;
       if (this.isFeature) {
         delete features[c];
       }
+      var zones = HTomb.World.zones;
       if (this.isZone) {
         var tsk = this.task;
         if (tsk.assignedTo) {

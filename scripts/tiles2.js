@@ -81,6 +81,9 @@ HTomb = (function(HTomb) {
     var zones = HTomb.World.zones;
     var visible = HTomb.World.visible;
     var explored = HTomb.World.explored;
+    if (tiles[z]===undefined) {
+      console.log([x,y,z]);
+    }
     var tile = tiles[z][x][y];
     var zview = tiles[z][x][y].zview;
     //if the square has not been explored, don't show it

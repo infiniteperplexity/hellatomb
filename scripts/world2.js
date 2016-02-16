@@ -67,7 +67,7 @@ HTomb = (function(HTomb) {
   HTomb.World.getSquare = function(x,y,z) {
     var square = {};
     var coord = HTomb.coord(x,y,z);
-    square.terrain = tiles[z][x][y];
+    square.terrain = HTomb.World.tiles[z][x][y];
     square.creature = HTomb.World.creatures[coord];
     square.items = HTomb.World.items[coord];
     square.feature = HTomb.World.features[coord];
@@ -80,6 +80,23 @@ HTomb = (function(HTomb) {
     square.z = z;
     return square;
   };
+
+  HTomb.World.dailyCycle = {hour: 8, minute: 0,
+    onTurnBegin: function() {
+      this.minute+=1;
+      if (this.minute>=60) {
+        this.minute = 0;
+        this.hour = (this.hour+1)%24;
+      }},
+    shade: function(color) {
+      color = ROT.Color.fromString(color);
+      //color = ROT.Color.add(color,[0,50,50]); //midday?
+      //color = ROT.Color.add(color,[50,50,0]); //dawn?
+      //color = ROT.Color.add(color,[50,0,0]); //dusk?
+      //color = ROT.Color.add(color,[-50,-50,0]); //night?
+      //at this point we need to add daylight stuff
+      return ROT.Color.toHex(color);
+  }};
 
   return HTomb;
 })(HTomb);

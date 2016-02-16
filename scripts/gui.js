@@ -20,7 +20,7 @@ HTomb = (function(HTomb) {
   GUI.panels = {};
   var Controls = HTomb.Controls;
   var Commands = HTomb.Commands;
-  var display = new ROT.Display({width: SCREENW+MENUW, height: SCREENH+STATUSH+SCROLLH, fontSize: FONTSIZE, fontFamily: "Century wewGothic MS"});
+  var display = new ROT.Display({width: SCREENW+MENUW, height: SCREENH+STATUSH+SCROLLH, fontSize: FONTSIZE});
   document.body.appendChild(display.getContainer());
   // Attach input events
   var keydown = function(key) {
@@ -159,13 +159,14 @@ HTomb = (function(HTomb) {
   gameScreen.xoffset = 0;
   gameScreen.yoffset = 0;
   // Keep track of which Z level it is on
-  gameScreen.z = 0;
+  gameScreen.z = 1;
   gameScreen.render = function() {
     var z = gameScreen.z;
     var xoffset = gameScreen.xoffset;
     var yoffset = gameScreen.yoffset;
     for (var x = xoffset; x < xoffset+SCREENW; x++) {
       for (var y = yoffset; y < yoffset+SCREENH; y++) {
+
         // Draw every symbol in the right place
         var sym = HTomb.Tiles.getSymbol(x,y,z);
         display.draw(this.x0+x-xoffset,this.y0+y-yoffset, sym[0], sym[1], sym[2]);
@@ -178,8 +179,8 @@ HTomb = (function(HTomb) {
     //black out the entire line with solid blocks
     display.drawText(this.x0,this.y0+1,"%c{black}"+(UNIBLOCK.repeat(SCREENW-2)));
     display.drawText(this.x0,this.y0+1,"HP: " + 5 + "/" + 5);
-    display.drawText(this.x0+15,this.y0+1,"X: " + HTomb.Player._x);
-    display.drawText(this.x0+21,this.y0+1,"Y: " + HTomb.Player._y);
+    display.drawText(this.x0+15,this.y0+1,"X: " + HTomb.Player.x);
+    display.drawText(this.x0+21,this.y0+1,"Y: " + HTomb.Player.y);
     display.drawText(this.x0+27,this.y0+1,"Elevation: " + gameScreen.z);
     display.drawText(this.x0+42,this.y0+1,
       HTomb.World.dailyCycle.hour + ":"+HTomb.World.dailyCycle.minute);
@@ -282,7 +283,7 @@ HTomb = (function(HTomb) {
     }
     var z = gameScreen.z;
     GUI.highlightTile(x,y,"#0000FF");
-    var square = HTomb.Tiles.getSquare(x,y,z);
+    var square = HTomb.World.getSquare(x,y,z);
     if (square.explored===false) {
       hover.text[0][4] = "";
       hover.text[0][5] = "";
@@ -314,7 +315,7 @@ HTomb = (function(HTomb) {
     //if (square.feature && square.feature.zView===+1 && z+1<NLEVELS) {
       hover.text[0][4] = "Above: ";
       hover.text[0][5] = "Above: ";
-      vis = HTomb.Tiles.getSquare(x,y,z+1);
+      vis = HTomb.World.getSquare(x,y,z+1);
       if (vis.creature) {
         hover.text[1][4] = vis.creature.describe();
       } else {
@@ -329,7 +330,7 @@ HTomb = (function(HTomb) {
     } else if (square.terrain.zview===-1 && z-1>=0) {
       hover.text[0][4] = "Below: ";
       hover.text[0][5] = "Below: ";
-      vis = HTomb.Tiles.getSquare(x,y,z-1);
+      vis = HTomb.World.getSquare(x,y,z-1);
       if (vis.creature) {
         hover.text[1][4] = vis.creature.describe();
       } else {
@@ -395,7 +396,7 @@ HTomb = (function(HTomb) {
   };
   // Clicking a tile looks...this may be obsolete
   main.clickTile = function(x,y) {
-    var square = HTomb.Tiles.getSquare(x,y,gameScreen.z);
+    var square = HTomb.World.getSquare(x,y,gameScreen.z);
     Commands.look(square);
   };
 
@@ -434,8 +435,8 @@ HTomb = (function(HTomb) {
       callb(x,y,z);
     };
     if (options.line!==undefined) {
-      var x0 = options.line.x || HTomb.Player._x;
-      var y0 = options.line.y || HTomb.Player._y;
+      var x0 = options.line.x || HTomb.Player.x;
+      var y0 = options.line.y || HTomb.Player.y;
       var bg = options.line.bg || "#550000";
       context.mouseTile = function(x,y) {
         gameScreen.render();
@@ -541,16 +542,16 @@ HTomb = (function(HTomb) {
   // Recenter the game screen on the player
   GUI.recenter = function() {
     var Player = HTomb.Player;
-    gameScreen.z = Player._z;
-    if (Player._x >= gameScreen.xoffset+SCREENW-2) {
-      gameScreen.xoffset = Player._x-SCREENW+2;
-    } else if (Player._x <= gameScreen.xoffset) {
-      gameScreen.xoffset = Player._x-1;
+    gameScreen.z = Player.z;
+    if (Player.x >= gameScreen.xoffset+SCREENW-2) {
+      gameScreen.xoffset = Player.x-SCREENW+2;
+    } else if (Player.x <= gameScreen.xoffset) {
+      gameScreen.xoffset = Player.x-1;
     }
-    if (Player._y >= gameScreen.yoffset+SCREENH-2) {
-      gameScreen.yoffset = Player._y-SCREENH+2;
-    } else if (Player._y <= gameScreen.yoffset) {
-      gameScreen.yoffset = Player._y-1;
+    if (Player.y >= gameScreen.yoffset+SCREENH-2) {
+      gameScreen.yoffset = Player.y-SCREENH+2;
+    } else if (Player.y <= gameScreen.yoffset) {
+      gameScreen.yoffset = Player.y-1;
     }
   };
 

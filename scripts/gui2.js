@@ -364,31 +364,32 @@ HTomb = (function(HTomb) {
     GUI.updateMenu(["You are now in survey mode.","Use movement keys to navigate.","Comma go down.","Period to go up.","Escape to exit."]);
   };
 
+/*
   // These are the default controls
   var main = new ControlContext({
     // bind number pad movement
-    VK_LEFT: Commands.tryMoveWest,
-    VK_RIGHT: Commands.tryMoveEast,
-    VK_UP: Commands.tryMoveNorth,
-    VK_DOWN: Commands.tryMoveSouth,
+    VK_LEFT: HTomb.Player.commands.tryMoveDir(-1,0),
+    VK_RIGHT: HTomb.Player.commands.tryMoveDir(+1,0),
+    VK_UP:  HTomb.Player.commands.tryMoveDir(0,-1),
+    VK_DOWN: HTomb.Player.commands.tryMoveDir(0,+1),
     // bind keyboard movement
-    VK_Z: Commands.tryMoveSouthWest,
-    VK_S: Commands.wait,
-    VK_X: Commands.tryMoveSouth,
-    VK_C: Commands.tryMoveSouthEast,
-    VK_A: Commands.tryMoveWest,
-    VK_D: Commands.tryMoveEast,
-    VK_Q: Commands.tryMoveNorthWest,
-    VK_W: Commands.tryMoveNorth,
-    VK_E: Commands.tryMoveNorthEast,
-    VK_PERIOD: Commands.tryMoveDown,
-    VK_COMMA: Commands.tryMoveUp,
-    VK_G: Commands.pickup,
-    VK_F: Commands.drop,
-    VK_J: Commands.showJobs,
-    VK_P: Commands.showSpells,
-    VK_SHIFT: GUI.surveyMode,
-    VK_SPACE: Commands.wait
+    VK_Z: HTomb.Player.commands.tryMoveDir(-1,+1),
+    VK_X: HTomb.Player.commands.tryMoveDir(0,+1),
+    VK_C: HTomb.Player.commands.tryMoveDir(+1,+1),
+    VK_A: HTomb.Player.commands.tryMoveDir(-1,0),
+    VK_D: HTomb.Player.commands.tryMoveDir(+1,0),
+    VK_Q: HTomb.Player.commands.tryMoveDir(-1,-1),
+    VK_W: HTomb.Player.commands.tryMoveDir(0,-1),
+    VK_E: HTomb.Player.commands.tryMoveDir(+1,-1),
+    VK_PERIOD: HTomb.Player.commands.tryMoveDown,
+    VK_COMMA: HTomb.Player.commands.tryMoveUp,
+    VK_G: HTomb.Player.commands.pickup,
+    VK_F: HTomb.Player.commands.drop,
+    VK_J: HTomb.Player.commands.showJobs,
+    VK_P: HTomb.Player.commands.showSpells,
+    VK_SHIFT: HTomb.Player.commands.surveyMode,
+    VK_S: HTomb.Player.commands.wait,
+    VK_SPACE:HTomb.Player.commands.wait
   });
 
   // Clicking outside the game screen does nothing

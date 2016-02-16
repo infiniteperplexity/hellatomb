@@ -48,7 +48,7 @@ var HTomb = (function() {
     //Events.subscribe(World.dailyCycle,"TurnBegin");
   };
   // Process a turn of play
-  //var turn = function() {
+  var turn = function() {
   //  Events.publish({type: "TurnBegin"});
   //  var Player = HTomb.Player;
     // Assign tasks to minions
@@ -66,11 +66,11 @@ var HTomb = (function() {
   //    FOV.findVisible(Player._x, Player._y, Player._z, Player.sight.range);
   //  }
     // Recenter the GUI on the player
-  //  GUI.recenter();
+    GUI.recenter();
     // Render the GUI
-  //  GUI.render();
+    GUI.render();
 //    Events.publish({type: "TurnEnd"});
-  //};
+  };
 
   // Set up the various submodules that will be used
   var World = {};
@@ -79,6 +79,8 @@ var HTomb = (function() {
   var Path = {};
   var Events = {};
   var GUI = {};
+  var Controls = {};
+  var Commands = {};
   var Tasks = {};
   var Tiles = {};
   var Debug = {};
@@ -89,10 +91,12 @@ var HTomb = (function() {
     Constants: Constants,
     init: init,
     coord: coord,
-    //turn: turn,
+    Controls: Controls,
+    Commands: Commands,
+    turn: turn,
     World: World,
     //FOV: FOV,
-    //Path: Path,
+    Path: Path,
     //Events: Events,
     GUI: GUI,
     Player: Player,

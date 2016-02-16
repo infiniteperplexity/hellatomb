@@ -5,6 +5,12 @@ HTomb = (function(HTomb) {
   HTomb.Things.defineBehavior({
     template: "Commands",
     name: "commands",
+    tryMoveDir: function(x1, y1) {
+      var f = function() {
+        tryMove(x1,y1);
+      };
+      return f;
+    },
     tryMove: function(x1, y1) {
       var x = this.entity.x;
       var y = this.entity.y;

@@ -80,10 +80,6 @@ HTomb = (function(HTomb) {
     }
     return false;
   };
-  Tiles.coord = function(x,y,z) {
-    //return x*LEVELW*LEVELH + y*LEVELH + z;
-    return z*NLEVELS*LEVELW + x*LEVELW + y;
-  };
   Tiles.fillSquare = function(x,y,z) {
     // check for more stuff in a while
     if (HTomb.World.features[x*LEVELW*LEVELH+y*LEVELH+z]) {
