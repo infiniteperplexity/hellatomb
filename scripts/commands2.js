@@ -1,10 +1,6 @@
-// This submodule defines the templates for creature Entities
+// The Commands submodule defines the various things a player can do
 HTomb = (function(HTomb) {
   "use strict";
-
-  var b = HTomb.Things;
-
-
 
   HTomb.Things.defineBehavior({
     template: "Commands",
@@ -171,15 +167,6 @@ HTomb = (function(HTomb) {
         }
       );
     }
-  });
-
-  HTomb.Things.defineEntity({
-      template: "Necromancer",
-      name: "necromancer",
-      isCreature: true,
-      symbol: "@",
-      fg: "#D888FF",
-      behaviors: [b.Commands()]
   });
 
   return HTomb;

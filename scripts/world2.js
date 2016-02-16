@@ -19,8 +19,9 @@ HTomb = (function(HTomb) {
     return grid;
   }
 
+  HTomb.World.things = [];
   HTomb.World.init = function() {
-    HTomb.World.things = [];
+    //HTomb.World.things = [];
     HTomb.World.tiles = grid3d(HTomb.Tiles.EmptyTile);
     HTomb.World.explored = grid3d(true);
     HTomb.World.visible = grid3d(true);
@@ -61,6 +62,23 @@ HTomb = (function(HTomb) {
         }
       }
     }
+  };
+
+  HTomb.World.getSquare = function(x,y,z) {
+    var square = {};
+    var coord = HTomb.coord(x,y,z);
+    square.terrain = tiles[z][x][y];
+    square.creature = HTomb.World.creatures[coord];
+    square.items = HTomb.World.items[coord];
+    square.feature = HTomb.World.features[coord];
+    square.portals = HTomb.World.portals[coord];
+    square.zone = HTomb.World.zones[coord];
+    square.explored = HTomb.World.explored[z][x][y];
+    square.visible = HTomb.World.visible[z][x][y];
+    square.x = x;
+    square.y = y;
+    square.z = z;
+    return square;
   };
 
   return HTomb;

@@ -114,12 +114,16 @@ HTomb = (function(HTomb) {
     for (var i=0; i<t.each.length; i++) {
       t[t.each[i]] = HTomb.Things.templates[template][t.each[i]];
     }
+    t.template = template;
     // Copy the arguments onto the thing
     for (var arg in args) {
       t[arg] = args[arg];
     }
     // Do all "on spawn" tasks
     t.spawn();
+    if (t.onCreate) {
+      t.onCreate();
+    }
     // return the thing
     return t;
   };
@@ -141,7 +145,7 @@ HTomb = (function(HTomb) {
     fg: "white",
     bg: "black",
     behaviors: [],
-    each: ["x","y","z","behaviors"],
+    each: ["x","y","z"],
     place: function(x,y,z) {
       var c = coord(x,y,z);
       var creatures = HTomb.World.creatures;
@@ -149,7 +153,7 @@ HTomb = (function(HTomb) {
         delete creatures[c];
         creatures[c] = this;
       }
-      var creatures = HTomb.World.items;
+      var items = HTomb.World.items;
       if (this.isItem) {
         var pile = items[c];        // remove it from the old pile
         if (pile) {
@@ -241,27 +245,27 @@ HTomb = (function(HTomb) {
         }
       }
     },
-    onCreate: function(ent) {
+    onCreate: function() {
       var beh;
       // Add behaviors to entity
-      for (var i=0; i<ent.behaviors.length; i++) {
-        ent.behaviors[i].addToEntity(ent);
+      for (var i=0; i<this.behaviors.length; i++) {
+        this.behaviors[i].addToEntity(this);
       }
       // Randomly choose symbol if necessary
-      if (Array.isArray(ent.symbol)) {
-        ent.symbol = ent.symbol[Math.floor(Math.random()*ent.symbol.length)];
+      if (Array.isArray(this.symbol)) {
+        this.symbol = this.symbol[Math.floor(Math.random()*this.symbol.length)];
       }
       // Randomly choose  color if necessary
-      if (Array.isArray(ent.fg)) {
-        ent.fg = ent.fg[Math.floor(Math.random()*ent.fg.length)];
+      if (Array.isArray(this.fg)) {
+        this.fg = this.fg[Math.floor(Math.random()*this.fg.length)];
       }
       // Randomly perturb color, if necessary
-      if (ent.randomColor>0 && ent.fg) {
-        if (ent.fg) {
-          var c = ROT.Color.fromString(ent.fg);
-          c = ROT.Color.randomize(c,[ent.randomColor, ent.randomColor, ent.randomColor]);
+      if (this.randomColor>0 && this.fg) {
+        if (this.fg) {
+          var c = ROT.Color.fromString(this.fg);
+          c = ROT.Color.randomize(c,[this.randomColor, this.randomColor, this.randomColor]);
           c = ROT.Color.toHex(c);
-          ent.fg = c;
+          this.fg = c;
         }
       }
     }
@@ -277,6 +281,7 @@ HTomb = (function(HTomb) {
     addToEntity: function(ent) {
       // spin off a descendent of this object
       var beh = Object.create(this);
+      beh.template = this.template;
       ent[this.name] = beh;
       var options = this.options || {};
       for (var i=0; i<this.each.length; i++) {
