@@ -31,6 +31,7 @@ HTomb = (function(HTomb) {
 
   HTomb.World.init = function() {
     HTomb.World.fillTiles();
+    HTomb.World.generators.newSimplex();
     HTomb.World.validate();
   };
 
@@ -79,7 +80,7 @@ HTomb = (function(HTomb) {
     populateStuff();
   };
   HTomb.World.generators.newSimplex = function() {
-    colorize(20);
+    //colorize(20);
     assignElevation();
     //raise_hill(1);
     simplex_features("Tombstone",{p1: 0.25, p2: 0.1, filter: function(x,y,z) {
@@ -89,8 +90,8 @@ HTomb = (function(HTomb) {
     simplex_features("Tree",{vthresh: 1, p1: 0.75, p2: 0.25});
     simplex_features("Rock",{hscale: 10, vtresh: 3, p1: 0.25, p2: 0.1});
     simplex_features("Stick",{hscale: 10, vtresh: 3, p1: 0.15, p2: 0.05});
-    water_table(23);
-    scatter("Zombie",0.005);
+    //water_table(23);
+    //scatter("Zombie",0.005);
     addSlopes();
   };
   function scatter(template,p) {
@@ -140,10 +141,10 @@ HTomb = (function(HTomb) {
         mn = Math.min(mn,grid[x][y]);
         if (x>0 && x<LEVELW-1 && y>0 && y<LEVELH-1) {
           for (var z=grid[x][y]; z>=0; z--) {
-            levels[z].grid[x][y] = HTomb.Tiles.WALLTILE;
+            HTomb.World.tiles[z][x][y] = HTomb.Tiles.WallTile;
           }
           z = grid[x][y]+1;
-          levels[z].grid[x][y] = HTomb.Tiles.FLOORTILE;
+          HTomb.World.tiles[z][x][y] = HTomb.Tiles.FloorTile;
         }
       }
     }
@@ -159,12 +160,12 @@ HTomb = (function(HTomb) {
     var noise = new ROT.Noise.Simplex();
     for (var x=1; x<LEVELW-1; x++) {
       for (var y=1; y<LEVELH-1; y++) {
-        var z = HTomb.Tiles.groundLevel(x,y)+1;
+        var z = HTomb.Tiles.groundLevel(x,y);
         var val = parseInt(noise.get(x/hscale,y/hscale)*vscale);
         var r = Math.random();
         if ((val>vthresh && r<p1) || (val===vthresh && r<p2)) {
           if (options.filter===undefined || options.filter(x,y,z)===true) {
-            HTomb.Entity.create(template).place(x,y,z);
+            HTomb.Things.create(template).place(x,y,z);
           }
         }
       }
@@ -241,25 +242,26 @@ HTomb = (function(HTomb) {
     }
   }
   function addSlopes() {
+    var tiles = HTomb.World.tiles;
     var squares;
     var square;
     var slope;
     for (var x=0; x<LEVELW; x++) {
       for (var y=0; y<LEVELH; y++) {
         for (var z=0; z<NLEVELS-1; z++) {
-          if (levels[z].grid[x][y]===HTomb.Tiles.FLOORTILE && levels[z+1].grid[x][y]===HTomb.Tiles.EMPTYTILE) {
+          if (tiles[z][x][y]===HTomb.Tiles.FloorTile && tiles[z+1][x][y]===HTomb.Tiles.EmptyTile) {
             squares = HTomb.Tiles.neighbors(x,y);
             slope = false;
             for (var i=0; i<squares.length; i++) {
               square = squares[i];
-              if (levels[z].grid[square[0]][square[1]]===HTomb.Tiles.WALLTILE && levels[z+1].grid[square[0]][square[1]]===HTomb.Tiles.FLOORTILE) {
+              if (tiles[z][square[0]][square[1]]===HTomb.Tiles.WallTile && tiles[z+1][square[0]][square[1]]===HTomb.Tiles.FloorTile) {
                 slope = true;
               }
             }
             if (slope===true) {
               //HTomb.Entity.create("UpSlope").place(x,y,z);
-              levels[z].grid[x][y] = HTomb.Tiles.UPSLOPE;
-              levels[z+1].grid[x][y] = HTomb.Tiles.DOWNSLOPE;
+              tiles[z][x][y] = HTomb.Tiles.UpSlopeTile;
+              tiles[z+1][x][y] = HTomb.Tiles.DownSlopeTile;
             }
           }
         }

@@ -33,7 +33,7 @@ var HTomb = (function() {
     // Initialize the world...could be generate()?
     World.init();
     var p = HTomb.Player = Things.Necromancer();
-    p.place(1,1,1);
+    p.place(1,1,Tiles.groundLevel(1,1));
     // Place the player on the ground at 1,1
     //var Player = HTomb.Player = Things.Necromancer();
     //var ground = Tiles.groundLevel(1,1);

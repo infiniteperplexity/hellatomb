@@ -144,7 +144,7 @@ HTomb = (function(HTomb) {
     symbol: "X",
     fg: "white",
     bg: "black",
-    behaviors: [],
+    behaviors: {},
     each: ["x","y","z"],
     place: function(x,y,z) {
       this.remove();
