@@ -43,8 +43,8 @@ HTomb = (function(HTomb) {
     }
     // If you can't go that way...
     if (HTomb.Player.movement===undefined || HTomb.Player.movement.canPass(newx,newy,z)===false) {
-      var square0 = HTomb.World.getSquare(x,y,z);
-      var square1 = HTomb.World.getSquare(newx,newy,z);
+      var square0 = HTomb.Tiles.getSquare(x,y,z);
+      var square1 = HTomb.Tiles.getSquare(newx,newy,z);
       // If the way is blocked, try to scramble up or down a slope
       if (square0.terrain.zmove===+1) {
         Commands.tryMoveUp();
@@ -66,7 +66,7 @@ HTomb = (function(HTomb) {
     var x = HTomb.Player.x;
     var y = HTomb.Player.y;
     var z = HTomb.Player.z;
-    var square = HTomb.World.getSquare(x,y,z);
+    var square = HTomb.Tiles.getSquare(x,y,z);
     if (square.terrain.zmove===+1) {
       HTomb.GUI.pushMessage("You scramble up the slope.");
       Commands.movePlayer(x,y,z+1);
@@ -80,7 +80,7 @@ HTomb = (function(HTomb) {
     var x = HTomb.Player.x;
     var y = HTomb.Player.y;
     var z = HTomb.Player.z;
-    var square = HTomb.World.getSquare(x,y,z);
+    var square = HTomb.Tiles.getSquare(x,y,z);
     if (square.terrain.zmove===-1) {
       HTomb.GUI.pushMessage("You scramble down the slope.");
       Commands.movePlayer(x,y,z-1);
@@ -105,7 +105,7 @@ HTomb = (function(HTomb) {
       var mesg = null;
       var i;
       if (square.feature.zView===+1) {
-        seeSquare = HTomb.World.getSquare(square.x,square.y,square.z+1);
+        seeSquare = HTomb.Tiles.getSquare(square.x,square.y,square.z+1);
         if (seeSquare.creature) {
           HTomb.GUI.pushMessage("There is " + square.creature.describe() + " above here.");
         }
@@ -122,7 +122,7 @@ HTomb = (function(HTomb) {
           HTomb.GUI.pushMessage(mesg+".");
         }
       } else if (square.feature.zView===-1) {
-        seeSquare = HTomb.World.getSquare(square.x,square.y,square.z-1);
+        seeSquare = HTomb.Tiles.getSquare(square.x,square.y,square.z-1);
         if (seeSquare.creature) {
           HTomb.GUI.pushMessage("There is " + square.creature.describe() + " below here.");
         }
@@ -165,7 +165,7 @@ HTomb = (function(HTomb) {
   // Move the player, glance, and spend an action
   Commands.movePlayer = function(x,y,z) {
     HTomb.Player.place(x,y,z);
-    var square = HTomb.World.getSquare(x,y,z);
+    var square = HTomb.Tiles.getSquare(x,y,z);
     Commands.glance(square);
     HTomb.turn();
   };

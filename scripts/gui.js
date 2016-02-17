@@ -283,7 +283,7 @@ HTomb = (function(HTomb) {
     }
     var z = gameScreen.z;
     GUI.highlightTile(x,y,"#0000FF");
-    var square = HTomb.World.getSquare(x,y,z);
+    var square = HTomb.Tiles.getSquare(x,y,z);
     if (square.explored===false) {
       hover.text[0][4] = "";
       hover.text[0][5] = "";
@@ -315,7 +315,7 @@ HTomb = (function(HTomb) {
     //if (square.feature && square.feature.zView===+1 && z+1<NLEVELS) {
       hover.text[0][4] = "Above: ";
       hover.text[0][5] = "Above: ";
-      vis = HTomb.World.getSquare(x,y,z+1);
+      vis = HTomb.Tiles.getSquare(x,y,z+1);
       if (vis.creature) {
         hover.text[1][4] = vis.creature.describe();
       } else {
@@ -330,7 +330,7 @@ HTomb = (function(HTomb) {
     } else if (square.terrain.zview===-1 && z-1>=0) {
       hover.text[0][4] = "Below: ";
       hover.text[0][5] = "Below: ";
-      vis = HTomb.World.getSquare(x,y,z-1);
+      vis = HTomb.Tiles.getSquare(x,y,z-1);
       if (vis.creature) {
         hover.text[1][4] = vis.creature.describe();
       } else {
@@ -396,7 +396,7 @@ HTomb = (function(HTomb) {
   };
   // Clicking a tile looks...this may be obsolete
   main.clickTile = function(x,y) {
-    var square = HTomb.World.getSquare(x,y,gameScreen.z);
+    var square = HTomb.Tiles.getSquare(x,y,gameScreen.z);
     Commands.look(square);
   };
 

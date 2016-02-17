@@ -1,12 +1,12 @@
-HTomb = (function(HTomb) {
+Tomb = (function(HTomb) {
   "use strict";
   var LEVELW = HTomb.Constants.LEVELW;
   var LEVELH = HTomb.Constants.LEVELH;
   var NLEVELS = HTomb.Constants.NLEVELS;
   var World = HTomb.World;
   var features = World.features;
-
-  var terrain = HTomb.Tiles.terrain;
+  var coord = HTomb.coord;
+  var tiles = World.tiles;
   var levels = World.levels;
   var portals = World.portals;
 
@@ -16,8 +16,8 @@ HTomb = (function(HTomb) {
     if (x<0 || x>=LEVELW || y<0 || y>=LEVELH || z<0 || z>=NLEVELS) {
       return false;
     }
-    t = terrain[levels[z].grid[x][y]];
-    //t = terrain[_fastgrid[y+x*LEVELH+z*LEVELH*LEVELW]];
+    t = tiles[z][x][y];
+// t = _fastgrid[z*LEVELH*NLEVELS+y*LEVELH+x];
     return (t.solid===undefined && t.fallable===undefined);
   }
 
@@ -57,10 +57,10 @@ HTomb = (function(HTomb) {
       [-1,  0],
       [-1, -1]
     ].randomize();
-    var current, next, this_score, h_score, coord;
+    var current, next, this_score, h_score, crd;
     var checked = {}, scores = {}, retrace = {}, path = [];
     // it costs zero to get to the starting square
-    scores[x0*LEVELW*LEVELH+y0*LEVELH+z0] = 0;
+    scores[coord(x0,y0,z0)] = 0;
     //square that need to be checked
     //three-dimensional coordinate, and estimated (heuristic) distance
     var tocheck = [[x0,y0,z0,this_score+h(x0,y0,z0,x1,y1,z1)]];
@@ -69,7 +69,7 @@ HTomb = (function(HTomb) {
       // choose the highest-priority square
       current = tocheck.shift();
       // calculate the fast lookup
-      coord = current[0]*LEVELW*LEVELH+current[1]*LEVELH+current[2];
+      crd = coord(current[0],current[1],current[2]);
       // check if we have found the target square (or maybe distance==1?)
       if (current[0]===x1 && current[1]===y1 && current[2]===z1) {
       // if (current[6]===1) {
@@ -78,9 +78,9 @@ HTomb = (function(HTomb) {
         // until we get back to the starting square...
         while (current[0]!==x0 || current[1]!==y0 || current[2]!==z0) {
           // retrace the path by one step
-          current = retrace[coord];
+          current = retrace[crd];
           // calculate the fast coordinate
-          coord = current[0]*LEVELW*LEVELH+current[1]*LEVELH+current[2];
+          crd = coord(current[0],current[1],current[2]);
           // add the next square to the returnable path
           path.unshift([current[0],current[1],current[2]]);
         }
@@ -94,7 +94,7 @@ HTomb = (function(HTomb) {
         return path;
       }
       // we are now checking this square
-      checked[coord] = true;
+      checked[crd] = true;
       // loop through neighboring cells
       for (var i=-1; i<8; i++) {
         // -1 is the place where we check for portals
@@ -103,8 +103,8 @@ HTomb = (function(HTomb) {
             continue;
           }
           // right now cannot handle multiple portals in one square
-          if (portals[coord]) {
-            next = portals[coord];
+          if (portals[crd]) {
+            next = portals[crd];
           } else {
             continue;
           }
@@ -112,17 +112,17 @@ HTomb = (function(HTomb) {
           // grab a neighboring square
           next = [current[0]+dirs[i][0],current[1]+dirs[i][1],current[2]];
         }
-        coord = next[0]*LEVELW*LEVELH+next[1]*LEVELH+next[2];
+        crd = coord(next[0],next[1],next[2]);
         // if this one has been checked already then skip it
-        if (checked[coord]) {
+        if (checked[crd]) {
           //HTomb.GUI.drawAt(next[0],next[1],"X","purple","black");
           continue;
         }
         // otherwise set the score equal to the distance from the starting square
           // this assumes a uniform edge cost of 1
-        this_score = scores[current[0]*LEVELW*LEVELH+current[1]*LEVELH+current[2]]+1;
+        this_score = scores[coord(current[0],current[1],current[2])]+1;
         // if there is already a better score for this square then skip it
-        if (scores[coord]!==undefined && scores[coord]<=this_score) {
+        if (scores[crd]!==undefined && scores[crd]<=this_score) {
           //HTomb.GUI.drawAt(next[0],next[1],"X","yellow","black");
           continue;
         }
@@ -153,15 +153,16 @@ HTomb = (function(HTomb) {
           tocheck.push([next[0],next[1],next[2],h_score]);
         }
         // set the parent square in the potential path
-        retrace[coord] = [current[0],current[1],current[2]];
+        retrace[crd] = [current[0],current[1],current[2]];
         // save the new best score for this square
-        scores[coord] = this_score;
+        scores[crd] = this_score;
       }
     }
 
     console.log("path failed");
     return false;
   };
+
 
   //bresenham's line drawing algorithm
   HTomb.Path.line = function(x0, y0, x1, y1){

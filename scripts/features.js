@@ -3,53 +3,9 @@ HTomb = (function(HTomb) {
   "use strict";
   var LEVELW = HTomb.Constants.LEVELW;
   var LEVELH = HTomb.Constants.LEVELH;
+  var coord = HTomb.coord;
 
-  var b = HTomb.Behavior;
-
-  // Slopes might get converted into a terrain type
-  HTomb.Entity.define({
-    template: "UpSlope",
-    name: "upward slope",
-    isFeature: true,
-    portalTo: null,
-    symbol: "\u02C4",
-    // You can see up this slop
-    zView: +1,
-    fg: HTomb.Constants.ABOVE,
-    randomColor: 10,
-    // Upon placing an upward slope, a downward slope is added above
-    onPlace: function(x,y,z) {
-      HTomb.Entity.create("DownSlope").place(x,y,z+1);
-      HTomb.World.levels[z+1].grid[x][y] = HTomb.Tiles.FLOORTILE;
-      HTomb.World.portals[x*LEVELW*LEVELH+y*LEVELH+z] = [x,y,z+1];
-      // Wait...shouldn't I create a "portalTo"?
-    }
-  });
-  HTomb.Entity.define({
-    template: "DownSlope",
-    name: "downward slope",
-    isFeature: true,
-    portalTo: null,
-    // You can see down this slope
-    zView: -1,
-    symbol: "\u02C5",
-    fg: HTomb.Constants.BELOW,
-    randomColor: 10,
-    onPlace: function(x,y,z) {
-      HTomb.World.portals[x*LEVELW*LEVELH+y*LEVELH+z] = [x,y,z-1];
-      // Wait...shouldn't I create a "portalTo"?
-    }
-  });
-  HTomb.Entity.define({
-    template: "Pit",
-    name: "pit",
-    isFeature: true,
-    // You can see down into the pit
-    zView: -1,
-    symbol: "\u25CB",
-    fg: HTomb.Constants.BELOW
-  });
-  HTomb.Entity.define({
+  HTomb.Things.defineEntity({
     template: "Tombstone",
     name: "tombstone",
     isFeature: true,
@@ -58,11 +14,11 @@ HTomb = (function(HTomb) {
     randomColor: 5,
     onPlace: function(x,y,z) {
       // Bury a corpse beneath the tombstone
-      HTomb.Entity.create("Corpse").place(x,y,z-1);
+      HTomb.Things.create("Corpse").place(x,y,z-1);
     }
   });
 
-  HTomb.Entity.define({
+  HTomb.Things.defineEntity({
     template: "Tree",
     name: "tree",
     isFeature: true,
@@ -72,7 +28,7 @@ HTomb = (function(HTomb) {
     randomColor: 20
   });
 
-  HTomb.Entity.define({
+  HTomb.Things.defineEntity({
     template: "Shrub",
     name: "shrub",
     isFeature: true,
@@ -81,7 +37,7 @@ HTomb = (function(HTomb) {
     randomColor: 20
   });
 
-  HTomb.Entity.define({
+  HTomb.Things.defineEntity({
     template: "Puddle",
     name: "puddle",
     isFeature: true,
@@ -90,20 +46,20 @@ HTomb = (function(HTomb) {
     randomColor: 20
   });
 
-  HTomb.Entity.define({
+  HTomb.Things.defineEntity({
     template: "IncompletePit",
     name: "pit (under contruction)",
     isFeature: true,
     symbol: "\u2022",
-    behaviors: [b.Construction()]
+    behaviors: []
   });
 
-  HTomb.Entity.define({
+  HTomb.Things.defineEntity({
     template: "IncompleteWall",
     name: "wall (under contruction)",
     isFeature: true,
     symbol: "\u25AB",
-    behaviors: [b.Construction()]
+    behaviors: []
   });
 
   return HTomb;

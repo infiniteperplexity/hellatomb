@@ -19,8 +19,8 @@ HTomb = (function(HTomb) {
       var newy = y+y1;
       // If you can't go that way...
       if (this.entity.movement===undefined || HTomb.entity.movement.canPass(newx,newy,z)===false) {
-        var square0 = HTomb.World.getSquare(x,y,z);
-        var square1 = HTomb.World.getSquare(newx,newy,z);
+        var square0 = HTomb.Tiles.getSquare(x,y,z);
+        var square1 = HTomb.Tiles.getSquare(newx,newy,z);
         // If the way is blocked, try to scramble up or down a slope
         if (square0.terrain.zmove===+1) {
           this.tryMoveUp();
@@ -42,7 +42,7 @@ HTomb = (function(HTomb) {
       var x = this.entity.x;
       var y = this.entity.y;
       var z = this.entity.z;
-      var square = HTomb.World.getSquare(x,y,z);
+      var square = HTomb.Tiles.getSquare(x,y,z);
       if (square.terrain.zmove===+1) {
         HTomb.GUI.pushMessage("You scramble up the slope.");
         this.moveEntity(x,y,z+1);
@@ -56,7 +56,7 @@ HTomb = (function(HTomb) {
       var x = this.entity.x;
       var y = this.entity.y;
       var z = this.entity.z;
-      var square = HTomb.World.getSquare(x,y,z);
+      var square = HTomb.Tiles.getSquare(x,y,z);
       if (square.feature!==undefined && square.feature.template==="DownSlope") {
         HTomb.GUI.pushMessage("You scramble down the slope.");
         this.moveEntity(x,y,z-1);
@@ -95,7 +95,7 @@ HTomb = (function(HTomb) {
     // Move the player, glance, and spend an action
     moveEntity: function(x,y,z) {
       this.entity.place(x,y,z);
-      var square = HTomb.World.getSquare(x,y,z);
+      var square = HTomb.Tiles.getSquare(x,y,z);
       this.glance(square);
       HTomb.turn();
     },

@@ -119,7 +119,7 @@ HTomb = (function(HTomb) {
       if (this.canMove(x,y,z)===false) {
         return false;
       }
-      var square = HTomb.World.getSquare(x,y,z);
+      var square = HTomb.Tiles.getSquare(x,y,z);
       if (square.creature) {
         return false;
       }
@@ -130,7 +130,7 @@ HTomb = (function(HTomb) {
       if (x<0 || x>=LEVELW || y<0 || y>=LEVELH) {
         return false;
       }
-      var square = HTomb.World.getSquare(x,y,z);
+      var square = HTomb.Tiles.getSquare(x,y,z);
       if (square.terrain.solid===true && this.phases===undefined) {
         return false;
       } else if (square.terrain.fallable===true && this.flies===undefined) {

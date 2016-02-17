@@ -97,7 +97,7 @@ var HTomb = (function() {
     World: World,
     FOV: FOV,
     Path: Path,
-    //Events: Events,
+    Events: Events,
     GUI: GUI,
     Player: Player,
     //Tasks: Tasks,

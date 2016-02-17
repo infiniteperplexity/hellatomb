@@ -1,15 +1,13 @@
 HTomb = (function(HTomb) {
   "use strict";
 
-  var b = HTomb.Behavior;
-
-  HTomb.Entity.define({
+  HTomb.Things.defineEntity({
     template: "Rock",
     name: "rock",
     isItem: true,
     symbol: "*",
     fg: "#CCCCCC",
-    behaviors: [b.Stackable()],
+    behaviors: {Stackable: {n: 10}},
     onPlace: function() {
       var r = parseInt(Math.random()*5);
       this.stack.n = r;
@@ -17,7 +15,7 @@ HTomb = (function(HTomb) {
     randomColor: 10
   });
 
-  HTomb.Entity.define({
+  HTomb.Things.defineEntity({
     template: "Corpse",
     name: "corpse",
     isItem: true,
@@ -26,7 +24,7 @@ HTomb = (function(HTomb) {
     randomColor: 10
   });
 
-  HTomb.Entity.define({
+  HTomb.Things.defineEntity({
     template: "Stick",
     name: "stick",
     isItem: true,

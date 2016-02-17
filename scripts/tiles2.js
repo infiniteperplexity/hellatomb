@@ -161,5 +161,22 @@ HTomb = (function(HTomb) {
     }
     return ["X","red","black"];
   };
+
+  HTomb.Tiles.getSquare = function(x,y,z) {
+    var square = {};
+    var coord = HTomb.coord(x,y,z);
+    square.terrain = HTomb.World.tiles[z][x][y];
+    square.creature = HTomb.World.creatures[coord];
+    square.items = HTomb.World.items[coord];
+    square.feature = HTomb.World.features[coord];
+    square.portals = HTomb.World.portals[coord];
+    square.zone = HTomb.World.zones[coord];
+    square.explored = HTomb.World.explored[z][x][y];
+    square.visible = HTomb.World.visible[z][x][y];
+    square.x = x;
+    square.y = y;
+    square.z = z;
+    return square;
+  };
   return HTomb;
 })(HTomb);
