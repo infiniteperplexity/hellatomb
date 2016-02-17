@@ -8,7 +8,13 @@ HTomb = (function(HTomb) {
   HTomb.Things.defineBehavior({
     template: "Sight",
     name: "sight",
-    range: 10
+    range: 10,
+    init: function(options) {
+      options = options || {};
+      if (options.range) {
+        this.range = options.range;
+      }
+    }
   });
 
   // The Movement behavior allows the creature to move

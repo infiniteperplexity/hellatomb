@@ -10,7 +10,11 @@ HTomb = (function(HTomb) {
       isCreature: true,
       symbol: "@",
       fg: "#D888FF",
-      behaviors: [b.Movement(), b.Inventory()]
+      behaviors: {
+        Movement: {},
+        Inventory: {},
+        Sight: {}
+      }
   });
 
   return HTomb;

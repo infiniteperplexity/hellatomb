@@ -250,10 +250,10 @@ HTomb = (function(HTomb) {
       }
     },
     onCreate: function() {
-      var beh;
       // Add behaviors to entity
-      for (var i=0; i<this.behaviors.length; i++) {
-        this.behaviors[i].addToEntity(this);
+      for (var b in this.behaviors) {
+        var beh = HTomb.Things[b](this.behaviors[b] || {});
+        beh.addToEntity(this);
       }
       // Randomly choose symbol if necessary
       if (Array.isArray(this.symbol)) {
@@ -283,17 +283,10 @@ HTomb = (function(HTomb) {
     parent: "Thing",
     entity: null,
     addToEntity: function(ent) {
-      // spin off a descendent of this object
-      var beh = Object.create(this);
-      beh.template = this.template;
-      ent[this.name] = beh;
-      var options = this.options || {};
-      for (var i=0; i<this.each.length; i++) {
-        beh[this.each[i]] = this[this.each[i]];
-      }
-      beh.entity = ent;
-      if (beh.init) {
-        beh.init(options);
+      this.entity = ent;
+      ent[this.name] = this;
+      if (this.init) {
+        this.init(this.options);
       }
     },
     each: ["entity"]

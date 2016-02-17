@@ -18,9 +18,18 @@ HTomb = (function(HTomb) {
     symbol: "X",
     fg: "white",
     bg: "black",
+    types: [],
     onDefine: function() {
       HTomb.Tiles[this.template] = this;
-      this.static = true;
+      HTomb.Things.templates.Terrain.types.push(this);
+    },
+    stringify: function() {
+      // returns a number
+      return HTomb.Things.templates.Terrain.types.indexOf(this)
+    },
+    parse: function(json) {
+      // parses a number into a terrain type
+      return HTomb.Things.templates.Terrain.types[json];
     }
   });
 

@@ -3,20 +3,10 @@ HTomb = (function(HTomb) {
   "use strict";
   var LEVELW = HTomb.Constants.LEVELW;
   var LEVELH = HTomb.Constants.LEVELH;
-  var levels = HTomb.World.levels;
+  var NLEVELS = HTomb.Constants.NLEVELS;
   var grid;
-  var explored;
-  var above;
-  var below;
-  var terrain = HTomb.Tiles.terrain;
-  var visible = [];
-  for (var i=0; i<LEVELW; i++) {
-    visible.push([]);
-    for (var j=0; j<LEVELH; j++) {
-      visible[i][j] = false;
-    }
-  }
-  var ox, oy, r0;
+  var x0,y0,z0,r0;
+
 
   var passlight = function(x,y) {
       //constrain to the grid
@@ -24,45 +14,46 @@ HTomb = (function(HTomb) {
         return false;
       }
       //curve the edges
-      if (Math.sqrt((x-ox)*(x-ox)+(y-oy)*(y-oy)) > r0) {
+      if (Math.sqrt((x-x0)*(x-x0)+(y-y0)*(y-y0)) > r0) {
         return false;
       }
       //only opaque tiles block light
       //if this ever changes use a different FOV
-      return (terrain[grid[x][y]].opaque === undefined);
+      return (grid[x][y].opaque === undefined);
   };
 
   var show = function(x,y,r,v) {
-    visible[x][y] = true;
-    explored[x][y] = true;
-    if (terrain[grid[x][y]].zview===+1) {
-      above[x][y] = true;
-    } else if (terrain[grid[x][y]].zview===-1) {
-      below[x][y] = true;
+    var visible = HTomb.World.visible;
+    var explored = HTomb.World.explored;
+    visible[z0][x][y] = true;
+    explored[z0][x][y] = true;
+    if (grid[x][y].zview===+1) {
+      explored[z0+1][x][y] = true;
+    } else if (grid[x][y].zview===-1) {
+      explored[z0-1][x][y] = true;
     }
   };
 
   var caster = new ROT.FOV.PreciseShadowcasting(passlight);
 
   HTomb.FOV.resetVisible = function() {
+    var visible = HTomb.World.visible;
     for (var x=0; x<LEVELW; x++) {
       for (var y=0; y<LEVELH; y++) {
-        visible[x][y] = false;
+        for (var z=0; z<NLEVELS; z++) {
+          visible[z][x][y] = false;
+        }
       }
     }
   };
   HTomb.FOV.findVisible = function(x,y,z,r) {
-    //test code
-    ox = x;
-    oy = y;
+    x0 = x;
+    y0 = y;
     r0 = r;
-    //end test
-    grid = levels[z].grid;
-    explored = levels[z].explored;
-    below = levels[z-1].explored;
-    above = levels[z+1].explored;
+    z0 = z;
+    grid = HTomb.World.tiles[z];
     caster.compute(x,y,r,show);
   };
-  HTomb.FOV.visible = visible;
+
   return HTomb;
 })(HTomb);
