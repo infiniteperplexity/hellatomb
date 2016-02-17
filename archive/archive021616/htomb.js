@@ -1,6 +1,7 @@
-
+//require rot.js?
 var HTomb = (function() {
 "use strict";
+
   // Set a number of useful constants
   var Constants = {};
   // Dimensions of the playing area
@@ -23,88 +24,84 @@ var HTomb = (function() {
   var ABOVE = Constants.ABOVE = "#BBBBFF";
   var BELOW = Constants.BELOW = "#8888DD";
 
-  // Used throughout the project
-  function coord(x,y,z) {
-    return z*NLEVELS*LEVELW + x*LEVELW + y;
-  }
-
   // Begin the game
   var init = function() {
     // Initialize the world...could be generate()?
     World.init();
-    var p = HTomb.Player = Things.Necromancer();
-    p.place(1,1,Tiles.groundLevel(1,1));
     // Place the player on the ground at 1,1
-    //var Player = HTomb.Player = Things.Necromancer();
-    //var ground = Tiles.groundLevel(1,1);
-    //Player.place(1,1,ground+1);
+    var Player = HTomb.Player = Entity.create("Necromancer");
+    var ground = Tiles.groundLevel(1,1);
+    Player.place(1,1,ground+1);
     // Begin visibility
-    if (p.sight) {
-      FOV.findVisible(p.x, p.y, p.z, p.sight.range);
+    if (Player.sight) {
+      FOV.findVisible(Player._x, Player._y, Player._z, Player.sight.range);
     }
-    GUI.reset();
     // Throw up a welcome splash screen
-    //GUI.splash("Welcome to HellaTomb!");
-    //Events.subscribe(World.dailyCycle,"TurnBegin");
+    GUI.splash("Welcome to HellaTomb!");
+    Events.subscribe(World.dailyCycle,"TurnBegin");
   };
   // Process a turn of play
   var turn = function() {
-  //  Events.publish({type: "TurnBegin"});
+    Events.publish({type: "TurnBegin"});
     var Player = HTomb.Player;
     // Assign tasks to minions
-  //  Tasks.assignTasks();
+    Tasks.assignTasks();
 
     // Run the AI for each creature...should I deal with action points here?
-  //  for (var creature in World.creatures) {
-    //  if (World.creatures[creature].ai) {
-    //      World.creatures[creature].ai.act();
-    //  }
-  //  }
+    for (var creature in World.creatures) {
+      if (World.creatures[creature].ai) {
+          World.creatures[creature].ai.act();
+      }
+    }
     // Calculate visibility
     FOV.resetVisible();
     if (Player.sight) {
-      FOV.findVisible(Player.x, Player.y, Player.z, Player.sight.range);
+      FOV.findVisible(Player._x, Player._y, Player._z, Player.sight.range);
     }
     // Recenter the GUI on the player
     GUI.recenter();
     // Render the GUI
     GUI.render();
-//    Events.publish({type: "TurnEnd"});
+    Events.publish({type: "TurnEnd"});
   };
-
   // Set up the various submodules that will be used
   var World = {};
   var Player = {};
+  var Entity = {};
   var FOV = {};
   var Path = {};
   var Events = {};
-  var GUI = {};
-  var Controls = {};
   var Commands = {};
+  var GUI = {};
+  var Behavior = {};
+  var Controls = {};
   var Tasks = {};
   var Tiles = {};
   var Debug = {};
   var Save = {};
   var Things = {};
+  var Utils = {};
   // Allow public access to the submodules
   return {
     Constants: Constants,
     init: init,
-    coord: coord,
-    Controls: Controls,
-    Commands: Commands,
     turn: turn,
     World: World,
+    Entity: Entity,
     FOV: FOV,
     Path: Path,
     Events: Events,
+    Commands: Commands,
     GUI: GUI,
     Player: Player,
-    //Tasks: Tasks,
+    Behavior: Behavior,
+    Controls: Controls,
+    Tasks: Tasks,
     Tiles: Tiles,
     Debug: Debug,
-    //Save: Save,
-    Things: Things
+    Save: Save,
+    Things: Things,
+    Utils: Utils
   };
 })();
 // Start the game when the window loads
