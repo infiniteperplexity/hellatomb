@@ -224,7 +224,7 @@ HTomb = (function(HTomb) {
   Commands.showSpells = function() {
     //var spells = [];
     //for (var i=0;)
-    GUI.choosingMenu("Choose a spell:", HTomb.Player.caster.spells,
+    GUI.choosingMenu("Choose a spell:", HTomb.Player.caster.listSpells(),
       function(sp) {
         return function() {
           HTomb.Player.caster.cast(sp);
@@ -236,7 +236,7 @@ HTomb = (function(HTomb) {
   };
   // Show a menu of the tasks the player can assign
   Commands.showJobs = function() {
-    GUI.choosingMenu("Choose a task:", HTomb.Player.master.tasks,
+    GUI.choosingMenu("Choose a task:", HTomb.Player.master.listTasks(),
       function(task) {
         return function() {
           HTomb.Player.master.designate(task);

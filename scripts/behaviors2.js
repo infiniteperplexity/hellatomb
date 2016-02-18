@@ -227,15 +227,10 @@ HTomb = (function(HTomb) {
     taskTemplates: null,
     taskList: null,
     each: ["minions","taskTemplates","taskList"],
-    init: function(options) {
-      this.minions = [];
+    onCreate: function(options) {
       options = options || {};
       options.tasks = options.tasks || [];
-      this.taskTemplates = [];
-      for (var i=0; i<options.tasks.length; i++) {
-        this.taskTemplates.push(HTomb.Things[options.tasks[i]]());
-      }
-      this.taskList = [];
+      this.tasks = options.tasks;
     },
     addMinion: function(cr) {
       this.minions.push(cr);
@@ -266,6 +261,13 @@ HTomb = (function(HTomb) {
           }
         }
       }
+    },
+    listTasks: function() {
+      var tasks = [];
+      for (var i=0; i<this.tasks.length; i++) {
+        tasks.push(HTomb.Things.templates[this.tasks[i]]);
+      }
+      return tasks;
     }
   });
 
@@ -304,16 +306,20 @@ HTomb = (function(HTomb) {
   HTomb.Things.defineBehavior({
     template: "SpellCaster",
     name: "caster",
-    init: function(options) {
+    onCreate: function(options) {
       options = options || {};
       options.spells = options.spells || [];
-      this.spells = [];
-      for (var i=0; i<options.spells.length; i++) {
-        this.spells.push(HTomb.Things[options.spells[i]]());
-      }
+      this.spells = options.spells;
     },
     cast: function(sp) {
       sp.cast(this);
+    },
+    listSpells: function() {
+      var spells = [];
+      for (var i=0; i<this.spells.length; i++) {
+        spells.push(HTomb.Things.templates[this.spells[i]]);
+      }
+      return spells;
     }
   });
 
@@ -355,7 +361,7 @@ HTomb = (function(HTomb) {
           this.entity.minion.task.ai();
         } else {
           // Otherwise, patrol around the creature's master
-          this.patrol(this.entity.minion.master._x,this.entity.minion.master._y,this.entity.minion.master._z);
+          this.patrol(this.entity.minion.master.x,this.entity.minion.master.y,this.entity.minion.master.z);
         }
       }
       // Otherwise, wander randomly
