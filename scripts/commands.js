@@ -222,6 +222,8 @@ HTomb = (function(HTomb) {
   };
   // Show a menu of the spells the player can cast
   Commands.showSpells = function() {
+    //var spells = [];
+    //for (var i=0;)
     GUI.choosingMenu("Choose a spell:", HTomb.Player.caster.spells,
       function(sp) {
         return function() {

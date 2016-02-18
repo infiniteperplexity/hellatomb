@@ -15,26 +15,30 @@ HTomb = (function(HTomb) {
     var json = stringify(saveGame);
     //return json;
     localStorage.saveGame = json;
-  }
+  };
 
   function stringify(obj) {
     var json = JSON.stringify(obj, function(key, val) {
-    // if it has special instructions, use those to stringify
-    if (val.stringify) {
-      return val.stringify();
-      // if it's from the global things table, stringify it normally
-    } else if (this===HTomb.World.things) {
-      return val;
-    // if it's on the global things table, stringify its ID
-    } else if (val.thingId) {
-      if (val.thingId==="static") {
-        return {staticThing: val.template};
-    } else {
-      return {thingId: val.thingId};
-    } else {
-    // otherwise stringify it normally
-      return val;
-    }
+      // if it has special instructions, use those to stringify
+      if (val.stringify) {
+        return val.stringify();
+        // if it's from the global things table, stringify it normally
+      } else if (this===HTomb.World.things) {
+        return val;
+      // if it's on the global things table, stringify its ID
+      } else if (val.thingId) {
+        return {tid: val.thingId};
+      } else {
+        // stringify only those things on the "each" list
+        for (var p in val) {
+      		// this should not delete inherited properties
+      		if (val.each.indexOf(p)===-1) {
+      			delete val[p];
+      		}
+      	}
+        return val;
+      }
+    });
   }
 
   function fillListFrom(fromList, toList) {
@@ -45,12 +49,13 @@ HTomb = (function(HTomb) {
       for (var i=0; i<fromList.length; i++) {
         toList.push(fromList[i]);
       }
-  } else {
-    for (var t in toList) {
-      delete toList[t];
-    }
-    for (var f in fromList) {
-      toList[f] = fromList[f];
+    } else {
+      for (var t in toList) {
+        delete toList[t];
+      }
+      for (var f in fromList) {
+        toList[f] = fromList[f];
+      }
     }
   }
 
@@ -78,7 +83,7 @@ HTomb = (function(HTomb) {
       } else {
         return val;
       }
-    }
+    });
     fillListFrom(thingParse.things, HTomb.World.things);
     fillGridFrom(restParse.tiles, HTomb.World.tiles, HTomb.Things.templates.Terrain.parse);
     fillGridFrom(restParse.explored, HTomb.World.explored);

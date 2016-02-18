@@ -91,6 +91,10 @@ HTomb = (function(HTomb) {
     for (var arg in args) {
       t[arg] = args[arg];
     }
+    // concatenate "each" instead of overriding it
+    if (t.parent && HTomb.Things.templates[t.parent] && HTomb.Things.templates[t.parent].each) {
+      t.each = t.each.concat(HTomb.Things.templates[t.parent].each);
+    }
     // Add to the list of templates
     HTomb.Things.templates[args.template] = t;
     // Don't fire onDefine for the top-level thing

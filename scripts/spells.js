@@ -1,52 +1,26 @@
 HTomb = (function(HTomb) {
   "use strict";
 
-  var b = HTomb.Behavior;
+  HTomb.Things.define({
+    template: "Spell",
+    name: "spell",
+    parent: "Thing"
+  });
 
-  b.spells = {};
-  b.spells.templates = {};
-
-  var spell = {
-    describe: function() {return this.name;}
-  };
-  b.spells.define = function(properties) {
-    if (!properties || !properties.template) {
-      console.log("invalid template definition");
-      return;
-    }
-    var template = Object.create(spell);
-    for (var prop in properties) {
-      template[prop] = properties[prop];
-    }
-    b.spells.templates[properties.template] = template;
-  };
-
-  b.spells.create = function(template) {
-    if (!template) {
-      console.log("invalid template definition");
-      return;
-    }
-    var sp = b.spells.templates[template];
-    for (var p in beh) {
-      this[beh.name][p] = beh[p];
-    }
-  };
-
-
-  b.spells.define({
+  HTomb.Things.defineSpell({
     template: "RaiseZombie",
     name: "raise zombie",
-    cast: function() {
-      var c = this.entity;
+    cast: function(caster) {
+      var c = caster.entity;
       HTomb.GUI.pushMessage(c.describe() + " raises a zombie.");
-      var sq = HTomb.Tiles.randomEmptyNeighbor(c._x,c._y,c._z);
+      var sq = HTomb.Tiles.randomEmptyNeighbor(c.x,c.y,c.z);
       if (sq) {
-        var z = HTomb.Entity.create("Zombie");
+        var z = HTomb.Things.Zombie();
         z.place(sq[0],sq[1],sq[2]);
         if (!c.master) {
-          c.addBehavior(HTomb.Behavior.Master());
+		      HTomb.Things.Master().addToEntity(c);
         }
-        z.addBehavior(HTomb.Behavior.Minion());
+		    HTomb.Things.Minion.addToEntity(z);
         z.minion.setMaster(c);
         c.master.addMinion(z);
         z.ai.acted = true;

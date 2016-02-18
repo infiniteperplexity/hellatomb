@@ -34,17 +34,12 @@ var HTomb = (function() {
     World.init();
     var p = HTomb.Player = Things.Necromancer();
     p.place(1,1,Tiles.groundLevel(1,1));
-    // Place the player on the ground at 1,1
-    //var Player = HTomb.Player = Things.Necromancer();
-    //var ground = Tiles.groundLevel(1,1);
-    //Player.place(1,1,ground+1);
     // Begin visibility
     if (p.sight) {
       FOV.findVisible(p.x, p.y, p.z, p.sight.range);
     }
-    GUI.reset();
     // Throw up a welcome splash screen
-    //GUI.splash("Welcome to HellaTomb!");
+    GUI.splash("Welcome to HellaTomb!");
     //Events.subscribe(World.dailyCycle,"TurnBegin");
   };
   // Process a turn of play

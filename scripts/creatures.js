@@ -2,36 +2,34 @@
 HTomb = (function(HTomb) {
   "use strict";
 
-  var b = HTomb.Behavior;
-  var s = HTomb.Behavior.spells.templates;
-  var t = HTomb.Tasks;
+  var b = HTomb.Things;
 
-  HTomb.Entity.define({
+  HTomb.Things.defineEntity({
       template: "Necromancer",
       name: "necromancer",
       isCreature: true,
-      symbol: "@" /*"\u00D1"*/,
+      symbol: "@",
       fg: "#D888FF",
-      behaviors: [b.AI(), b.Movement(), b.Inventory(), b.Sight(),
-        b.Master({tasks: [
-          t.DigTask(),
-          t.BuildTask(),
-          t.PatrolTask(),
-          t.Undesignate()
-        ]}),
-        b.SpellCaster({spells: [
-          s.RaiseZombie
-        ]})
-      ]
+      behaviors: {
+        Movement: {},
+        Inventory: {},
+        Sight: {},
+        // Issue...those these be template names?  or reference to actual templates?
+        Master: {tasks: ["DigTask","BuildTask","PatrolTask","Undesignate"]},
+        SpellCaster: {spells: ["RaiseZombie"]}
+      }
   });
 
-  HTomb.Entity.define({
+  HTomb.Things.defineEntity({
     template: "Zombie",
     name: "zombie",
     isCreature: true,
     symbol: "z",
     fg: "#99FF66",
-    behaviors: [b.AI(), b.Movement(), b.Worker()]
+    behaviors: {
+      AI: {},
+      Movement: {}
+    }
   });
 
   return HTomb;
