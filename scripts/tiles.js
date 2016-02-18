@@ -40,7 +40,8 @@ HTomb = (function(HTomb) {
     name: "boundary",
     symbol: " ",
     opaque: true,
-    solid: true
+    solid: true,
+    immutable: true
   });
   HTomb.Things.defineTerrain({
     template: "EmptyTile",
