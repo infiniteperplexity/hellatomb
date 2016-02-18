@@ -3,6 +3,7 @@ HTomb = (function(HTomb) {
   var LEVELW = HTomb.Constants.LEVELW;
   var LEVELH = HTomb.Constants.LEVELH;
   var NLEVELS = HTomb.Constants.NLEVELS;
+  var coord = HTomb.coord;
 
   function grid3d(fill) {
     fill = fill || null;
@@ -56,10 +57,19 @@ HTomb = (function(HTomb) {
       for (var y=1; y<LEVELH-1; y++) {
         for (var z=1; z<NLEVELS-1; z++) {
           var t = HTomb.World.tiles[z][x][y];
+          // validate floors
           var below = HTomb.World.tiles[z-1][x][y];
           var above = HTomb.World.tiles[z+1][x][y];
           if (t===HTomb.Tiles.EmptyTile && below!==undefined && below.solid===true) {
             HTomb.World.tiles[z][x][y] = HTomb.Tiles.FloorTile;
+          }
+          // validate portals
+          if (t.zmove===+1) {
+            HTomb.World.portals[coord(x,y,z)] = [x,y,z+1];
+          } else if (t.zmove===-1) {
+            HTomb.World.portals[coord(x,y,z)] = [x,y,z-1];
+          } else {
+            delete HTomb.World.portals[coord(x,y,z)];
           }
         }
       }

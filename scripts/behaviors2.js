@@ -383,7 +383,7 @@ HTomb = (function(HTomb) {
       if (!this.entity.movement) {
         return false;
       }
-      var dist = HTomb.Path.distance(this.entity._x,this.entity._y,x,y);
+      var dist = HTomb.Path.distance(this.entity.x,this.entity.y,x,y);
       if (dist<min) {
         this.acted = this.entity.movement.walkAway(x,y,z);
       } else if (dist>max) {
@@ -418,9 +418,9 @@ HTomb = (function(HTomb) {
     },
     // Walk along a path toward the target
     walkToward: function(x,y,z) {
-      var x0 = this.entity._x;
-      var y0 = this.entity._y;
-      var z0 = this.entity._z;
+      var x0 = this.entity.x;
+      var y0 = this.entity.y;
+      var z0 = this.entity.z;
       var path = HTomb.Path.aStar(x0,y0,z0,x,y,z,{useLast: false});
       if (path!==false) {
         var square = path[0];
@@ -430,8 +430,8 @@ HTomb = (function(HTomb) {
     },
     // Walk straight away from the target
     walkAway: function(x,y) {
-      var x0 = this.entity._x;
-      var y0 = this.entity._y;
+      var x0 = this.entity.x;
+      var y0 = this.entity.y;
       var line = HTomb.Path.line(x0,y0,x,y);
       // need to handle errors somehow
       var dx = line[1][0] - x0;
@@ -440,9 +440,9 @@ HTomb = (function(HTomb) {
     },
     // Try to step in a certain direction
     tryStep: function(dx, dy, dz) {
-      var x = this.entity._x;
-      var y = this.entity._y;
-      var z = this.entity._z;
+      var x = this.entity.x;
+      var y = this.entity.y;
+      var z = this.entity.z;
       // Move up or down
       if (dz) {
         if(this.climbs===undefined) {
