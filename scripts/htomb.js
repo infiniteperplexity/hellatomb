@@ -25,7 +25,7 @@ var HTomb = (function() {
 
   // Used throughout the project
   function coord(x,y,z) {
-    return z*NLEVELS*LEVELW + x*LEVELW + y;
+    return z*LEVELH*LEVELW + x*LEVELH + y;
   }
 
   // Begin the game

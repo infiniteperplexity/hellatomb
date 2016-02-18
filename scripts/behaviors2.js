@@ -3,6 +3,7 @@ HTomb = (function(HTomb) {
   "use strict";
   var LEVELW = HTomb.Constants.LEVELW;
   var LEVELH = HTomb.Constants.LEVELH;
+  var coord = HTomb.coord;
 
   // The Sight behavior allows a creature to see
   HTomb.Things.defineBehavior({
@@ -63,7 +64,7 @@ HTomb = (function(HTomb) {
         if(this.climbs===undefined) {
           return false;
         }
-        var p = HTomb.World.portals[x*LEVELW*LEVELH+y*LEVELH+z];
+        var p = HTomb.World.portals[coord(x,y,z)];
         if (p) {
           if (p[0]===x+dx && p[1]===y+dy && p[2]===z+dz) {
             this.entity.place(x+dx,y+dy,z+dz);
@@ -448,7 +449,7 @@ HTomb = (function(HTomb) {
         if(this.climbs===undefined) {
           return false;
         }
-        var p = HTomb.World.portals[x*LEVELW*LEVELH+y*LEVELH+z];
+        var p = HTomb.World.portals[coord(x,y,z)];
         if (p) {
           if (p[0]===x+dx && p[1]===y+dy && p[2]===z+dz) {
             this.entity.place(x+dx,y+dy,z+dz);

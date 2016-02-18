@@ -63,12 +63,13 @@ HTomb = (function(HTomb) {
           if (t===HTomb.Tiles.EmptyTile && below!==undefined && below.solid===true) {
             HTomb.World.tiles[z][x][y] = HTomb.Tiles.FloorTile;
           }
+          t = HTomb.World.tiles[z][x][y];
           // validate portals
           if (t.zmove===+1) {
             HTomb.World.portals[coord(x,y,z)] = [x,y,z+1];
           } else if (t.zmove===-1) {
             HTomb.World.portals[coord(x,y,z)] = [x,y,z-1];
-          } else {
+          } else if (HTomb.World.portals[coord(x,y,z)]!==undefined) {
             delete HTomb.World.portals[coord(x,y,z)];
           }
         }
