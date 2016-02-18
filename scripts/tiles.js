@@ -62,6 +62,7 @@ HTomb = (function(HTomb) {
     name: "wall",
     symbol: "#",
     fg: ABOVE,
+    incompleteSymbol: "\u25AB",
     opaque: true,
     solid: true
   });

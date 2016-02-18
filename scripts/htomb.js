@@ -50,11 +50,11 @@ var HTomb = (function() {
   //  Tasks.assignTasks();
 
     // Run the AI for each creature...should I deal with action points here?
-  //  for (var creature in World.creatures) {
-    //  if (World.creatures[creature].ai) {
-    //      World.creatures[creature].ai.act();
-    //  }
-  //  }
+    for (var creature in World.creatures) {
+      if (World.creatures[creature].ai) {
+          World.creatures[creature].ai.act();
+      }
+    }
     // Calculate visibility
     FOV.resetVisible();
     if (Player.sight) {

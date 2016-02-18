@@ -231,6 +231,8 @@ HTomb = (function(HTomb) {
       options = options || {};
       options.tasks = options.tasks || [];
       this.tasks = options.tasks;
+      this.minions = [];
+      this.taskList = [];
     },
     addMinion: function(cr) {
       this.minions.push(cr);

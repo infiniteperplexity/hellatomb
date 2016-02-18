@@ -20,7 +20,7 @@ HTomb = (function(HTomb) {
         if (!c.master) {
 		      HTomb.Things.Master().addToEntity(c);
         }
-		    HTomb.Things.Minion.addToEntity(z);
+		    HTomb.Things.Minion().addToEntity(z);
         z.minion.setMaster(c);
         c.master.addMinion(z);
         z.ai.acted = true;

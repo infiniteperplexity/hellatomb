@@ -12,7 +12,8 @@ HTomb = (function(HTomb) {
     assignee: null,
     zone: null,
     zoneTemplate: null,
-    each: ["assigner","assignee","zone"],
+    construct: null,
+    each: ["assigner","assignee","zone","construct"],
     onDefine: function() {
       if (this.zoneTemplate) {
         var z = this.zoneTemplate;
@@ -112,12 +113,27 @@ HTomb = (function(HTomb) {
       this.entity.ai.acted = true;
     },
     work: function(x,y,z) {
-      this.buildConstruction(x,y,z);
-    }
-    buildConstruction: function(x,y,z) {
-      //this will be unique to the task
-
+      this.buildConstruction();
+      //spend action points
     },
+    buildConstruction: function() {
+      var x = this.zone.x;
+      var y = this.zone.y;
+      var z = this.zone.z;
+      var f = HTomb.World.features[coord(x,y,z)];
+      if (f && f.template==="Construction" && f.target===this.construct {
+        f.doWork();
+        return f;
+      } else {
+        var construct = HTomb.Things.Construction({target: HTomb.Things[this.construct]()});
+        if (f) {
+          console.log("removed a feature to make room for " + construct.describe());
+          f.remove();
+        }
+        construct.place(x,y,z);
+        return construct;
+      }
+    }
   });
 
   HTomb.Tasks.define({
@@ -128,6 +144,7 @@ HTomb = (function(HTomb) {
       name: "dig",
       bg: "#553300"
     },
+    construct: "Excavation",
     tryAssign: function(cr) {
       if (this.canReachZone(cr)) {
         this.assignTo(cr);
@@ -147,112 +164,50 @@ HTomb = (function(HTomb) {
     designate: function(master) {
       this.designateSquares({master: master});
     },
-    /*
-      Anything we can generalize from here?
-      - The "seeker" AI could be standardized.
-      - The "build a construction" proc could be standardized.
-      - The "finish" a construction" proc could be standardized.
-    */
-    buildConstruction: function(x,y,z) {
-      var crd = coord(x,y,z);
-      var feature = HTomb.World.features[crd];
-      if (feature) {
-        // If there is an incomplete pit, work on completing it
-        if (feature.template==="IncompletePit") {
-          feature.construction.stepsLeft-=1;
-          if (feature.construction.stepsLeft<=0) {
-            // If the pit is completed, remove the incomplete pit
-            feature.remove();
-            // If the pit was dug in the ground...
-            if (HTomb.World.levels[z].grid[x][y]===HTomb.Tiles.FLOORTILE) {
-              // ...then place a pit and drop one level...
-              //HTomb.Entity.create("Pit").place(x,y,z);
-              z-=1;
-}
-            // ...otherwise just empty out the current square
-            HTomb.Tiles.emptySquare(x,y,z);
-            // Explore the bottom of the pit
-            HTomb.Tiles.explore(x,y,z);
-            // Clean up the DigZone if there was one...bad place to do this
-            var zone = HTomb.World.zones[coord];
-            if (zone && zone.template==="DigZone") {
-              zone.remove();
-            }
-          }
-        } else {
-          // Clear out an existing feature to make room for digging
-          console.log(this.entity.describe() + " removes " + feature.describe() + " to make room for digging.");
-          feature.remove();
-        }
+    work: function() {
+      var construct = this.buildConstruction();
+      // should test whether it's complete or not?
+      if (HTomb.World.tiles[z][x][y].solid) {
+        construct.placement = [0,0,0];
       } else {
-        // Begin digging by creating an incomplete pit
-        HTomb.Entity.create("IncompletePit").place(x,y,z);
+        construct.placement = [0,0,-1];
       }
-      // Spend action
-
     }
   });
 
-  ///////All these shall change
   HTomb.Tasks.define({
     template: "BuildTask",
     name: "build",
-    // I don't like reusing this name
-    zone: {
+    zoneTemplate: {
       template: "BuildZone",
       name: "build",
-      isZone: true,
       bg: "#444444"
     },
+    construct: "WallTile",
     tryAssign: function(cr) {
-      var zone = this.zone;
-      // run the path backwards for faster failure
-      var path = HTomb.Path.aStar(zone._x,zone._y,zone._z,cr._x,cr._y,cr._z);
-      if (path!==false) {
+      if (this.canReachZone(cr)) {
         this.assignTo(cr);
         return true;
-      }
-      return false;
-    },
-    designate: function(master) {
-      if (master.entity===HTomb.Player) {
-        var buildSquares = function(squares) {
-          for (var i=0; i<squares.length; i++) {
-            var coord = squares[i];
-            if (HTomb.World.levels[coord[2]].grid[coord[0]][coord[1]]!==HTomb.Tiles.FLOORTILE) {
-              continue;
-            }
-            var z = HTomb.Entity.create("BuildZone");
-            z.place(coord[0],coord[1],coord[2]);
-            var t = HTomb.Tasks.BuildTask();
-            z.task = t;
-            t.zone = z;
-            t.master = master;
-            Tasks.taskList.push(t);
-          }
-        };
-        HTomb.GUI.selectSquareZone(HTomb.Player._z,buildSquares,{outline: true, bg: this.zone.bg});
+      } else {
+        return false;
       }
     },
-    ai: function() {
-      var cr = this.assignedTo;
-      if (cr.movement) {
-        var zone = this.zone;
-        var x = zone._x;
-        var y = zone._y;
-        var z = zone._z;
-        var dist = HTomb.Path.distance(cr._x,cr._y,x,y);
-        if (dist>1 || cr._z!==z) {
-          cr.movement.walkToward(x,y,z);
-        } else if (dist===0) {
-          cr.movement.walkRandom();
-        } else if (dist===1) {
-          console.log(cr.describe() + " builds.");
-          cr.worker.build(x,y,z);
-        }
+    canDesignateTile: function(x,y,z) {
+      var square = HTomb.Tiles.getSquare(x,y,z);
+      if (square.terrain.solid) {
+        return false;
+      } else {
+        return true;
       }
     }
+    designate: function(master) {
+      this.designateSquares({master: master, outline: true});
+    },
+    work: function() {
+      var construct = this.buildConstruction();
+    }
   });
+
   HTomb.Tasks.define({
     template: "Undesignate",
     name: "undesignate",
@@ -260,8 +215,8 @@ HTomb = (function(HTomb) {
       if (master.entity===HTomb.Player) {
         var deleteZones = function(squares) {
           for (var i=0; i<squares.length; i++) {
-            var coord = squares[i];
-            var z = HTomb.World.zones[coord[0]*LEVELW*LEVELH+coord[1]*LEVELH+coord[2]];
+            var crd = squares[i];
+            var z = HTomb.World.zones[coord(crd[0], crd[1], crd[2]);
             if (z) {
               z.remove();
             }
@@ -271,45 +226,30 @@ HTomb = (function(HTomb) {
       }
     }
   });
+
   HTomb.Tasks.define({
     template: "PatrolTask",
     name: "patrol",
     zone: {
       template: "PatrolZone",
       name: "patrol",
-      isZone: true,
       bg: "#880000"
     },
     designate: function(master) {
-      if (master.entity===HTomb.Player) {
-        var _z = HTomb.Player._z;
-        var createZone = function(x,y,z) {
-          var zone = HTomb.Entity.create("PatrolZone");
-          zone.place(x,y,z);
-          var t = HTomb.Tasks.PatrolTask();
-          zone.task = t;
-          t.zone = zone;
-          t.master = master;
-          Tasks.taskList.push(t);
-          HTomb.GUI.reset();
-        };
-        HTomb.GUI.selectSquare(_z,createZone);
-      }
+      this.designateSquare({master: master});
     },
     ai: function() {
       var cr = this.assignedTo;
-      cr.ai.patrol(this.zone._x,this.zone._y,this.zone._z);
+      cr.ai.patrol(this.zone.x,this.zone.y,this.zone.z);
     },
     tryAssign: function(cr) {
-      var zone = this.zone;
-      // run the path backwards for faster failure
-      var path = HTomb.Path.aStar(zone._x,zone._y,zone._z,cr._x,cr._y,cr._z);
-      if (path!==false) {
+      if (this.canReachZone(cr)) {
         this.assignTo(cr);
         return true;
+      } else {
+        return false;
       }
-      return false;
-    },
+    }
   });
 
 

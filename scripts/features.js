@@ -46,18 +46,64 @@ HTomb = (function(HTomb) {
     randomColor: 20
   });
 
+  // An excavation is a special, dynamic entity that digs out a square and then removes itself
   HTomb.Things.defineEntity({
-    template: "IncompletePit",
-    name: "pit (under contruction)",
+    template: "Excavation",
+    name: "excavation",
     isFeature: true,
-    symbol: "\u2022"
+    constructionSymbol: "\u2022",
+    onPlace: function(x,y,z) {
+      HTomb.World.emptySquare(x,y,z);
+      this.remove();
+    }
   });
 
   HTomb.Things.defineEntity({
-    template: "IncompleteWall",
-    name: "wall (under contruction)",
-    isFeature: true,
-    symbol: "\u25AB"
+  	template: "Construction",
+    name: "construction",
+  	isFeature: true,
+    target: null,
+    steps: 10,
+    placement: [],
+    task: null,
+    each: ["steps","target","placement","symbol","task"],
+    onCreate: function(args) {
+      args = args || {};
+      args.target = args.target || null;
+      args.steps = args.steps || this.steps;
+      args.task = args.task || null;
+      this.placement = args.placement || [0,0,0];
+      this.steps = args.steps;
+      this.target = args.target;
+      this.task = args.task;
+      this.symbol = target.constructSymbol || "X";
+      HTomb.Things.templates.Entity.onCreate.call(this, args);
+    },
+    describe: function() {
+      var desc = HTomb.Thigns.templates.Entity.describe.call(this);
+      desc += " (" + target.describe() + ")";
+      return desc;
+    },
+    doWork: function() {
+      this.steps-=1;
+      if (this.steps<=0) {
+        this.complete();
+      }
+    },
+  	complete: function() {
+      var x = this.x + this.placement[0];
+      var y = this.y + this.placement[1];
+      var z = this.z + this.placement[2];
+      if (target.isFeature) {
+        this.remove();
+        var feature = HTomb.Things.create(target.template);
+        feature.place(x,y,z);
+      } else if (target.parent==="Terrain") {
+        HTomb.World.tiles[z][x][y] = target;
+        this.remove();
+      }
+      this.task.complete();
+    }
   });
 
   return HTomb;
