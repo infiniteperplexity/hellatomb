@@ -433,6 +433,7 @@ HTomb = (function(HTomb) {
     HTomb.Controls.context = context;
     context.clickTile = function(x,y) {
       callb(x,y,z);
+      GUI.reset();
     };
     if (options.line!==undefined) {
       var x0 = options.line.x || HTomb.Player.x;

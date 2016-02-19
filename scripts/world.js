@@ -50,16 +50,21 @@ HTomb = (function(HTomb) {
       }
     }
   };
-
   // Run this to make sure the basic rules of adjacent terrain are followed
   HTomb.World.validate = function() {
     for (var x=1; x<LEVELW-1; x++) {
       for (var y=1; y<LEVELH-1; y++) {
         for (var z=1; z<NLEVELS-1; z++) {
           var t = HTomb.World.tiles[z][x][y];
-          // validate floors
           var below = HTomb.World.tiles[z-1][x][y];
           var above = HTomb.World.tiles[z+1][x][y];
+          // validate slopes
+          if (t===HTomb.Tiles.UpSlopeTile) {
+            if (above.solid!==true) {
+              HTomb.World.tiles[z+1][x][y] = HTomb.Tiles.DownSlopeTile;
+            }
+          }
+          // validate floors
           if (t===HTomb.Tiles.EmptyTile && below!==undefined && below.solid===true) {
             HTomb.World.tiles[z][x][y] = HTomb.Tiles.FloorTile;
           }

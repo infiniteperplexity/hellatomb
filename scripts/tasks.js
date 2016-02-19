@@ -2,260 +2,357 @@ HTomb = (function(HTomb) {
   "use strict";
   var LEVELW = HTomb.Constants.LEVELW;
   var LEVELH = HTomb.Constants.LEVELH;
-//  var b = HTomb.Behavior;
+  var coord = HTomb.coord;
 
-  var Tasks = HTomb.Tasks;
-  var Entity = HTomb.Entity;
-  Tasks.templates = {};
-  Tasks.taskList = [];
-
-  var task = {
-      describe: function() {return this.name;},
-      assignedTo: null,
-      tryAssign: function(cr) {
-        console.log("shouldn't use this default");
-        this.assignTo(cr);
-        return true;
-      },
-      assignTo: function(cr) {
-        if (cr.minion===undefined) {
-          alert("not good!");
-        } else {
-          this.assignedTo = cr;
-          cr.minion.onAssign(this);
-        }
-      },
-      unassign: function() {
-        var cr = this.assignedTo;
-        if (cr.minion===undefined) {
-          alert("not good!");
-        } else {
-          this.assignedTo = null;
-          cr.minion.unassign();
-        }
-      }
-  };
-  HTomb.Tasks.define = function(properties) {
-    if (!properties || !properties.template) {
-      console.log("invalid template definition");
-      return;
-    }
-    Tasks[properties.template] = function() {
-      var tsk = Object.create(task);
-      for (var p in properties) {
-        tsk[p] = properties[p];
-      }
-      if (tsk.zone) {
-        var z = tsk.zone;
+  // Define a generic task that gets workers assigned
+  HTomb.Things.define({
+    template: "Task",
+    name: "task",
+    parent: "Thing",
+    assigner: null,
+    assignee: null,
+    zone: null,
+    zoneTemplate: null,
+    construct: null,
+    each: ["assigner","assignee","zone","construct"],
+    onDefine: function() {
+      if (this.zoneTemplate) {
+        var z = this.zoneTemplate;
         z.isZone = true;
-        HTomb.Entity.define(z);
+        // is this how we define an entity?
+        HTomb.Things.defineEntity(z);
       }
-      return tsk;
-    };
-  };
-
-  Tasks.assignTasks = function() {
-    for(var i=0; i<Tasks.taskList.length; i++) {
-      var tsk = HTomb.Tasks.taskList[i];
-      if (tsk.assignedTo!==null) {
-        continue;
+    },
+    tryAssign: function(cr) {
+      HTomb.Debug.pushMessage("Probably shouldn't use default tryAssign()");
+      this.assignTo(cr);
+      return true;
+    },
+    // one of the more common ways to test if a task can be assigned
+    canReachZone: function(cr) {
+      var zone = this.zone;
+      var path = HTomb.Path.aStar(zone.x,zone.y,zone.z,cr.x,cr.y,cr.z,{useLast: false});
+      if (path!==false) {
+        return true;
+      } else if (zone.z===cr.z && HTomb.Path.distance(cr.x,cr.y,zone.x,zone.y)<=1) {
+        return true;
+      } else {
+        return false;
       }
-      var master = tsk.master;
-      var minions = master.minions;
-      // maybe should shuffle this only once per turn?
-      //minions = minions.randomize(); //this randomization function erases the original
-      for (var j=0; j<minions.length; j++) {
-        if (minions[j].minion.task!==null) {
-          continue;
+    },
+    canDesignateTile: function(x,y,z) {
+      return true;
+    },
+    assignTo: function(cr) {
+      if (cr.minion===undefined) {
+        HTomb.Debug.pushMessage("Problem assigning task");
+      } else {
+        this.assignee = cr;
+        cr.minion.onAssign(this);
+      }
+    },
+    unassign: function() {
+      var cr = this.assignee;
+      if (cr.minion===undefined) {
+        HTomb.Debug.pushMessage("Problem unassigning task");
+      } else {
+        this.assignee = null;
+        cr.minion.unassign();
+      }
+    },
+    cancel: function() {
+      var master = this.assigner;
+      if (master) {
+        var taskList = this.assigner.master.taskList;
+        taskList.splice(taskList.indexOf(this));
+      }
+      if (this.assignee) {
+        this.assignee.minion.unassign();
+      }
+      if (this.zone) {
+        this.zone.remove();
+      }
+    },
+    complete: function() {
+      var master = this.assigner;
+      if (master) {
+        var taskList = this.assigner.master.taskList;
+        taskList.splice(taskList.indexOf(this),0);
+      }
+      if (this.assignee) {
+        this.assignee.minion.unassign();
+      }
+      if (this.zone) {
+        this.zone.remove();
+      }
+    },
+    // the last parameter is optional
+    placeZone: function(x,y,z, master) {
+      master = master || HTomb.Player;
+      if (this.canDesignateTile(x,y,z)) {
+        var zone = HTomb.Things[this.zoneTemplate.template]();
+        zone.place(x,y,z);
+        var t = HTomb.Things[this.template]();
+        zone.task = t;
+        t.zone = zone;
+        t.assigner = master;
+        t.assigner.master.taskList.push(t);
+      }
+    },
+    // one common way of designating tasks
+    designateSquare: function(options) {
+      options = options || {};
+      var master = options.master || HTomb.Player;
+      var z = master.entity.z;
+      var that = this;
+      function createZone(x,y,z) {
+        that.placeZone(x,y,z);
+      }
+      HTomb.GUI.selectSquare(z,createZone);
+    },
+    // one common way of designating tasks
+    designateSquares: function(options) {
+      options = options || {};
+      var master = options.master || HTomb.Player.master;
+      options.outline = options.outline || false;
+      var that = this;
+      var taskSquares = function(squares) {
+        for (var i=0; i<squares.length; i++) {
+          var crd = squares[i];
+          that.placeZone(crd[0],crd[1],crd[2]);
         }
-        var assigned = tsk.tryAssign(minions[j]);
-        if (assigned) {
-          break;
+        HTomb.GUI.reset();
+      };
+      HTomb.GUI.selectSquareZone(master.entity.z,taskSquares,{outline: options.outline, bg: this.zoneTemplate.bg});
+    },
+    ai: function() {
+      this.seekZoneAI();
+    },
+    // A common AI pattern for Tasks
+    seekZoneAI: function() {
+      var cr = this.assignee;
+      if (cr.movement) {
+        var zone = this.zone;
+        var x = zone.x;
+        var y = zone.y;
+        var z = zone.z;
+        var dist = HTomb.Path.distance(cr.x,cr.y,x,y);
+        if (dist>1 || cr.z!==z) {
+          cr.movement.walkToward(x,y,z);
+        } else if (dist===0) {
+          cr.movement.walkRandom();
+        } else if (dist===1) {
+          this.work(x,y,z);
         }
-        //tsk.assignTo(minions[j]);
+      }
+      cr.ai.acted = true;
+    },
+    work: function(x,y,z) {
+      this.buildConstruction();
+    },
+    buildConstruction: function() {
+      var x = this.zone.x;
+      var y = this.zone.y;
+      var z = this.zone.z;
+      var f = HTomb.World.features[coord(x,y,z)];
+      if (f && f.template==="Construction" && f.target.template===this.construct) {
+        console.log("doing work");
+        f.doWork();
+        return f;
+      } else {
+        var construct = HTomb.Things.Construction({target: this.construct, task: this});
+        if (f) {
+          console.log("removed a feature to make room for " + construct.describe());
+          f.remove();
+        }
+        construct.place(x,y,z);
+        return construct;
       }
     }
-  };
+  });
 
-
-
-  HTomb.Tasks.define({
+  HTomb.Things.defineTask({
     template: "DigTask",
     name: "dig",
-    zone: {
+    zoneTemplate: {
       template: "DigZone",
       name: "dig",
-      isZone: true,
       bg: "#553300"
     },
+    construct: "Excavation",
     tryAssign: function(cr) {
-      var zone = this.zone;
-      // run the path backwards for faster failure
-      var path = HTomb.Path.aStar(zone._x,zone._y,zone._z,cr._x,cr._y,cr._z);
-      if (path!==false) {
+      if (this.canReachZone(cr)) {
         this.assignTo(cr);
         return true;
+      } else {
+        return false;
       }
-      return false;
     },
+    canDesignateTile: function(x,y,z) {
+      var square = HTomb.Tiles.getSquare(x,y,z);
+      if (square.terrain.fallable || square.terrain.immutable) {
+        return false;
+      } else {
+        return true;
+      }
+    },
+    // note that this passes the behavior, not the entity
     designate: function(master) {
-      if (master.entity===HTomb.Player) {
-        var digSquares = function(squares) {
-          for (var i=0; i<squares.length; i++) {
-            var coord = squares[i];
-            if (HTomb.World.levels[coord[2]].grid[coord[0]][coord[1]]!==HTomb.Tiles.FLOORTILE
-                && HTomb.World.levels[coord[2]].grid[coord[0]][coord[1]]!==HTomb.Tiles.WALLTILE) {
-              continue;
-            }
-            var z = HTomb.Entity.create("DigZone");
-            z.place(coord[0],coord[1],coord[2]);
-            var t = HTomb.Tasks.DigTask();
-            z.task = t;
-            t.zone = z;
-            t.master = master;
-            Tasks.taskList.push(t);
-          }
-        };
-        HTomb.GUI.selectSquareZone(HTomb.Player._z,digSquares,{outline: false, bg: this.zone.bg});
-      }
+      this.designateSquares({master: master});
     },
-    ai: function() {
-      var cr = this.assignedTo;
-      if (cr.movement) {
-        var zone = this.zone;
-        var x = zone._x;
-        var y = zone._y;
-        var z = zone._z;
-        // the Z issue is a problem
-        var dist = HTomb.Path.distance(cr._x,cr._y,x,y);
-        if (dist>1 || cr._z!==z) {
-          cr.movement.walkToward(x,y,z);
-        } else if (dist===0) {
-          cr.movement.walkRandom();
-        } else if (dist===1) {
-          console.log(cr.describe() + " digs.");
-          cr.worker.dig(x,y,z);
-        }
+    work: function() {
+      var x = this.zone.x;
+      var y = this.zone.y;
+      var z = this.zone.z;
+      var construct = this.buildConstruction();
+      // should test whether it's complete or not?
+      if (HTomb.World.tiles[z][x][y].solid) {
+        construct.placement = [0,0,0];
+      } else {
+        construct.placement = [0,0,-1];
       }
     }
   });
-  HTomb.Tasks.define({
+
+  HTomb.Things.defineTask({
     template: "BuildTask",
-    name: "build",
-    // I don't like reusing this name
-    zone: {
+    name: "build wall",
+    zoneTemplate: {
       template: "BuildZone",
       name: "build",
-      isZone: true,
       bg: "#444444"
     },
+    construct: "WallTile",
     tryAssign: function(cr) {
-      var zone = this.zone;
-      // run the path backwards for faster failure
-      var path = HTomb.Path.aStar(zone._x,zone._y,zone._z,cr._x,cr._y,cr._z);
-      if (path!==false) {
+      if (this.canReachZone(cr)) {
         this.assignTo(cr);
         return true;
+      } else {
+        return false;
       }
-      return false;
+    },
+    canDesignateTile: function(x,y,z) {
+      var square = HTomb.Tiles.getSquare(x,y,z);
+      if (square.terrain.solid) {
+        return false;
+      } else {
+        return true;
+      }
     },
     designate: function(master) {
-      if (master.entity===HTomb.Player) {
-        var buildSquares = function(squares) {
-          for (var i=0; i<squares.length; i++) {
-            var coord = squares[i];
-            if (HTomb.World.levels[coord[2]].grid[coord[0]][coord[1]]!==HTomb.Tiles.FLOORTILE) {
-              continue;
-            }
-            var z = HTomb.Entity.create("BuildZone");
-            z.place(coord[0],coord[1],coord[2]);
-            var t = HTomb.Tasks.BuildTask();
-            z.task = t;
-            t.zone = z;
-            t.master = master;
-            Tasks.taskList.push(t);
-          }
-        };
-        HTomb.GUI.selectSquareZone(HTomb.Player._z,buildSquares,{outline: true, bg: this.zone.bg});
-      }
-    },
-    ai: function() {
-      var cr = this.assignedTo;
-      if (cr.movement) {
-        var zone = this.zone;
-        var x = zone._x;
-        var y = zone._y;
-        var z = zone._z;
-        var dist = HTomb.Path.distance(cr._x,cr._y,x,y);
-        if (dist>1 || cr._z!==z) {
-          cr.movement.walkToward(x,y,z);
-        } else if (dist===0) {
-          cr.movement.walkRandom();
-        } else if (dist===1) {
-          console.log(cr.describe() + " builds.");
-          cr.worker.build(x,y,z);
-        }
-      }
+      this.designateSquares({master: master, outline: true});
     }
   });
-  HTomb.Tasks.define({
+
+  HTomb.Things.defineTask({
     template: "Undesignate",
     name: "undesignate",
     designate: function(master) {
       if (master.entity===HTomb.Player) {
         var deleteZones = function(squares) {
           for (var i=0; i<squares.length; i++) {
-            var coord = squares[i];
-            var z = HTomb.World.zones[coord[0]*LEVELW*LEVELH+coord[1]*LEVELH+coord[2]];
+            var crd = squares[i];
+            var z = HTomb.World.zones[coord(crd[0], crd[1], crd[2])];
             if (z) {
-              z.remove();
+              z.task.cancel();
             }
           }
         };
-        HTomb.GUI.selectSquareZone(HTomb.Player._z,deleteZones,{outline: false});
+        HTomb.GUI.selectSquareZone(HTomb.Player.z,deleteZones,{outline: false});
       }
     }
   });
-  HTomb.Tasks.define({
+
+  HTomb.Things.defineTask({
     template: "PatrolTask",
     name: "patrol",
-    zone: {
+    zoneTemplate: {
       template: "PatrolZone",
       name: "patrol",
-      isZone: true,
       bg: "#880000"
     },
-    designate: function(master) {
-      if (master.entity===HTomb.Player) {
-        var _z = HTomb.Player._z;
-        var createZone = function(x,y,z) {
-          var zone = HTomb.Entity.create("PatrolZone");
-          zone.place(x,y,z);
-          var t = HTomb.Tasks.PatrolTask();
-          zone.task = t;
-          t.zone = zone;
-          t.master = master;
-          Tasks.taskList.push(t);
-          HTomb.GUI.reset();
-        };
-        HTomb.GUI.selectSquare(_z,createZone);
-      }
-    },
-    ai: function() {
-      var cr = this.assignedTo;
-      cr.ai.patrol(this.zone._x,this.zone._y,this.zone._z);
-    },
-    tryAssign: function(cr) {
-      var zone = this.zone;
-      // run the path backwards for faster failure
-      var path = HTomb.Path.aStar(zone._x,zone._y,zone._z,cr._x,cr._y,cr._z);
-      if (path!==false) {
-        this.assignTo(cr);
+    canDesignateTile: function(x,y,z) {
+      var square = HTomb.Tiles.getSquare(x,y,z);
+      if (square.terrain.solid || square.terrain.fallable) {
+        return false;
+      } else {
         return true;
       }
-      return false;
     },
+    designate: function(master) {
+      this.designateSquare({master: master});
+    },
+    ai: function() {
+      var cr = this.assignee;
+      cr.ai.patrol(this.zone.x,this.zone.y,this.zone.z);
+    },
+    tryAssign: function(cr) {
+      if (this.canReachZone(cr)) {
+        this.assignTo(cr);
+        return true;
+      } else {
+        return false;
+      }
+    }
   });
+
+  HTomb.Things.defineTask({
+    template: "DigTrench",
+    name: "dig trench",
+    zoneTemplate: {
+      template: "TrenchZone",
+      name: "trench",
+      bg: "#444444"
+    },
+    construct: "UpSlope",
+    tryAssign: function(cr) {
+      if (this.canReachZone(cr)) {
+        this.assignTo(cr);
+        return true;
+      } else {
+        return false;
+      }
+    },
+    canDesignateTile: function(x,y,z) {
+      var square = HTomb.Tiles.getSquare(x,y,z);
+      if (square.terrain.solid) {
+        return false;
+      } else {
+        return true;
+      }
+    },
+    canDesignateTile: function(x,y,z) {
+      var square = HTomb.Tiles.getSquare(x,y,z);
+      if (square.terrain.fallable || square.terrain.immutable) {
+        return false;
+      } else {
+        return true;
+      }
+    },
+    // note that this passes the behavior, not the entity
+    designate: function(master) {
+      this.designateSquares({master: master});
+    },
+    work: function() {
+      var x = this.zone.x;
+      var y = this.zone.y;
+      var z = this.zone.z;
+      var construct = this.buildConstruction();
+      // should test whether it's complete or not?
+      if (HTomb.World.tiles[z][x][y].solid) {
+        construct.placement = [0,0,0];
+      } else {
+        construct.placement = [0,0,-1];
+      }
+    }
+  });
+
 
   return HTomb;
 })(HTomb);
+
+/*
+some thoughts...
+..."okayTiles" could be a property of the template, not the arguments
+
+*/

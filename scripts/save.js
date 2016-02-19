@@ -1,6 +1,9 @@
 // This submodule handles saving the game
 HTomb = (function(HTomb) {
   "use strict";
+  var LEVELW = HTomb.Constants.LEVELW;
+  var LEVELH = HTomb.Constants.LEVELH;
+  var NLEVELS = HTomb.Constants.NLEVELS;
 
   HTomb.Save.saveGame = function() {
     var saveGame = {};
@@ -11,35 +14,48 @@ HTomb = (function(HTomb) {
     saveGame.items = HTomb.World.items;
     saveGame.features = HTomb.World.features;
     saveGame.zones = HTomb.World.zones;
-    //saveGame.tasks = HTomb.World.tasks;
-    var json = stringify(saveGame);
-    //return json;
+    var json = HTomb.Save.stringify(saveGame);
     localStorage.saveGame = json;
+    console.log(json.length);
   };
 
-  function stringify(obj) {
+  HTomb.Save.stringify = function(obj) {
     var json = JSON.stringify(obj, function(key, val) {
+      //console.log([this,key,val]);
+      if (val===undefined) {
+        //console.log("why is val undefined?");
+        return undefined;
+      } else if (val===null) {
+        //console.log("could I just do null normally?");
+        return null;
+      }
       // if it has special instructions, use those to stringify
       if (val.stringify) {
+        //console.log("special way to stringify");
         return val.stringify();
         // if it's from the global things table, stringify it normally
       } else if (this===HTomb.World.things) {
-        return val;
-      // if it's on the global things table, stringify its ID
-      } else if (val.thingId) {
-        return {tid: val.thingId};
-      } else {
+        //console.log("thing on the thing list");
         // stringify only those things on the "each" list
         for (var p in val) {
-      		// this should not delete inherited properties
-      		if (val.each.indexOf(p)===-1) {
+      		// this should not delete inherited properties or attached things
+            //// Can maybe dump x, y, and z, and reconstruct from lists?
+      		if (val.each.indexOf(p)===-1 && val.thingId===undefined) {
       			delete val[p];
       		}
       	}
         return val;
+      // if it's on the global things table, stringify its ID
+      } else if (val.thingId) {
+        //console.log("serialized as ID");
+        return {tid: val.thingId};
+      } else {
+        //console.log("normal value");
+        return val;
       }
     });
-  }
+    return json;
+  };
 
   function fillListFrom(fromList, toList) {
     if (Array.isArray(fromList) && Array.isArray(toList)) {
@@ -76,17 +92,16 @@ HTomb = (function(HTomb) {
     saveGame = localStorage.saveGame;
     var thingParse = JSON.parse(saveGame);
     var restParse = JSON.parse(saveGame, function(key, val) {
-      if (key==="thingId") {
+      if (key==="tid") {
+        // This will need to restore the prototype chain
         return thingParse.things[val];
-      } else if (key==="staticThing") {
-        return HTomb.Things.template[val]();
       } else {
         return val;
       }
     });
     fillListFrom(thingParse.things, HTomb.World.things);
-    fillGridFrom(restParse.tiles, HTomb.World.tiles, HTomb.Things.templates.Terrain.parse);
-    fillGridFrom(restParse.explored, HTomb.World.explored);
+    fillGrid3dFrom(restParse.tiles, HTomb.World.tiles, HTomb.Things.templates.Terrain.parse);
+    fillGrid3dFrom(restParse.explored, HTomb.World.explored);
     fillListFrom(restParse.creatures, HTomb.World.creatures);
     fillListFrom(restParse.items, HTomb.World.items);
     fillListFrom(restParse.features, HTomb.World.features);

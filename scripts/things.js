@@ -2,14 +2,8 @@ HTomb = (function(HTomb) {
   "use strict";
   var coord = HTomb.coord;
 
-
-  // The global list of known templates
-  HTomb.Things.templates = {};
-  HTomb.Things.static = [];
-
-
-
   var thing = {
+    template: "Thing",
     spawn: function() {
       // Add to the global things table
       HTomb.World.things.push(this);
@@ -24,24 +18,9 @@ HTomb = (function(HTomb) {
         this.onDespawn();
       }
     },
-    stringify: function() {
-      var json = JSON.stringify(this, function(key, val) {
-        // Fully stringify if it is a top-level item on the global things list
-        if (this===HTomb.World.things) {
-          return val;
-        // If it is a static thing than stringify it as a number only...will this work?
-        } else if (val.static===true) {
-          return HTomb.Things.static.indexOf(val);
-        } else {
-          // Otherwise serialize only the ID
-          return {thingId: this.thingId};
-        }
-      });
-      return json;
-    },
     get thingId () {
       // Calculate thingId dynamically
-      return HTomb.World.Things.indexOf(this);
+      return HTomb.World.things.indexOf(this);
     },
     set thingId (arg) {
       // not allowed
@@ -56,10 +35,10 @@ HTomb = (function(HTomb) {
       return this.describe();
     },
     // list any properties that are specific to eachs, such as current hit points
-    each: []
+    each: ["template"]
   };
-
-
+  // The global list of known templates
+  HTomb.Things.templates = {Thing: thing};
 
   // define a template for creating things
   HTomb.Things.define = function(args) {
@@ -92,17 +71,19 @@ HTomb = (function(HTomb) {
       t[arg] = args[arg];
     }
     // concatenate "each" instead of overriding it
-    if (t.parent && HTomb.Things.templates[t.parent] && HTomb.Things.templates[t.parent].each) {
-      t.each = t.each.concat(HTomb.Things.templates[t.parent].each);
+    if (t.parent && HTomb.Things.templates[t.parent]) {
+      var par = HTomb.Things.templates[t.parent].each;
+      for (var i=0; i<par.length; i++) {
+        if (t.each.indexOf(par[i])===-1) {
+          t.each.push(par[i]);
+        }
+      }
     }
     // Add to the list of templates
     HTomb.Things.templates[args.template] = t;
     // Don't fire onDefine for the top-level thing
     if (t.onDefine && args.parent!=="Thing") {
       t.onDefine();
-    }
-    if (t.static===true) {
-      HTomb.Things.static.push(t);
     }
   };
 
@@ -111,10 +92,6 @@ HTomb = (function(HTomb) {
   // Create a new object based on the template
   HTomb.Things.create = function(template, args) {
     var t = Object.create(HTomb.Things.templates[template]);
-    if (t.static===true) {
-      HTomb.Debug.pushMessage("Can't create a static thing");
-      return;
-    }
     for (var i=0; i<t.each.length; i++) {
       t[t.each[i]] = HTomb.Things.templates[template][t.each[i]];
     }
@@ -151,6 +128,7 @@ HTomb = (function(HTomb) {
     behaviors: {},
     each: ["x","y","z"],
     place: function(x,y,z) {
+      //ah...this is causing some problems...
       this.remove();
       var c = coord(x,y,z);
       var creatures = HTomb.World.creatures;
@@ -224,11 +202,6 @@ HTomb = (function(HTomb) {
       }
       var zones = HTomb.World.zones;
       if (this.isZone) {
-        var tsk = this.task;
-        if (tsk.assignedTo) {
-          tsk.unassign();
-        }
-        //HTomb.Tasks.taskList.splice(HTomb.Tasks.taskList.indexOf(tsk),1);
         delete zones[c];
       }
       this.x = null;
@@ -327,11 +300,11 @@ HTomb = (function(HTomb) {
       }
     },
     unassign: function() {
-      var cr = this.assignedTo;
+      var cr = this.assignee;
       if (cr.minion===undefined) {
         HTomb.Debug.pushMessage("Problem unassigning task");
       } else {
-        this.assignedTo = null;
+        this.assignee = null;
         cr.minion.unassign();
       }
     }

@@ -53,7 +53,22 @@ HTomb = (function(HTomb) {
     isFeature: true,
     constructionSymbol: "\u2022",
     onPlace: function(x,y,z) {
-      HTomb.World.emptySquare(x,y,z);
+      var t = HTomb.World.tiles[z][x][y];
+      var below = HTomb.World.tiles[z-1][x][y];
+      if (t===HTomb.Tiles.WallTile) {
+        if (below.solid===true) {
+          HTomb.World.tiles[z][x][y] = HTomb.Tiles.FloorTile;
+        } else {
+          HTomb.World.tiles[z][x][y] = HTomb.Tiles.EmptyTile;
+        }
+      } else if (t===HTomb.Tiles.FloorTile) {
+        HTomb.World.tiles[z][x][y] = HTomb.Tiles.EmptyTile;
+        if (below.solid===true) {
+          HTomb.World.tiles[z][x][y] = HTomb.Tiles.FloorTile;
+        } else {
+          HTomb.World.tiles[z][x][y] = HTomb.Tiles.EmptyTile;
+        }
+      }
       this.remove();
     }
   });
@@ -74,14 +89,16 @@ HTomb = (function(HTomb) {
       args.task = args.task || null;
       this.placement = args.placement || [0,0,0];
       this.steps = args.steps;
-      this.target = args.target;
+      console.log(args);
+      this.target = HTomb.Things.templates[args.target];
       this.task = args.task;
-      this.symbol = target.constructSymbol || "X";
+      this.symbol = this.target.constructionSymbol || "X";
+      this.fg = this.target.fg;
       HTomb.Things.templates.Entity.onCreate.call(this, args);
     },
     describe: function() {
-      var desc = HTomb.Thigns.templates.Entity.describe.call(this);
-      desc += " (" + target.describe() + ")";
+      var desc = HTomb.Things.templates.Entity.describe.call(this);
+      desc += " (" + this.target.describe() + ")";
       return desc;
     },
     doWork: function() {
@@ -94,12 +111,13 @@ HTomb = (function(HTomb) {
       var x = this.x + this.placement[0];
       var y = this.y + this.placement[1];
       var z = this.z + this.placement[2];
-      if (target.isFeature) {
+      console.log(this);
+      if (this.target.isFeature) {
         this.remove();
-        var feature = HTomb.Things.create(target.template);
+        var feature = HTomb.Things.create(this.target.template);
         feature.place(x,y,z);
-      } else if (target.parent==="Terrain") {
-        HTomb.World.tiles[z][x][y] = target;
+      } else if (this.target.parent==="Terrain") {
+        HTomb.World.tiles[z][x][y] = this.target;
         this.remove();
       }
       this.task.complete();

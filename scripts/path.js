@@ -41,9 +41,9 @@ Tomb = (function(HTomb) {
     //_fastgrid = HTomb.World._fastgrid;
     options = options || {};
     var useFirst = options.useFirst || false;
-    var useLast = options.useLast || true;
+    var useLast = (options.useLast===false) ? false : true;
     var canPass = options.canPass || defaultPassable;
-    var usePortals = options.usePortals || true;
+    var usePortals = (options.usePortals===false) ? false : true;
 
     // fastest possible lookup
     // random bias should be okay
@@ -71,7 +71,7 @@ Tomb = (function(HTomb) {
       // calculate the fast lookup
       crd = coord(current[0],current[1],current[2]);
       // check if we have found the target square (or maybe distance==1?)
-      if (current[0]===x1 && current[1]===y1 && current[2]===z1) {
+      if ((current[0]===x1 && current[1]===y1 && current[2]===z1) || (HTomb.Path.distance(current[0],current[1],x1,y1)<=1 && current[2]===z1 && useLast===false)) {
       // if (current[6]===1) {
         // start with the goal square
         path = [[current[0],current[1],current[2]]];
@@ -88,9 +88,9 @@ Tomb = (function(HTomb) {
         if (path.length>0 && useFirst===false) {
           path.shift();
         }
-        if (path.length>0 && useLast===false) {
-          path.pop();
-        }
+        //if (path.length>0 && useLast===false) {
+        //  path.pop();
+        //}
         return path;
       }
       // we are now checking this square

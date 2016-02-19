@@ -102,7 +102,7 @@ HTomb = (function(HTomb) {
     }
     if (this.isZone) {
       var tsk = this.task;
-      if (tsk.assignedTo) {
+      if (tsk.assignee) {
         tsk.unassign();
       }
       HTomb.Tasks.taskList.splice(HTomb.Tasks.taskList.indexOf(tsk),1);

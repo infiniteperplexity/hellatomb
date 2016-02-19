@@ -8,6 +8,7 @@ HTomb = (function(HTomb) {
   var ABOVE = HTomb.Constants.ABOVE;
   var BELOW = HTomb.Constants.BELOW;
   HTomb.Constants.FLOORBELOW = "\u25E6";
+  HTomb.Constants.ROOFABOVE = "'";
   var coord = HTomb.coord;
 
   var Tiles = HTomb.Tiles;
@@ -62,7 +63,7 @@ HTomb = (function(HTomb) {
     name: "wall",
     symbol: "#",
     fg: ABOVE,
-    incompleteSymbol: "\u25AB",
+    constructionSymbol: "\u25AB",
     opaque: true,
     solid: true
   });
@@ -70,6 +71,7 @@ HTomb = (function(HTomb) {
     template: "UpSlopeTile",
     name: "upward slope",
     symbol: "\u02C4",
+    constructionSymbol: "\u25BF",
     fg: ABOVE,
     zview: +1,
     zmove: +1
@@ -126,6 +128,8 @@ HTomb = (function(HTomb) {
         // an empty space with floor below it
       } else if (tile===Tiles.EmptyTile && tiles[z-1][x][y]===Tiles.FloorTile) {
         return [HTomb.Constants.FLOORBELOW,fg,bg];
+      } else if (tile===Tiles.FloorTile && tiles[z+1][x][y]!==Tiles.EmptyTile) {
+        return [HTomb.Constants.ROOFABOVE,fg,bg];
       } else {
         // terrain on current level
         return [tile.symbol || "X",fg,bg];
@@ -159,6 +163,8 @@ HTomb = (function(HTomb) {
         //fg = ROT.Color.add(fg,HTomb.World.colors[x][y]);
         //fg = ROT.Color.toHex(fg);
         //return [tile.symbol || "X",fg,bg];
+      } else if (tile===Tiles.FloorTile && tiles[z+1][x][y]!==Tiles.EmptyTile) {
+        return [HTomb.Constants.ROOFABOVE,tile.fg,bg];
       } else {
         fg = tile.fg || fg;
         return [tile.symbol || "X",fg,bg];
@@ -213,8 +219,9 @@ HTomb = (function(HTomb) {
     if (HTomb.World.tiles[z+1][x][y]===HTomb.Tiles.EmptyTile) {
       HTomb.World.tiles[z+1][x][y] = HTomb.Tiles.FloorTile;
     }
-    //validate
+    HTomb.World.validate();
   };
+  // I actually hate the way this works
   Tiles.emptySquare = function(x,y,z) {
     if (HTomb.World.tiles[z-1][x][y]===HTomb.Tiles.WallTile) {
       HTomb.World.tiles[z][x][y] = HTomb.Tiles.FloorTile;
