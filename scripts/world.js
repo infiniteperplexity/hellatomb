@@ -107,15 +107,16 @@ HTomb = (function(HTomb) {
     simplex_features("Rock",{hscale: 10, vtresh: 3, p1: 0.25, p2: 0.1});
     simplex_features("Stick",{hscale: 10, vtresh: 3, p1: 0.15, p2: 0.05});
     //water_table(23);
-    //scatter("Zombie",0.005);
+    scatter("Bat",0.005);
+    scatter("Spider",0.005);
     addSlopes();
   };
   function scatter(template,p) {
     for (var x=0; x<LEVELW; x++) {
       for (var y=0; y<LEVELH; y++) {
-        var z = HTomb.Tiles.groundLevel(x,y)+1;
-        var e = HTomb.Entity.create(template);
-        if (e.isCreature && HTomb.World.creatures[x*LEVELW*LEVELH+y*LEVELH+z]===HTomb.Player) {
+        var z = HTomb.Tiles.groundLevel(x,y);
+        var e = HTomb.Things.create(template);
+        if (e.isCreature && HTomb.World.creatures[coord(x,y,z)]===HTomb.Player) {
           continue;
         } else if (Math.random()<p) {
           e.place(x,y,z);

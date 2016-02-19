@@ -32,5 +32,29 @@ HTomb = (function(HTomb) {
     }
   });
 
+  HTomb.Things.defineEntity({
+    template: "Bat",
+    name: "bat",
+    isCreature: true,
+    symbol: "b",
+    fg: "#999999",
+    behaviors: {
+      AI: {},
+      Movement: {}
+    }
+  });
+
+  HTomb.Things.defineEntity({
+    template: "Spider",
+    name: "spider",
+    isCreature: true,
+    symbol: "s",
+    fg: "#BBBBBB",
+    behaviors: {
+      AI: {},
+      Movement: {}
+    }
+  });
+
   return HTomb;
 })(HTomb);
