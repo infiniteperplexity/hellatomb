@@ -40,9 +40,9 @@ HTomb = (function(HTomb) {
         for (var p in val) {
       		// this should not delete inherited properties or attached things
             //// Can maybe dump x, y, and z, and reconstruct from lists?
-      		if (val.each.indexOf(p)===-1 && val.thingId===undefined) {
-      			delete val[p];
-      		}
+      		//if (val.each.indexOf(p)===-1) {
+      		//	delete val[p];
+      		//}
       	}
         return val;
       // if it's on the global things table, stringify its ID
@@ -109,7 +109,7 @@ HTomb = (function(HTomb) {
         if (val.template==="Player") {
           player = val;
         }
-        return ob
+        return obj;
       } else {
         return val;
       }

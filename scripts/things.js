@@ -71,6 +71,9 @@ HTomb = (function(HTomb) {
       t[arg] = args[arg];
     }
     // concatenate "each" instead of overriding it
+    if (t.hasOwnProperty("each")===false) {
+      t.each = [];
+    }
     if (t.parent && HTomb.Things.templates[t.parent]) {
       var par = HTomb.Things.templates[t.parent].each;
       for (var i=0; i<par.length; i++) {
@@ -262,6 +265,14 @@ HTomb = (function(HTomb) {
     addToEntity: function(ent) {
       this.entity = ent;
       ent[this.name] = this;
+      if (ent.hasOwnProperty("each")===false) {
+        var each = [];
+        for (var i=0; i<ent.each.length; i++) {
+          each.push(ent.each[i]);
+        }
+        ent.each = each;
+      }
+      ent.each.push(this.name);
       if (this.init) {
         this.init(this.options);
       }
