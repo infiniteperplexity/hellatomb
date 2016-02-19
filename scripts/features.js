@@ -73,7 +73,7 @@ HTomb = (function(HTomb) {
     }
   });
 
-  HTomb.Things.defineEntity({
+  /*HTomb.Things.defineEntity({
   	template: "Construction",
     name: "construction",
   	isFeature: true,
@@ -122,6 +122,16 @@ HTomb = (function(HTomb) {
       }
       this.task.complete();
     }
+  });*/
+
+  HTomb.Things.defineEntity({
+    template: "Construction",
+    name: "construction",
+    isFeature: true,
+    steps: 10,
+    task: null,
+    symbol: "X",
+    each: ["steps","symbol","fg","task","name"]
   });
 
   return HTomb;
