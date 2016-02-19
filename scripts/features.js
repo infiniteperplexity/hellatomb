@@ -73,57 +73,6 @@ HTomb = (function(HTomb) {
     }
   });
 
-  /*HTomb.Things.defineEntity({
-  	template: "Construction",
-    name: "construction",
-  	isFeature: true,
-    target: null,
-    steps: 10,
-    placement: [],
-    task: null,
-    each: ["steps","target","placement","symbol","task"],
-    onCreate: function(args) {
-      args = args || {};
-      args.target = args.target || null;
-      args.steps = args.steps || this.steps;
-      args.task = args.task || null;
-      this.placement = args.placement || [0,0,0];
-      this.steps = args.steps;
-      console.log(args);
-      this.target = HTomb.Things.templates[args.target];
-      this.task = args.task;
-      this.symbol = this.target.constructionSymbol || "X";
-      this.fg = this.target.fg;
-      HTomb.Things.templates.Entity.onCreate.call(this, args);
-    },
-    describe: function() {
-      var desc = HTomb.Things.templates.Entity.describe.call(this);
-      desc += " (" + this.target.describe() + ")";
-      return desc;
-    },
-    doWork: function() {
-      this.steps-=1;
-      if (this.steps<=0) {
-        this.complete();
-      }
-    },
-  	complete: function() {
-      var x = this.x + this.placement[0];
-      var y = this.y + this.placement[1];
-      var z = this.z + this.placement[2];
-      console.log(this);
-      if (this.target.isFeature) {
-        this.remove();
-        var feature = HTomb.Things.create(this.target.template);
-        feature.place(x,y,z);
-      } else if (this.target.parent==="Terrain") {
-        HTomb.World.tiles[z][x][y] = this.target;
-        this.remove();
-      }
-      this.task.complete();
-    }
-  });*/
-
   HTomb.Things.defineEntity({
     template: "Construction",
     name: "construction",
@@ -132,6 +81,37 @@ HTomb = (function(HTomb) {
     task: null,
     symbol: "X",
     each: ["steps","symbol","fg","task","name"]
+  });
+
+  HTomb.Things.defineEntity({
+    template: "Door",
+    name: "door",
+    isFeature: true,
+    active: true,
+    get symbol() {
+      if (this.active) {
+        return "\u25A5";
+      } else {
+        return "\u25FB";
+      }
+    },
+    fg: "#BB9922",
+    each: ["active"],
+    activate: function() {
+      if (this.active) {
+        this.active=false;
+      } else {
+        this.active=true;
+      }
+      HTomb.GUI.reset();
+    },
+    get passable() {
+      if (this.active) {
+        return false;
+      } else {
+        return true;
+      }
+    }
   });
 
   return HTomb;

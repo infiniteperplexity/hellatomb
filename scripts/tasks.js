@@ -13,8 +13,9 @@ HTomb = (function(HTomb) {
     assignee: null,
     zone: null,
     zoneTemplate: null,
-    construct: null,
-    each: ["assigner","assignee","zone","construct"],
+    feature: null,
+    featureTemplate: null,
+    each: ["assigner","assignee","zone","feature"],
     onDefine: function() {
       if (this.zoneTemplate) {
         var z = this.zoneTemplate;
@@ -85,6 +86,9 @@ HTomb = (function(HTomb) {
       if (this.zone) {
         this.zone.remove();
       }
+      if (this.onComplete) {
+        this.onComplete();
+      }
     },
     // the last parameter is optional
     placeZone: function(x,y,z, master) {
@@ -148,28 +152,32 @@ HTomb = (function(HTomb) {
       cr.ai.acted = true;
     },
     work: function(x,y,z) {
-      this.buildConstruction();
-    },
-    buildConstruction: function() {
-      var x = this.zone.x;
-      var y = this.zone.y;
-      var z = this.zone.z;
       var f = HTomb.World.features[coord(x,y,z)];
-      if (f && f.template==="Construction" && f.target.template===this.construct) {
+      if (f===this.feature) {
         console.log("doing work");
-        f.doWork();
-        return f;
+        f.steps-=1;
+        if (f.steps<=0) {
+          this.finish();
+          this.complete();
+        }
       } else {
-        var construct = HTomb.Things.Construction({target: this.construct, task: this});
+        this.feature = HTomb.Things.Construction(this.featureTemplate);
+        this.feature.task = this;
+        console.log(this.feature);
         if (f) {
-          console.log("removed a feature to make room for " + construct.describe());
+          console.log("removed a feature to make room for " + this.feature.describe());
           f.remove();
         }
-        construct.place(x,y,z);
-        return construct;
+        this.feature.place(x,y,z);
       }
+    },
+    finish: function() {
+      HTomb.Debug.pushMessage("Don't use default!");
     }
   });
+
+
+
 
   HTomb.Things.defineTask({
     template: "DigTask",
@@ -179,7 +187,41 @@ HTomb = (function(HTomb) {
       name: "dig",
       bg: "#553300"
     },
-    construct: "Excavation",
+    featureTemplate: {
+      name: "incomplete excavation",
+      symbol: "\u2022",
+      steps: 10,
+      fg: HTomb.Constants.BELOW
+    },
+    finish: function() {
+      var c = this.feature;
+      var x = c.x;
+      var y = c.y;
+      var z = c.z;
+      c.remove();
+      var t = HTomb.World.tiles[z][x][y];
+      // If we dug out a wall, build a tunnel
+      if (t===HTomb.Tiles.WallTile) {
+        if (HTomb.World.tiles[z-1][x][y].solid===true) {
+          HTomb.Tiles.changeTile(x,y,z,HTomb.Tiles.FloorTile);
+        } else {
+          HTomb.Tiles.changeTile(x,y,z,HTomb.Tiles.EmptyTile);
+        }
+      // If we dug out a floor, build a pit
+      } else if (t===HTomb.Tiles.FloorTile) {
+        HTomb.Tiles.changeTile(x,y,z,HTomb.Tiles.FloorTile);
+        // If the tile below is already dug out, skip it
+        if (HTomb.World.tiles[z-1][x][y].solid===false) {
+          null;
+        // if two tiles below is solid, place a floor
+        } else if (HTomb.World.tiles[z-2][x][y].solid===true) {
+          HTomb.Tiles.changeTile(x,y,z-1,HTomb.Tiles.FloorTile);
+        // otherwise make it empty
+        } else {
+          HTomb.Tiles.changeTile(x,y,z-1,HTomb.Tiles.EmptyTile);
+        }
+      }
+    },
     tryAssign: function(cr) {
       if (this.canReachZone(cr)) {
         this.assignTo(cr);
@@ -199,18 +241,6 @@ HTomb = (function(HTomb) {
     // note that this passes the behavior, not the entity
     designate: function(master) {
       this.designateSquares({master: master});
-    },
-    work: function() {
-      var x = this.zone.x;
-      var y = this.zone.y;
-      var z = this.zone.z;
-      var construct = this.buildConstruction();
-      // should test whether it's complete or not?
-      if (HTomb.World.tiles[z][x][y].solid) {
-        construct.placement = [0,0,0];
-      } else {
-        construct.placement = [0,0,-1];
-      }
     }
   });
 
@@ -222,7 +252,20 @@ HTomb = (function(HTomb) {
       name: "build",
       bg: "#444444"
     },
-    construct: "WallTile",
+    featureTemplate: {
+      name: "incomplete wall",
+      symbol: "\u25AB",
+      fg: HTomb.Constants.ABOVE,
+      steps: 10
+    },
+    finish: function() {
+      var c = this.feature;
+      var x = c.x;
+      var y = c.y;
+      var z = c.z;
+      HTomb.Tiles.changeTile(x,y,z,HTomb.Tiles.WallTile);
+      c.remove();
+    },
     tryAssign: function(cr) {
       if (this.canReachZone(cr)) {
         this.assignTo(cr);
@@ -297,14 +340,31 @@ HTomb = (function(HTomb) {
   });
 
   HTomb.Things.defineTask({
-    template: "DigTrench",
-    name: "dig trench",
+    template: "BuildSlope",
+    name: "build slope",
     zoneTemplate: {
-      template: "TrenchZone",
-      name: "trench",
+      template: "BuildSlopeZone",
+      name: "slope",
       bg: "#444444"
     },
-    construct: "UpSlope",
+    featureTemplate: {
+      name: "incomplete slope",
+      symbol: "\u25B5",
+      steps: 5,
+      fg: HTomb.Constants.ABOVE
+    },
+    finish: function() {
+      var c = this.feature;
+      var x = c.x;
+      var y = c.y;
+      var z = c.z;
+      HTomb.Tiles.changeTile(x,y,z,HTomb.Tiles.UpSlopeTile);
+      if (HTomb.World.tiles[z+1][x][y].solid!==true) {
+        HTomb.Tiles.changeTile(x,y,z-1,HTomb.Tiles.DownSlopeTile);
+      }
+      HTomb.World.validate();
+      c.remove();
+    },
     tryAssign: function(cr) {
       if (this.canReachZone(cr)) {
         this.assignTo(cr);
@@ -315,10 +375,61 @@ HTomb = (function(HTomb) {
     },
     canDesignateTile: function(x,y,z) {
       var square = HTomb.Tiles.getSquare(x,y,z);
-      if (square.terrain.solid) {
-        return false;
-      } else {
+      if (square.terrain===HTomb.Tiles.FloorTile) {
         return true;
+      } else {
+        return false;
+      }
+    },
+    // note that this passes the behavior, not the entity
+    designate: function(master) {
+      this.designateSquares({master: master});
+    }
+  });
+
+  HTomb.Things.defineTask({
+    template: "DigSlope",
+    name: "dig slope",
+    zoneTemplate: {
+      template: "DigSlopeZone",
+      name: "dig",
+      bg: "#553300"
+    },
+    featureTemplate: {
+      name: "incomplete slope",
+      symbol: "\u25BF",
+      steps: 10,
+      fg: HTomb.Constants.BELOW
+    },
+    finish: function() {
+      var c = this.feature;
+      var x = c.x;
+      var y = c.y;
+      var z = c.z;
+      c.remove();
+      var t = HTomb.World.tiles[z][x][y];
+      // If we dug out a wall, build a tunnel
+      if (t===HTomb.Tiles.WallTile) {
+        HTomb.Tiles.changeTile(x,y,z,HTomb.Tiles.UpSlopeTile);
+        if (HTomb.World.tiles[z+1][x][y].solid!==true) {
+          HTomb.Tiles.changeTile(x,y,z+1,HTomb.Tiles.DownSlopeTile);
+        }
+      // If we dug out a floor, build a pit
+      } else if (t===HTomb.Tiles.FloorTile) {
+        if (HTomb.World.tiles[z-1][x][y].solid===true) {
+          HTomb.Tiles.changeTile(x,y,z,HTomb.Tiles.DownSlopeTile);
+          HTomb.Tiles.changeTile(x,y,z-1,HTomb.Tiles.UpSlopeTile);
+        } else {
+          HTomb.Tiles.changeTile(x,y,z,HTomb.Tiles.EmptyTile);
+        }
+      }
+    },
+    tryAssign: function(cr) {
+      if (this.canReachZone(cr)) {
+        this.assignTo(cr);
+        return true;
+      } else {
+        return false;
       }
     },
     canDesignateTile: function(x,y,z) {
@@ -332,27 +443,53 @@ HTomb = (function(HTomb) {
     // note that this passes the behavior, not the entity
     designate: function(master) {
       this.designateSquares({master: master});
+    }
+  });
+
+  HTomb.Things.defineTask({
+    template: "BuildDoor",
+    name: "build door",
+    zoneTemplate: {
+      template: "BuildDoorZone",
+      name: "build",
+      bg: "#553300"
     },
-    work: function() {
-      var x = this.zone.x;
-      var y = this.zone.y;
-      var z = this.zone.z;
-      var construct = this.buildConstruction();
-      // should test whether it's complete or not?
-      if (HTomb.World.tiles[z][x][y].solid) {
-        construct.placement = [0,0,0];
+    featureTemplate: {
+      name: "incomplete door",
+      symbol: "\u25AB",
+      steps: 10,
+      fg: "#BB9922"
+    },
+    finish: function() {
+      var c = this.feature;
+      var x = c.x;
+      var y = c.y;
+      var z = c.z;
+      c.remove();
+      HTomb.Things.Door().place(x,y,z);
+    },
+    tryAssign: function(cr) {
+      if (this.canReachZone(cr)) {
+        this.assignTo(cr);
+        return true;
       } else {
-        construct.placement = [0,0,-1];
+        return false;
       }
+    },
+    canDesignateTile: function(x,y,z) {
+      var square = HTomb.Tiles.getSquare(x,y,z);
+      if (square.terrain===HTomb.Tiles.FloorTile) {
+        return true;
+      } else {
+        return false;
+      }
+    },
+    // note that this passes the behavior, not the entity
+    designate: function(master) {
+      this.designateSquare({master: master});
     }
   });
 
 
   return HTomb;
 })(HTomb);
-
-/*
-some thoughts...
-..."okayTiles" could be a property of the template, not the arguments
-
-*/

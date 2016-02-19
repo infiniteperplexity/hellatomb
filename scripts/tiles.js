@@ -232,6 +232,10 @@ HTomb = (function(HTomb) {
     }
     //validate?
   };
+  Tiles.changeTile = function(x,y,z,tile) {
+    HTomb.World.tiles[z][x][y] = tile;
+    HTomb.World.validate();
+  }
   Tiles.neighbors = function(x,y) {
     var squares = [];
     var dirs = ROT.DIRS[8];

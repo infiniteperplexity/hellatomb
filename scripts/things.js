@@ -136,7 +136,9 @@ HTomb = (function(HTomb) {
       var c = coord(x,y,z);
       var creatures = HTomb.World.creatures;
       if (this.isCreature) {
-        delete creatures[c];
+        if (creatures[c]) {
+          creatures[c].remove();
+        }
         creatures[c] = this;
       }
       var items = HTomb.World.items;
@@ -161,12 +163,20 @@ HTomb = (function(HTomb) {
       }
       var features = HTomb.World.features;
       if (this.isFeature) {
-        delete features[c];
+        if (features[c]) {
+          features[c].remove();
+        }
         features[c] = this;
       }
       var zones = HTomb.World.zones;
       if (this.isZone) {
-        delete zones[c];
+        if (zones[c]) {
+          if (zones[c].task) {
+            zones[c].task.cancel();
+          } else {
+            zones[c].remove();
+          }
+        }
         zones[c] = this;
       }
       this.x = x;
