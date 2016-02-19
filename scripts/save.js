@@ -21,7 +21,6 @@ HTomb = (function(HTomb) {
 
   HTomb.Save.stringify = function(obj) {
     var json = JSON.stringify(obj, function(key, val) {
-      //console.log([this,key,val]);
       if (val===undefined) {
         //console.log("why is val undefined?");
         return undefined;
@@ -35,12 +34,14 @@ HTomb = (function(HTomb) {
         return val.stringify();
         // if it's from the global things table, stringify it normally
       } else if (this===HTomb.World.things) {
-        //console.log("thing on the thing list");
         // stringify only those things on the "each" list
         for (var p in val) {
+          if (p!=="each" && val.hasOwnProperty(p)===false) {
+            delete val[p];
+          }
       		// this should not delete inherited properties or attached things
             //// Can maybe dump x, y, and z, and reconstruct from lists?
-      		//if (val.each.indexOf(p)===-1) {
+      		//if (p!=="each" && val.each.indexOf(p)===-1) {
       		//	delete val[p];
       		//}
       	}
@@ -56,6 +57,7 @@ HTomb = (function(HTomb) {
     });
     return json;
   };
+
 
   function fillListFrom(fromList, toList) {
     if (Array.isArray(fromList) && Array.isArray(toList)) {
@@ -90,34 +92,32 @@ HTomb = (function(HTomb) {
 
   HTomb.Save.restoreGame = function(j) {
     var json = localStorage.saveGame;
-    var revives = [];
+    var tids = [];
+    //var templates = [];
     var player = null;
     // parse while keeping a list of references to thingIds
     var saveGame = JSON.parse(json, function (key, val) {
       if (val===null) {
         return null;
       } else if (val.tid) {
-        revives.push([this,key,val]);
+        tids.push([this,key,val]);
+        return undefined;
       } else if (val.template) {
-        // if it's a Thing with a template, copy the objects over into a new template
-        var obj = Object.create(HTomb.Things.templates[val.template]);
-        for (var p in val) {
-          if (val.hasOwnProperty(p)) {
-            obj[p] = val[p];
-          }
-        }
+        // supposedly writing to __proto__ makes baby jesus cry
+        val.__proto__ = HTomb.Things.templates[val.template];
+        //templates.push([this,key,val]);
         if (val.template==="Player") {
           player = val;
         }
-        return obj;
+        return val;
       } else {
         return val;
       }
     });
     // swap all thingId references for their thing
-    for (var i=0; i<revives.length; i++) {
-      var revive = revives[i];
-      revive[0][revive[1]] = saveGame.things[revive[2].tid];
+    for (var i=0; i<tids.length; i++) {
+      var tid = tids[i];
+      tid[0][tid[1]] = saveGame.things[tid[2].tid];
     }
     HTomb.Player = player.entity;
     fillListFrom(saveGame.things, HTomb.World.things);
@@ -127,7 +127,10 @@ HTomb = (function(HTomb) {
     fillListFrom(saveGame.items, HTomb.World.items);
     fillListFrom(saveGame.features, HTomb.World.features);
     fillListFrom(saveGame.zones, HTomb.World.zones);
-    //fillListFrom(saveGame.tasks, HTomb.World.tasks);
+    HTomb.FOV.resetVisible();
+    if (HTomb.Player.sight) {
+      HTomb.FOV.findVisible(HTomb.Player.x, HTomb.Player.y, HTomb.Player.z, HTomb.Player.sight.range);
+    }
     HTomb.GUI.splash("Game restored.");
   };
 
