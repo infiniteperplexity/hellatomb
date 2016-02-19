@@ -95,6 +95,7 @@ HTomb = (function(HTomb) {
     var creatures = HTomb.World.creatures;
     var items = HTomb.World.items;
     var features = HTomb.World.features;
+    var liquids = HTomb.World.liquids;
     var zones = HTomb.World.zones;
     var visible = HTomb.World.visible;
     var explored = HTomb.World.explored;
@@ -110,7 +111,13 @@ HTomb = (function(HTomb) {
     // background color for explored squares is based on zoning
       // maybe at some point, liquids
     var fg = "white";
-    var bg = (zones[crd]===undefined) ? "black" : zones[crd].bg;
+    var bg = "black";
+    if (liquids[crd]!==undefined) {
+      bg = liquids[crd].bg;
+    }
+    if (zones[crd]!==undefined) {
+      bg = zones[crd].bg;
+    }
     // square explored but not visible
     if (visible[z][x][y]===false && HTomb.Debug.visible!==true) {
       //fg = HTomb.Constants.SHADOW;

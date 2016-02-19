@@ -114,5 +114,18 @@ HTomb = (function(HTomb) {
     }
   });
 
+
+  HTomb.Things.defineEntity({
+    template: "Water",
+    name: "water",
+    isLiquid: true,
+    symbol: "~",
+    fg: "blue",
+    bg: "blue",
+
+    liquidColor: "#0000FF",
+    randomColor: 50
+  });
+
   return HTomb;
 })(HTomb);

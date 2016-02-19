@@ -29,6 +29,7 @@ HTomb = (function(HTomb) {
   HTomb.World.features = {};
   HTomb.World.zones = {};
   HTomb.World.portals = {};
+  HTomb.World.liquids = {};
 
   HTomb.World.init = function() {
     HTomb.World.fillTiles();
@@ -106,7 +107,7 @@ HTomb = (function(HTomb) {
     simplex_features("Tree",{vthresh: 1, p1: 0.75, p2: 0.25});
     simplex_features("Rock",{hscale: 10, vtresh: 3, p1: 0.25, p2: 0.1});
     simplex_features("Stick",{hscale: 10, vtresh: 3, p1: 0.15, p2: 0.05});
-    //water_table(23);
+    water_table(23);
     scatter("Bat",0.005);
     scatter("Spider",0.005);
     addSlopes();
@@ -206,16 +207,19 @@ HTomb = (function(HTomb) {
   function water_table(elev) {
     for (var x=1; x<LEVELW-1; x++) {
       for (var y=1; y<LEVELH-1; y++) {
-        for (var z=HTomb.Tiles.groundLevel(x,y)+1; z<=elev; z++) {
+        for (var z=HTomb.Tiles.groundLevel(x,y); z<=elev; z++) {
           var square = HTomb.Tiles.getSquare(x,y,z);
-          HTomb.Entity.create("Puddle").place(x,y,z);
+          HTomb.Things.create("Water").place(x,y,z);
           if (square.items) {
             for (var i=0; i<square.items.length; i++) {
               square.items[i].remove();
             }
           }
+          if (square.feature) {
+            square.feature.remove();
+          }
           if (z===elev) {
-            HTomb.Entity.create("Puddle").place(x,y,z+1);
+            HTomb.Things.create("Water").place(x,y,z+1);
           }
         }
       }

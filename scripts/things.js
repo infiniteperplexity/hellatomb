@@ -168,6 +168,13 @@ HTomb = (function(HTomb) {
         }
         features[c] = this;
       }
+      var liquids = HTomb.World.liquids;
+      if (this.isLiquid) {
+        if (liquids[c]) {
+          liquids[c].remove();
+        }
+        liquids[c] = this;
+      }
       var zones = HTomb.World.zones;
       if (this.isZone) {
         if (zones[c]) {
@@ -212,6 +219,10 @@ HTomb = (function(HTomb) {
       var features = HTomb.World.features;
       if (this.isFeature) {
         delete features[c];
+      }
+      var liquids = HTomb.World.features;
+      if (this.isLiquid) {
+        delete liquids[c];
       }
       var zones = HTomb.World.zones;
       if (this.isZone) {
