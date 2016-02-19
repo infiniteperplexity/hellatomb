@@ -166,7 +166,9 @@ HTomb = (function(HTomb) {
     var yoffset = gameScreen.yoffset;
     for (var x = xoffset; x < xoffset+SCREENW; x++) {
       for (var y = yoffset; y < yoffset+SCREENH; y++) {
-
+        if (gameScreen.z===undefined) {
+          alert("wtf!");
+        }
         // Draw every symbol in the right place
         var sym = HTomb.Tiles.getSymbol(x,y,z);
         display.draw(this.x0+x-xoffset,this.y0+y-yoffset, sym[0], sym[1], sym[2]);

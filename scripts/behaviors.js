@@ -5,6 +5,13 @@ HTomb = (function(HTomb) {
   var LEVELH = HTomb.Constants.LEVELH;
   var coord = HTomb.coord;
 
+  HTomb.Things.defineBehavior({
+    template: "Player",
+    name: "player",
+    init: function() {
+      HTomb.Player = this.entity;
+    }
+  });
   // The Sight behavior allows a creature to see
   HTomb.Things.defineBehavior({
     template: "Sight",

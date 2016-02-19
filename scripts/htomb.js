@@ -32,14 +32,15 @@ var HTomb = (function() {
   var init = function() {
     // Initialize the world...could be generate()?
     World.init();
-    var p = HTomb.Player = Things.Necromancer();
+    var p = Things.Necromancer();
+    HTomb.Things.Player().addToEntity(p);
     p.place(1,1,Tiles.groundLevel(1,1));
     // Begin visibility
     if (p.sight) {
       FOV.findVisible(p.x, p.y, p.z, p.sight.range);
     }
     // Throw up a welcome splash screen
-    GUI.splash("Welcome to HellaTomb!");
+    //GUI.splash("Welcome to HellaTomb!");
     //Events.subscribe(World.dailyCycle,"TurnBegin");
   };
   // Process a turn of play
@@ -95,8 +96,8 @@ var HTomb = (function() {
     Path: Path,
     Events: Events,
     GUI: GUI,
-    Player: Player,
-    //Tasks: Tasks,
+    get Player () {return Player;},
+    set Player (p) {Player = p; GUI.splash("Welcome to HellaTomb!");},
     Tiles: Tiles,
     Debug: Debug,
     Save: Save,

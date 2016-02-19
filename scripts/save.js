@@ -88,25 +88,47 @@ HTomb = (function(HTomb) {
     }
   }
 
-  HTomb.Save.restoreGame = function(saveGame) {
-    saveGame = localStorage.saveGame;
-    var thingParse = JSON.parse(saveGame);
-    var restParse = JSON.parse(saveGame, function(key, val) {
-      if (key==="tid") {
-        // This will need to restore the prototype chain
-        return thingParse.things[val];
+  HTomb.Save.restoreGame = function(j) {
+    var json = localStorage.saveGame;
+    var revives = [];
+    var player = null;
+    // parse while keeping a list of references to thingIds
+    var saveGame = JSON.parse(json, function (key, val) {
+      if (val===null) {
+        return null;
+      } else if (val.tid) {
+        revives.push([this,key,val]);
+      } else if (val.template) {
+        // if it's a Thing with a template, copy the objects over into a new template
+        var obj = Object.create(HTomb.Things.templates[val.template]);
+        for (var p in val) {
+          if (val.hasOwnProperty(p)) {
+            obj[p] = val[p];
+          }
+        }
+        if (val.template==="Player") {
+          player = val;
+        }
+        return ob
       } else {
         return val;
       }
     });
-    fillListFrom(thingParse.things, HTomb.World.things);
-    fillGrid3dFrom(restParse.tiles, HTomb.World.tiles, HTomb.Things.templates.Terrain.parse);
-    fillGrid3dFrom(restParse.explored, HTomb.World.explored);
-    fillListFrom(restParse.creatures, HTomb.World.creatures);
-    fillListFrom(restParse.items, HTomb.World.items);
-    fillListFrom(restParse.features, HTomb.World.features);
-    fillListFrom(restParse.zones, HTomb.World.zones);
-    //fillListFrom(restParse.tasks, HTomb.World.tasks);
+    // swap all thingId references for their thing
+    for (var i=0; i<revives.length; i++) {
+      var revive = revives[i];
+      revive[0][revive[1]] = saveGame.things[revive[2].tid];
+    }
+    HTomb.Player = player.entity;
+    fillListFrom(saveGame.things, HTomb.World.things);
+    fillGrid3dFrom(saveGame.tiles, HTomb.World.tiles, HTomb.Things.templates.Terrain.parse);
+    fillGrid3dFrom(saveGame.explored, HTomb.World.explored);
+    fillListFrom(saveGame.creatures, HTomb.World.creatures);
+    fillListFrom(saveGame.items, HTomb.World.items);
+    fillListFrom(saveGame.features, HTomb.World.features);
+    fillListFrom(saveGame.zones, HTomb.World.zones);
+    //fillListFrom(saveGame.tasks, HTomb.World.tasks);
+    HTomb.GUI.splash("Game restored.");
   };
 
   return HTomb;
