@@ -100,9 +100,10 @@ HTomb = (function(HTomb) {
     }
     t.template = template;
     // Copy the arguments onto the thing
-    for (var arg in args) {
-      t[arg] = args[arg];
-    }
+    // here's where we went wrong...
+    //for (var arg in args) {
+    //  t[arg] = args[arg];
+    //}
     // Do all "on spawn" tasks
     t.spawn();
     if (t.onCreate) {

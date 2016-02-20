@@ -235,9 +235,8 @@ HTomb = (function(HTomb) {
     template: "Master",
     name: "master",
     minions: null,
-    taskTemplates: null,
     taskList: null,
-    each: ["minions","taskTemplates","taskList"],
+    each: ["minions","tasks","taskList"],
     onCreate: function(options) {
       options = options || {};
       options.tasks = options.tasks || [];

@@ -113,15 +113,17 @@ HTomb = (function(HTomb) {
     var fg = "white";
     var bg = "black";
     if (liquids[crd]!==undefined) {
-      bg = liquids[crd].bg;
+      bg = liquids[crd].shimmer();
     }
     if (zones[crd]!==undefined) {
       bg = zones[crd].bg;
     }
     // square explored but not visible
     if (visible[z][x][y]===false && HTomb.Debug.visible!==true) {
-      //fg = HTomb.Constants.SHADOW;
       fg = HTomb.Constants.SHADOW;
+      if (liquids[crd]!==undefined) {
+        bg = liquids[crd].darkbg;
+      }
       if (features[crd]) {
         // feature in shadow
         return [features[crd].symbol || "X",fg,bg];
@@ -131,6 +133,10 @@ HTomb = (function(HTomb) {
       } else if (zview===-1 && features[cbelow]) {
         // feature on level below
         return [features[cbelow].symbol || "X",fg,bg];
+      } else if (liquids[crd] && liquids[cabove]===undefined) {
+        return [liquids[crd].symbol,liquids[crd].fg,bg];
+      } else if (zview===-1 && liquids[cbelow]) {
+        return [HTomb.Constants.FLOORBELOW,liquids[cbelow].fg,liquids[cbelow].darkbg];
         // an empty space with floor below it
       } else if (tile===Tiles.EmptyTile && tiles[z-1][x][y]===Tiles.FloorTile) {
         return [HTomb.Constants.FLOORBELOW,fg,bg];
@@ -162,6 +168,10 @@ HTomb = (function(HTomb) {
         return [features[cabove].symbol || "X",above,bg];
       } else if (zview===-1 && features[cbelow]) {
         return [features[cbelow].symbol || "X",below,bg];
+      } else if (liquids[crd] && liquids[cabove]===undefined) {
+        return [liquids[crd].symbol,liquids[crd].fg,bg];
+      } else if (zview===-1 && liquids[cbelow]) {
+        return [HTomb.Constants.FLOORBELOW,liquids[cbelow].fg,liquids[cbelow].shimmer()];
       } else if (tile===Tiles.EmptyTile && tiles[z-1][x][y]===Tiles.FloorTile) {
         return [HTomb.Constants.FLOORBELOW,below,bg];
       //} else if (tile===Tiles.FloorTile) {

@@ -114,17 +114,21 @@ HTomb = (function(HTomb) {
     }
   });
 
-
   HTomb.Things.defineEntity({
     template: "Water",
     name: "water",
     isLiquid: true,
     symbol: "~",
     fg: "blue",
-    bg: "blue",
-
-    liquidColor: "#0000FF",
-    randomColor: 50
+    bg: "#0000BB",
+    darkbg: "#000088",
+    shimmer: function() {
+      var bg = ROT.Color.fromString(this.bg);
+      bg = ROT.Color.randomize(bg,[0, 0, this.randombg]);
+      bg = ROT.Color.toHex(bg);
+      return bg;
+    },
+    randombg: 25
   });
 
   return HTomb;
