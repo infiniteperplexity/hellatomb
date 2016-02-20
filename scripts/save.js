@@ -14,6 +14,7 @@ HTomb = (function(HTomb) {
     saveGame.items = HTomb.World.items;
     saveGame.features = HTomb.World.features;
     saveGame.zones = HTomb.World.zones;
+    saveGame.liquids = HTomb.World.liquids;
     var json = HTomb.Save.stringify(saveGame);
     localStorage.saveGame = json;
     console.log(json.length);
@@ -127,6 +128,7 @@ HTomb = (function(HTomb) {
     fillListFrom(saveGame.items, HTomb.World.items);
     fillListFrom(saveGame.features, HTomb.World.features);
     fillListFrom(saveGame.zones, HTomb.World.zones);
+    fillListFrom(saveGame.liquids, HTomb.World.liquids);
     HTomb.FOV.resetVisible();
     if (HTomb.Player.sight) {
       HTomb.FOV.findVisible(HTomb.Player.x, HTomb.Player.y, HTomb.Player.z, HTomb.Player.sight.range);

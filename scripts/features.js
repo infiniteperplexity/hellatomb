@@ -5,10 +5,9 @@ HTomb = (function(HTomb) {
   var LEVELH = HTomb.Constants.LEVELH;
   var coord = HTomb.coord;
 
-  HTomb.Things.defineEntity({
+  HTomb.Things.defineFeature({
     template: "Tombstone",
     name: "tombstone",
-    isFeature: true,
     symbol: "\u271F",
     fg: "#AAAAAA",
     randomColor: 5,
@@ -18,75 +17,43 @@ HTomb = (function(HTomb) {
     }
   });
 
-  HTomb.Things.defineEntity({
+  HTomb.Things.defineFeature({
     template: "Tree",
     name: "tree",
-    isFeature: true,
     //symbol: "\u2663",
     symbol: ["\u2663","\u2660"],
     fg: "#559900",
     randomColor: 20
   });
 
-  HTomb.Things.defineEntity({
+  HTomb.Things.defineFeature({
     template: "Shrub",
     name: "shrub",
-    isFeature: true,
     symbol: "\u262B",
     fg: "#779922",
     randomColor: 20
   });
 
-  HTomb.Things.defineEntity({
+  HTomb.Things.defineFeature({
     template: "Puddle",
     name: "puddle",
-    isFeature: true,
     symbol: "~",
     fg: "#0088DD",
     randomColor: 20
   });
 
-  // An excavation is a special, dynamic entity that digs out a square and then removes itself
-  HTomb.Things.defineEntity({
-    template: "Excavation",
-    name: "excavation",
-    isFeature: true,
-    constructionSymbol: "\u2022",
-    onPlace: function(x,y,z) {
-      var t = HTomb.World.tiles[z][x][y];
-      var below = HTomb.World.tiles[z-1][x][y];
-      if (t===HTomb.Tiles.WallTile) {
-        if (below.solid===true) {
-          HTomb.World.tiles[z][x][y] = HTomb.Tiles.FloorTile;
-        } else {
-          HTomb.World.tiles[z][x][y] = HTomb.Tiles.EmptyTile;
-        }
-      } else if (t===HTomb.Tiles.FloorTile) {
-        HTomb.World.tiles[z][x][y] = HTomb.Tiles.EmptyTile;
-        if (below.solid===true) {
-          HTomb.World.tiles[z][x][y] = HTomb.Tiles.FloorTile;
-        } else {
-          HTomb.World.tiles[z][x][y] = HTomb.Tiles.EmptyTile;
-        }
-      }
-      this.remove();
-    }
-  });
-
-  HTomb.Things.defineEntity({
+  HTomb.Things.defineFeature({
     template: "Construction",
     name: "construction",
-    isFeature: true,
     steps: 10,
     task: null,
     symbol: "X",
     each: ["steps","symbol","fg","task","name"]
   });
 
-  HTomb.Things.defineEntity({
+  HTomb.Things.defineFeature({
     template: "Door",
     name: "door",
-    isFeature: true,
     active: true,
     get symbol() {
       if (this.active) {
@@ -114,14 +81,13 @@ HTomb = (function(HTomb) {
     }
   });
 
-  HTomb.Things.defineEntity({
+  HTomb.Things.defineLiquid({
     template: "Water",
     name: "water",
-    isLiquid: true,
     symbol: "~",
-    fg: "blue",
-    bg: "#0000BB",
-    darkbg: "#000088",
+    fg: "#3388FF",
+    bg: "#1144BB",
+    darkbg: "#002288",
     shimmer: function() {
       var bg = ROT.Color.fromString(this.bg);
       bg = ROT.Color.randomize(bg,[0, 0, this.randombg]);

@@ -61,8 +61,18 @@ HTomb = (function(HTomb) {
           var above = HTomb.World.tiles[z+1][x][y];
           // validate slopes
           if (t===HTomb.Tiles.UpSlopeTile) {
-            if (above.solid!==true) {
+            if (above.fallable===true) {
               HTomb.World.tiles[z+1][x][y] = HTomb.Tiles.DownSlopeTile;
+            }
+          }
+          t = HTomb.World.tiles[z][x][y];
+          if (t===HTomb.Tiles.DownSlopeTile) {
+            if (below!==HTomb.Tiles.UpSlopeTile) {
+              if (below.solid) {
+                HTomb.World.tiles[z][x][y] = HTomb.Tiles.FloorTile;
+              } else {
+                HTomb.World.tiles[z][x][y] = HTomb.Tiles.EmptyTile;
+              }
             }
           }
           // validate floors
@@ -221,43 +231,6 @@ HTomb = (function(HTomb) {
           if (z===elev) {
             HTomb.Things.create("Water").place(x,y,z+1);
           }
-        }
-      }
-    }
-  }
-  function populateStuff() {
-    var z;
-    for (var x=1; x<LEVELW-1; x++) {
-      for (var y=1; y<LEVELH-1; y++) {
-        z = HTomb.Tiles.groundLevel(x,y)+1;
-        if (Math.random() <= 0.025) {
-          HTomb.Entity.create("Rock").place(x,y,z);
-        }
-        if (Math.random() <= 0.025) {
-          HTomb.Entity.create("Stick").place(x,y,z);
-        }
-        if (Math.random() <= 0.025) {
-          if (HTomb.World.features[x*LEVELW*LEVELH+y*LEVELH+z]===undefined) {
-            HTomb.Entity.create("Tombstone").place(x,y,z);
-          }
-        }
-        if (Math.random() <= 0.025) {
-          if (HTomb.World.features[x*LEVELW*LEVELH+y*LEVELH+z]===undefined) {
-            HTomb.Entity.create("Tree").place(x,y,z);
-          }
-        }
-        if (Math.random() <= 0.025) {
-          if (HTomb.World.features[x*LEVELW*LEVELH+y*LEVELH+z]===undefined) {
-            HTomb.Entity.create("Shrub").place(x,y,z);
-          }
-        }
-        if (Math.random() <= 0.01) {
-          if (HTomb.World.features[x*LEVELW*LEVELH+y*LEVELH+z]===undefined) {
-            HTomb.Entity.create("Puddle").place(x,y,z);
-          }
-        }
-        if (Math.random() <= 0.005) {
-          HTomb.Entity.create("Zombie").place(x,y,z);
         }
       }
     }

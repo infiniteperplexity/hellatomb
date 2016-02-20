@@ -4,10 +4,9 @@ HTomb = (function(HTomb) {
 
   var b = HTomb.Things;
 
-  HTomb.Things.defineEntity({
+  HTomb.Things.defineCreature({
       template: "Necromancer",
       name: "necromancer",
-      isCreature: true,
       symbol: "@",
       fg: "#D888FF",
       behaviors: {
@@ -15,15 +14,14 @@ HTomb = (function(HTomb) {
         Inventory: {},
         Sight: {},
         // Issue...those these be template names?  or reference to actual templates?
-        Master: {tasks: ["DigTask","BuildTask","DigSlope","BuildSlope","BuildDoor","PatrolTask","Undesignate"]},
+        Master: {tasks: ["FullDig","FullBuild","HalfDig","HalfBuild","BuildDoor","PatrolTask","Undesignate"]},
         SpellCaster: {spells: ["RaiseZombie"]}
       }
   });
 
-  HTomb.Things.defineEntity({
+  HTomb.Things.defineCreature({
     template: "Zombie",
     name: "zombie",
-    isCreature: true,
     symbol: "z",
     fg: "#99FF66",
     behaviors: {
@@ -32,10 +30,9 @@ HTomb = (function(HTomb) {
     }
   });
 
-  HTomb.Things.defineEntity({
+  HTomb.Things.defineCreature({
     template: "Bat",
     name: "bat",
-    isCreature: true,
     symbol: "b",
     fg: "#999999",
     behaviors: {
@@ -44,10 +41,9 @@ HTomb = (function(HTomb) {
     }
   });
 
-  HTomb.Things.defineEntity({
+  HTomb.Things.defineCreature({
     template: "Spider",
     name: "spider",
-    isCreature: true,
     symbol: "s",
     fg: "#BBBBBB",
     behaviors: {

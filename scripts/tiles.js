@@ -226,7 +226,7 @@ HTomb = (function(HTomb) {
     }
     return false;
   };
-  Tiles.fillSquare = function(x,y,z) {
+  Tiles.fill = function(x,y,z) {
     // check for more stuff in a while
     if (HTomb.World.features[coord(x,y,z)]) {
       HTomb.World.features[coord(x,y,z)].remove();
@@ -238,21 +238,24 @@ HTomb = (function(HTomb) {
     HTomb.World.validate();
   };
   // I actually hate the way this works
-  Tiles.emptySquare = function(x,y,z) {
-    if (HTomb.World.tiles[z-1][x][y]===HTomb.Tiles.WallTile) {
-      HTomb.World.tiles[z][x][y] = HTomb.Tiles.FloorTile;
-    } else {
-      HTomb.World.tiles[z][x][y] = HTomb.Tiles.EmptyTile;
+  Tiles.excavate = function(x,y,z,options) {
+    options = options || {};
+    if (HTomb.World.tiles[z][x][y]===HTomb.Tiles.VoidTile) {
+      HTomb.GUI.pushMessage("Can't dig here!");
+      return;
     }
-    if (HTomb.World.tiles[z+1][x][y]===HTomb.Tiles.FloorTile) {
+    // If the ceiling is removed and there no solid tile above...
+    if (options.removeCeiling===true && HTomb.World.tiles[z+1][x][y].solid!==true) {
       HTomb.World.tiles[z+1][x][y] = HTomb.Tiles.EmptyTile;
     }
-    //validate?
-  };
-  Tiles.changeTile = function(x,y,z,tile) {
-    HTomb.World.tiles[z][x][y] = tile;
+    // Check whether there is a solid tile below...
+    if (HTomb.World.tiles[z-1][x][y].solid!==true) {
+      HTomb.World.tiles[z][x][y] = HTomb.Tiles.EmptyTile;
+    } else {
+      HTomb.World.tiles[z][x][y] = HTomb.Tiles.FloorTile;
+    }
     HTomb.World.validate();
-  }
+  };
   Tiles.neighbors = function(x,y) {
     var squares = [];
     var dirs = ROT.DIRS[8];

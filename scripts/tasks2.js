@@ -16,15 +16,19 @@ HTomb = (function(HTomb) {
     feature: null,
     featureTemplate: null,
     each: ["assigner","assignee","zone","feature"],
+    allowedTiles: [],
     onDefine: function() {
       if (this.zoneTemplate) {
         HTomb.Things.defineZone(this.zoneTemplate);
       }
     },
     tryAssign: function(cr) {
-      HTomb.Debug.pushMessage("Probably shouldn't use default tryAssign()");
-      this.assignTo(cr);
-      return true;
+      if (this.canReachZone(cr)) {
+        this.assignTo(cr);
+        return true;
+      } else {
+        return false;
+      }
     },
     // one of the more common ways to test if a task can be assigned
     canReachZone: function(cr) {
@@ -39,7 +43,13 @@ HTomb = (function(HTomb) {
       }
     },
     canDesignateTile: function(x,y,z) {
-      return true;
+      if (this.allowedTiles==="all") {
+        return true;
+      } else if (this.allowedTiles.indexOf(HTomb.World.tiles[z][x][y])>=0) {
+        return true;
+      } else {
+        return false;
+      }
     },
     assignTo: function(cr) {
       if (cr.minion===undefined) {
@@ -99,6 +109,10 @@ HTomb = (function(HTomb) {
         t.assigner = master;
         t.assigner.master.taskList.push(t);
       }
+    },
+    // note that this passes the behavior, not the entity
+    designate: function(master) {
+      this.designateSquares({master: master});
     },
     // one common way of designating tasks
     designateSquare: function(options) {
@@ -160,7 +174,6 @@ HTomb = (function(HTomb) {
       } else {
         this.feature = HTomb.Things.Construction(this.featureTemplate);
         this.feature.task = this;
-        console.log(this.feature);
         if (f) {
           console.log("removed a feature to make room for " + this.feature.describe());
           f.remove();
@@ -177,11 +190,11 @@ HTomb = (function(HTomb) {
 
 
   HTomb.Things.defineTask({
-    template: "DigTask",
+    template: "FullDig",
     name: "dig",
     zoneTemplate: {
-      template: "DigZone",
-      name: "dig",
+      template: "FullDigZone",
+      name: "(full dig)",
       bg: "#553300"
     },
     featureTemplate: {
@@ -190,6 +203,11 @@ HTomb = (function(HTomb) {
       steps: 10,
       fg: HTomb.Constants.BELOW
     },
+    allowedTiles: [
+      HTomb.Tiles.FloorTile,
+      HTomb.Tiles.WallTile,
+      HTomb.Tiles.UpSlopeTile
+    ],
     finish: function() {
       var c = this.feature;
       var x = c.x;
@@ -199,85 +217,41 @@ HTomb = (function(HTomb) {
       var t = HTomb.World.tiles[z][x][y];
       // If we dug out a wall, build a tunnel
       if (t===HTomb.Tiles.WallTile) {
-        if (HTomb.World.tiles[z-1][x][y].solid===true) {
-          HTomb.Tiles.changeTile(x,y,z,HTomb.Tiles.FloorTile);
-        } else {
-          HTomb.Tiles.changeTile(x,y,z,HTomb.Tiles.EmptyTile);
-        }
+        // note: does not remove ceiling, usually
+        HTomb.Tiles.excavate(x,y,z);
       // If we dug out a floor, build a pit
-      } else if (t===HTomb.Tiles.FloorTile) {
-        HTomb.Tiles.changeTile(x,y,z,HTomb.Tiles.FloorTile);
-        // If the tile below is already dug out, skip it
-        if (HTomb.World.tiles[z-1][x][y].solid===false) {
-          //do nothing
-        // if two tiles below is solid, place a floor
-        } else if (HTomb.World.tiles[z-2][x][y].solid===true) {
-          HTomb.Tiles.changeTile(x,y,z-1,HTomb.Tiles.FloorTile);
-        // otherwise make it empty
-        } else {
-          HTomb.Tiles.changeTile(x,y,z-1,HTomb.Tiles.EmptyTile);
-        }
+      } else if (t===HTomb.Tiles.FloorTile || t===HTomb.Tiles.UpSlopeTile) {
+        HTomb.Tiles.excavate(x,y,z-1,{removeCeiling: true});
       }
-    },
-    tryAssign: function(cr) {
-      if (this.canReachZone(cr)) {
-        this.assignTo(cr);
-        return true;
-      } else {
-        return false;
-      }
-    },
-    canDesignateTile: function(x,y,z) {
-      var square = HTomb.Tiles.getSquare(x,y,z);
-      if (square.terrain.fallable || square.terrain.immutable) {
-        return false;
-      } else {
-        return true;
-      }
-    },
-    // note that this passes the behavior, not the entity
-    designate: function(master) {
-      this.designateSquares({master: master});
     }
   });
 
   HTomb.Things.defineTask({
-    template: "BuildTask",
-    name: "build wall",
+    template: "FullBuild",
+    name: "build",
     zoneTemplate: {
-      template: "BuildZone",
-      name: "build",
+      template: "FullBuildZone",
+      name: "(full build)",
       bg: "#444444"
     },
     featureTemplate: {
-      name: "incomplete wall",
+      name: "incomplete construction",
       symbol: "\u25AB",
       fg: HTomb.Constants.ABOVE,
       steps: 10
     },
+    allowedTiles: [
+      // for now, can't build unless there is a floor
+      HTomb.Tiles.FloorTile,
+      HTomb.Tiles.UpSlopeTile
+    ],
     finish: function() {
       var c = this.feature;
       var x = c.x;
       var y = c.y;
       var z = c.z;
-      HTomb.Tiles.changeTile(x,y,z,HTomb.Tiles.WallTile);
+      HTomb.Tiles.fill(x,y,z);
       c.remove();
-    },
-    tryAssign: function(cr) {
-      if (this.canReachZone(cr)) {
-        this.assignTo(cr);
-        return true;
-      } else {
-        return false;
-      }
-    },
-    canDesignateTile: function(x,y,z) {
-      var square = HTomb.Tiles.getSquare(x,y,z);
-      if (square.terrain.solid) {
-        return false;
-      } else {
-        return true;
-      }
     },
     designate: function(master) {
       this.designateSquares({master: master, outline: true});
@@ -287,6 +261,7 @@ HTomb = (function(HTomb) {
   HTomb.Things.defineTask({
     template: "Undesignate",
     name: "undesignate",
+    allowedTiles: "all",
     designate: function(master) {
       if (master.entity===HTomb.Player) {
         var deleteZones = function(squares) {
@@ -311,93 +286,35 @@ HTomb = (function(HTomb) {
       name: "patrol",
       bg: "#880000"
     },
-    canDesignateTile: function(x,y,z) {
-      var square = HTomb.Tiles.getSquare(x,y,z);
-      if (square.terrain.solid || square.terrain.fallable) {
-        return false;
-      } else {
-        return true;
-      }
-    },
+    allowedTiles: "all",
     designate: function(master) {
       this.designateSquare({master: master});
     },
     ai: function() {
       var cr = this.assignee;
       cr.ai.patrol(this.zone.x,this.zone.y,this.zone.z);
-    },
-    tryAssign: function(cr) {
-      if (this.canReachZone(cr)) {
-        this.assignTo(cr);
-        return true;
-      } else {
-        return false;
-      }
     }
   });
 
   HTomb.Things.defineTask({
-    template: "BuildSlope",
-    name: "build slope",
+    template: "HalfDig",
+    name: "partial dig",
     zoneTemplate: {
-      template: "BuildSlopeZone",
-      name: "slope",
-      bg: "#444444"
-    },
-    featureTemplate: {
-      name: "incomplete slope",
-      symbol: "\u25B5",
-      steps: 5,
-      fg: HTomb.Constants.ABOVE
-    },
-    finish: function() {
-      var c = this.feature;
-      var x = c.x;
-      var y = c.y;
-      var z = c.z;
-      HTomb.Tiles.changeTile(x,y,z,HTomb.Tiles.UpSlopeTile);
-      if (HTomb.World.tiles[z+1][x][y].solid!==true) {
-        HTomb.Tiles.changeTile(x,y,z-1,HTomb.Tiles.DownSlopeTile);
-      }
-      HTomb.World.validate();
-      c.remove();
-    },
-    tryAssign: function(cr) {
-      if (this.canReachZone(cr)) {
-        this.assignTo(cr);
-        return true;
-      } else {
-        return false;
-      }
-    },
-    canDesignateTile: function(x,y,z) {
-      var square = HTomb.Tiles.getSquare(x,y,z);
-      if (square.terrain===HTomb.Tiles.FloorTile) {
-        return true;
-      } else {
-        return false;
-      }
-    },
-    // note that this passes the behavior, not the entity
-    designate: function(master) {
-      this.designateSquares({master: master});
-    }
-  });
-
-  HTomb.Things.defineTask({
-    template: "DigSlope",
-    name: "dig slope",
-    zoneTemplate: {
-      template: "DigSlopeZone",
-      name: "dig",
+      template: "HalfDigZone",
+      name: "(partial dig)",
       bg: "#553300"
     },
     featureTemplate: {
-      name: "incomplete slope",
+      name: "incomplete excavation",
       symbol: "\u25BF",
-      steps: 10,
+      steps: 5,
       fg: HTomb.Constants.BELOW
     },
+    allowedTiles: [
+      HTomb.Tiles.FloorTile,
+      HTomb.Tiles.WallTile,
+      HTomb.Tiles.UpSlopeTile
+    ],
     finish: function() {
       var c = this.feature;
       var x = c.x;
@@ -405,43 +322,68 @@ HTomb = (function(HTomb) {
       var z = c.z;
       c.remove();
       var t = HTomb.World.tiles[z][x][y];
-      // If we dug out a wall, build a tunnel
+      // If we dug out a wall, cut it down to a slope
       if (t===HTomb.Tiles.WallTile) {
-        HTomb.Tiles.changeTile(x,y,z,HTomb.Tiles.UpSlopeTile);
-        if (HTomb.World.tiles[z+1][x][y].solid!==true) {
-          HTomb.Tiles.changeTile(x,y,z+1,HTomb.Tiles.DownSlopeTile);
-        }
-      // If we dug out a floor, build a pit
+        HTomb.World.tiles[z][x][y] = HTomb.Tiles.UpSlopeTile;
       } else if (t===HTomb.Tiles.FloorTile) {
-        if (HTomb.World.tiles[z-1][x][y].solid===true) {
-          HTomb.Tiles.changeTile(x,y,z,HTomb.Tiles.DownSlopeTile);
-          HTomb.Tiles.changeTile(x,y,z-1,HTomb.Tiles.UpSlopeTile);
-        } else {
-          HTomb.Tiles.changeTile(x,y,z,HTomb.Tiles.EmptyTile);
+        if (HTomb.World.tiles[z-1][x][y]===HTomb.Tiles.VoidTile) {
+          HTomb.GUI.pushMessage("Can't dig here!");
+          // Either cut a slope into the floor...
+        } else if (HTomb.World.tiles[z-1][x][y]===HTomb.Tiles.WallTile) {
+          HTomb.World.tiles[z-1][x][y] = HTomb.Tiles.UpSlopeTile;
+          HTomb.World.tiles[z][x][y] = HTomb.Tiles.DownSlopeTile;
+          // Or cut a hole in the floor
+        } else if (HTomb.World.tiles[z-1][x][y].solid!==true) {
+          HTomb.World.tiles[z][x][y] = HTomb.Tiles.EmptyTile;
         }
+        // If it's a slope, level it
+      } else if (t===HTomb.Tiles.UpSlopeTile) {
+        HTomb.World.tiles[z][x][y] = HTomb.Tiles.FloorTile;
       }
-    },
-    tryAssign: function(cr) {
-      if (this.canReachZone(cr)) {
-        this.assignTo(cr);
-        return true;
-      } else {
-        return false;
-      }
-    },
-    canDesignateTile: function(x,y,z) {
-      var square = HTomb.Tiles.getSquare(x,y,z);
-      if (square.terrain.fallable || square.terrain.immutable) {
-        return false;
-      } else {
-        return true;
-      }
-    },
-    // note that this passes the behavior, not the entity
-    designate: function(master) {
-      this.designateSquares({master: master});
+      HTomb.World.validate();
     }
   });
+
+  HTomb.Things.defineTask({
+    template: "HalfBuild",
+    name: "partial build",
+    zoneTemplate: {
+      template: "HalfBuildZone",
+      name: "(partial build)",
+      bg: "#444444"
+    },
+    featureTemplate: {
+      name: "incomplete construction",
+      symbol: "\u25B5",
+      steps: 5,
+      fg: HTomb.Constants.ABOVE
+    },
+    allowedTiles: [
+      HTomb.Tiles.EmptyTile,
+      HTomb.Tiles.FloorTile,
+      HTomb.Tiles.DownSlopeTile,
+      HTomb.Tiles.UpSlopeTile
+    ],
+    finish: function() {
+      var c = this.feature;
+      var x = c.x;
+      var y = c.y;
+      var z = c.z;
+      c.remove();
+      var t = HTomb.World.tiles[z][x][y];
+      if (t===HTomb.Tiles.EmptyTile) {
+        HTomb.World.tiles[z][x][y] = HTomb.Tiles.FloorTile;
+      } else if (t===HTomb.Tiles.FloorTile) {
+        HTomb.World.tiles[z][x][y] = HTomb.Tiles.UpSlopeTile;
+      } else if (t===HTomb.Tiles.UpSlopeTile) {
+        HTomb.World.tiles[z][x][y] = HTomb.Tiles.WallTile;
+      } else if (t===HTomb.Tiles.DownSlopeTile) {
+        HTomb.World.tiles[z-1][x][y] = HTomb.Tiles.WallTile;
+      }
+      HTomb.World.validate();
+    }
+  });
+
 
   HTomb.Things.defineTask({
     template: "BuildDoor",
