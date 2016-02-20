@@ -243,14 +243,21 @@ HTomb = (function(HTomb) {
     allowedTiles: [
       // for now, can't build unless there is a floor
       HTomb.Tiles.FloorTile,
-      HTomb.Tiles.UpSlopeTile
+      HTomb.Tiles.UpSlopeTile,
+      HTomb.Tiles.DownSlopeTile,
+      HTomb.Tiles.EmptyTile
     ],
     finish: function() {
       var c = this.feature;
       var x = c.x;
       var y = c.y;
       var z = c.z;
-      HTomb.Tiles.fill(x,y,z);
+      var t = HTomb.World.tiles[z][x][y];
+      if (t===HTomb.Tiles.EmptyTile || t===HTomb.Tiles.DownSlopeTile) {
+        HTomb.Tiles.fill(x,y,z-1);
+      } else {
+        HTomb.Tiles.fill(x,y,z);
+      }
       c.remove();
     },
     designate: function(master) {
