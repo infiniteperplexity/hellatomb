@@ -18,7 +18,7 @@ HTomb = (function(HTomb) {
     }
   };
   Events.unsubscribe = function(listener, etype) {
-    Events[etype].splice(Events[etype].indexOf(listener));
+    Events[etype].splice(Events[etype].indexOf(listener),1);
   };
   return HTomb;
 })(HTomb);

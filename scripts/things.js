@@ -13,7 +13,7 @@ HTomb = (function(HTomb) {
     },
     despawn: function() {
     // remove from the global things table
-      HTomb.World.things.splice(this.thingId,0);
+      HTomb.World.things.splice(this.thingId,1);
       if (this.onDespawn) {
         this.onDespawn();
       }
@@ -146,7 +146,7 @@ HTomb = (function(HTomb) {
       if (this.isItem) {
         var pile = items[c];        // remove it from the old pile
         if (pile) {
-          pile.splice(pile.indexOf(this));
+          pile.splice(pile.indexOf(this),1);
           if (pile.length===0) {
             delete items[c];
           }

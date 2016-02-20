@@ -62,7 +62,7 @@ HTomb = (function(HTomb) {
       var master = this.assigner;
       if (master) {
         var taskList = this.assigner.master.taskList;
-        taskList.splice(taskList.indexOf(this));
+        taskList.splice(taskList.indexOf(this),0);
       }
       if (this.assignee) {
         this.assignee.minion.unassign();
