@@ -120,6 +120,11 @@ HTomb = (function(HTomb) {
     water_table(23);
     scatter("Bat",0.005);
     scatter("Spider",0.005);
+    minerals("IronOre");
+    minerals("Bloodstone");
+    minerals("GoldOre");
+    minerals("Moonstone");
+    minerals("Jade");
     addSlopes();
   };
   function scatter(template,p) {
@@ -230,6 +235,19 @@ HTomb = (function(HTomb) {
           }
           if (z===elev) {
             HTomb.Things.create("Water").place(x,y,z+1);
+          }
+        }
+      }
+    }
+  }
+
+  function minerals(ore,p) {
+    p = 0.01 || p;
+    for (var x=1; x<LEVELW-1; x++) {
+      for (var y=1; y<LEVELH-1; y++) {
+        for (var z=1; z<HTomb.Tiles.groundLevel(x,y)-1; z++) {
+          if (Math.random()<p) {
+            HTomb.Things.create(ore).place(x,y,z);
           }
         }
       }

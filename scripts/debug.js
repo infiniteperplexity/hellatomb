@@ -3,8 +3,8 @@ HTomb = (function(HTomb) {
   "use strict";
   var Debug = HTomb.Debug;
 
-  //Debug.explored = true;
-  //Debug.visible = true;
+  Debug.explored = true;
+  Debug.visible = true;
   //Debug.mobility = true;
   Debug.showpaths = true; //not yet implemented
   //Debug.messages = true;
