@@ -45,3 +45,17 @@ Q: Dig a hole in the ceiling from above?
 A: Same as digging a shallow pit.
 
 (note: this system has not yet been implemented.)
+
+It occurs to me there is still one ambiguous circumstance...if there is an upward slope directly below a pit you want to deepend, but you can't reach the upward slope to remove it; alternatively, you haven't explored the space so you don't know the slope is there.  Two rules can help resolve this: First, if you haven't explored the slope, it doesn't count.  Second, if you mark the slope as forbidden, it doesn't count.
+
+Might I call these things "sigils" or "wards" or "glyphs" or something?
+
+"inscribe sigils"
+
+"forbidden sigil" : zombies will avoid this sigil
+"warding sigil" : zombies will guard this sigil
+"hoarding sigil" : zombies will bring goods to this sigil
+"unearthing sigil" : zombies will remove earth around this sigil
+"constructing sigil" : zombies will create constructions around this sigil
+"dismantling sigil" : zombies will 
+"erase sigils"
