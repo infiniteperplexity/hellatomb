@@ -188,13 +188,14 @@ HTomb = (function(HTomb) {
     HTomb.Player.place(x,y,z);
     cr.place(x0,y0,z0);
     HTomb.GUI.pushMessage(HTomb.Player.describe() + " displaces " + cr.describe() + ".");
-    Commands.glance(square);
+    Commands.glance(HTomb.Tiles.getSquare(x,y,z));
     HTomb.turn();
 
   },
   // Try to pick up items
   Commands.pickup = function() {
-    var square = HTomb.Tiles.getSquare(Player.x,Player.y,Player.z).getSquare();
+    var p = HTomb.Player;
+    var square = HTomb.Tiles.getSquare(p.x,p.y,p.z);
     if (!square.items) {
       HTomb.GUI.pushMessage("Nothing here to pick up.");
     } else if (!HTomb.Player.inventory) {
