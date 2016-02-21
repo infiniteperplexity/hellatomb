@@ -1,0 +1,47 @@
+Okay, I think I figured out a way to do everything with just “build” and “dig.”
+
+How do I...
+
+Q: Turn a floor tile into a wall tile?
+A: Build on the tile once to create a slope, and then build on the tile again to create a wall.
+
+Q: Turn an upward slope into a wall tile?
+A: Build once on the slope.
+
+Q: Build a passage to the next level up?
+A: Build once on a floor tile to create a slope.  If there is no ceiling above, you can reach the next level up.  Otherwise, dig a hole in the ceiling (see below.)
+
+Q: Turn a deep pit or trench into a shallow pit or trench?
+A: Build once in the pit.  Do not build above the pit or a worker may place a floor above the slope.
+
+Q: Fill in a pit from above?
+A: Build once in the pit to create a slope, then build in it a second time to fill in the pit.
+
+Q: Build a floor in an empty tile?
+A: Build once in the empty tile.
+
+Q: Build a ceiling from above?
+A: Same as building a floor.
+
+Q: Build a ceiling from below?
+A: Build an upward slope directly below, then build on the level above.
+
+Q: Dig a shallow pit or trench in the floor?
+A: Dig once on a floor tile to create a downward slope.
+
+Q: Dig a deep pit or trench in the floor?
+A: Dig once on a floor tile to create a downward slope; then dig once more either above or on the slope.  Do not dig in the pit if there is an upward slope directly below the tile, or a worker might remove the floor of the pit.
+
+Q: Build a passage to the next level down?
+A: Dig once on a floor tile.
+
+Q: Create a tunnel (with floor and ceiling intact) from a wall tile?
+A: Dig once in the wall tile.  Make sure there is not an upward slope directly below the tile, or a worker might remove the floor of the tunnel.
+
+Q: Dig a hole in the ceiling from below?
+A: Build once on the floor directly below to create an upward slope.  Then dig once in the wall tile above.
+
+Q: Dig a hole in the ceiling from above?
+A: Same as digging a shallow pit.
+
+(note: this system has not yet been implemented.)
