@@ -439,11 +439,12 @@ HTomb = (function(HTomb) {
   // Select a single square with the mouse
   HTomb.GUI.selectSquare = function(z, callb, options) {
     options = options || {};
+    GUI.updateMenu(["Use movement keys to navigate.","Comma go down.","Period to go up.","Escape to exit."]);
     HTomb.GUI.pushMessage("Select a square.");
-    var context = new ControlContext({VK_ESCAPE: GUI.reset});
+    var context = Object.create(survey);
     HTomb.Controls.context = context;
     context.clickTile = function(x,y) {
-      callb(x,y,z);
+      callb(x,y,gameScreen.z);
       GUI.reset();
     };
     if (options.line!==undefined) {
@@ -464,13 +465,16 @@ HTomb = (function(HTomb) {
   // Select a rectangular zone using its two corners
   HTomb.GUI.selectSquareZone = function(z, callb, options) {
     options = options || {};
+    GUI.updateMenu(["Use movement keys to navigate.","Comma go down.","Period to go up.","Escape to exit."]);
     HTomb.GUI.pushMessage("Select the first corner.");
-    var context = new ControlContext({VK_ESCAPE: GUI.reset});
+    var context = Object.create(survey);
     HTomb.Controls.context = context;
     context.clickTile = function (x,y) {
       HTomb.GUI.pushMessage("Select the second corner.");
-      context.clickTile = secondSquare(x,y);
-      context.mouseTile = drawSquareBox(x,y);
+      var context2 = new ControlContext({VK_ESCAPE: GUI.reset});
+      HTomb.Controls.context = context2;
+      context2.clickTile = secondSquare(x,y);
+      context2.mouseTile = drawSquareBox(x,y);
     };
     var drawSquareBox = function(x0,y0) {
       var bg = options.bg || "#550000";
@@ -489,10 +493,10 @@ HTomb = (function(HTomb) {
           for (var y=0; y<ys.length; y++) {
             if (options.outline===true) {
               if (xs[x]===x0 || xs[x]===x1 || ys[y]===y0 || ys[y]===y1) {
-                squares.push([xs[x],ys[y],z]);
+                squares.push([xs[x],ys[y],gameScreen.z]);
               }
             } else {
-              squares.push([xs[x],ys[y],z]);
+              squares.push([xs[x],ys[y],gameScreen.z]);
             }
           }
         }
@@ -519,10 +523,10 @@ HTomb = (function(HTomb) {
             // If options.outline = true, use only the outline
             if (options.outline===true) {
               if (xs[x]===x0 || xs[x]===x1 || ys[y]===y0 || ys[y]===y1) {
-                squares.push([xs[x],ys[y],z]);
+                squares.push([xs[x],ys[y],gameScreen.z]);
               }
             } else {
-              squares.push([xs[x],ys[y],z]);
+              squares.push([xs[x],ys[y],gameScreen.z]);
             }
           }
         }
