@@ -59,7 +59,9 @@ HTomb = (function(HTomb) {
       var x0 = this.entity.x;
       var y0 = this.entity.y;
       var line = HTomb.Path.line(x0,y0,x,y);
-      // need to handle errors somehow
+      if (line.length<=1) {
+        return this.walkRandom();
+      }
       var dx = line[1][0] - x0;
       var dy = line[1][1] - y0;
       return this.tryStep(-dx,-dy);
@@ -76,7 +78,7 @@ HTomb = (function(HTomb) {
         }
         var p = HTomb.World.portals[coord(x,y,z)];
         if (p) {
-          if (p[0]===x+dx && p[1]===y+dy && p[2]===z+dz) {
+          if (p[0]===x+dx && p[1]===y+dy && p[2]===z+dz && this.canPass(x+dx,y+dy,z+dz) && this.canMove(x+dx, y+dy,z+dz)) {
             this.entity.place(x+dx,y+dy,z+dz);
             return true;
           }
@@ -121,6 +123,16 @@ HTomb = (function(HTomb) {
       }
       console.log("creature couldn't move.");
       return false;
+    },
+    displaceCreature: function(x,y,z) {
+      var x0 = this.entity.x;
+      var y0 = this.entity.y;
+      var z0 = this.entity.z;
+      var cr = HTomb.World.creatures[coord(x,y,z)];
+      cr.remove();
+      this.entity.place(x,y,z);
+      cr.place(x0,y0,z0);
+      HTomb.GUI.pushMessage(this.entity.describe() + " displaces " + cr.describe() + ".");
     },
     moveTo: function(x,y,z) {
       // unimplemented...use action points?
