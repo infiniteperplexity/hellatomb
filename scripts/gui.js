@@ -20,6 +20,7 @@ HTomb = (function(HTomb) {
   GUI.panels = {};
   var Controls = HTomb.Controls;
   var Commands = HTomb.Commands;
+  // Lucida Console, Trebuchet MS, Monaco, Verdana, Arial, Courier New (may be default?)
   var display = new ROT.Display({width: SCREENW+MENUW, height: SCREENH+STATUSH+SCROLLH, fontSize: FONTSIZE});
   document.body.appendChild(display.getContainer());
   // Attach input events
