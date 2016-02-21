@@ -7,8 +7,6 @@ HTomb = (function(HTomb) {
   var SHADOW = HTomb.Constants.SHADOW;
   var ABOVE = HTomb.Constants.ABOVE;
   var BELOW = HTomb.Constants.BELOW;
-  HTomb.Constants.FLOORBELOW = "\u25E6";
-  HTomb.Constants.ROOFABOVE = "'";
   var coord = HTomb.coord;
 
   var Tiles = HTomb.Tiles;
@@ -27,7 +25,7 @@ HTomb = (function(HTomb) {
     },
     stringify: function() {
       // returns a number
-      return HTomb.Things.templates.Terrain.types.indexOf(this)
+      return HTomb.Things.templates.Terrain.types.indexOf(this);
     },
     parse: function(json) {
       // parses a number into a terrain type
@@ -47,16 +45,22 @@ HTomb = (function(HTomb) {
   HTomb.Things.defineTerrain({
     template: "EmptyTile",
     name: "empty",
-    symbol: "\u25CB",
+    //symbol: "\u25CB",
+    //symbol: "\u25E6",
+    symbol: HTomb.Constants.FLOORBELOW,
     zview: -1,
-    fg: BELOW,
+    //fg: BELOW,
+    fg: HTomb.Constants.TWOBELOW,
+    //bg: HTomb.Constants.BELOWBG,
+    bg: "black",
     fallable: true
   });
   HTomb.Things.defineTerrain({
     template: "FloorTile",
     name: "floor",
     symbol: ".",
-    fg: EARTHTONE
+    fg: EARTHTONE,
+    bg: HTomb.Constants.FLOORBG
   });
   HTomb.Things.defineTerrain({
     template: "WallTile",
@@ -64,7 +68,8 @@ HTomb = (function(HTomb) {
     symbol: "#",
     fg: ABOVE,
     opaque: true,
-    solid: true
+    solid: true,
+    bg: HTomb.Constants.WALLBG
   });
   HTomb.Things.defineTerrain({
     template: "UpSlopeTile",
@@ -73,7 +78,8 @@ HTomb = (function(HTomb) {
     constructionSymbol: "\u25BF",
     fg: ABOVE,
     zview: +1,
-    zmove: +1
+    zmove: +1,
+    bg: HTomb.Constants.WALLBG
   });
   HTomb.Things.defineTerrain({
     template: "DownSlopeTile",
@@ -82,6 +88,7 @@ HTomb = (function(HTomb) {
     zview: -1,
     zmove: -1,
     fg: BELOW,
+    bg: HTomb.Constants.BELOWBG,
     allowsFeatures: false
   });
 
@@ -106,12 +113,13 @@ HTomb = (function(HTomb) {
     var zview = tiles[z][x][y].zview;
     //if the square has not been explored, don't show it
     if (!explored[z][x][y] && HTomb.Debug.explored!==true) {
+      //return [" ","black","black"];
       return [" ","black","black"];
     }
     // background color for explored squares is based on zoning
       // maybe at some point, liquids
     var fg = "white";
-    var bg = "black";
+    var bg = null;
     if (liquids[crd]!==undefined) {
       bg = liquids[crd].shimmer();
     }
@@ -126,67 +134,64 @@ HTomb = (function(HTomb) {
       }
       if (features[crd]) {
         // feature in shadow
-        return [features[crd].symbol || "X",fg,bg];
+        return [features[crd].symbol || "X",fg, bg || tile.bg];
       } else if (zview===+1 && features[cabove]) {
         // feature on level above
-        return [features[cabove].symbol || "X",fg,bg];
+        return [features[cabove].symbol || "X",fg, bg || HTomb.Constants.WALLBG];
       } else if (zview===-1 && features[cbelow]) {
         // feature on level below
-        return [features[cbelow].symbol || "X",fg,bg];
+        //return [features[cbelow].symbol || "X",fg,bg];
+        return [features[cbelow].symbol || "X",fg, bg || HTomb.Constants.BELOWBG];
       } else if (liquids[crd] && liquids[cabove]===undefined) {
         return [liquids[crd].symbol,liquids[crd].fg,bg];
       } else if (zview===-1 && liquids[cbelow]) {
         return [HTomb.Constants.FLOORBELOW,liquids[cbelow].fg,liquids[cbelow].darkbg];
         // an empty space with floor below it
       } else if (tile===Tiles.EmptyTile && tiles[z-1][x][y]===Tiles.FloorTile) {
-        return [HTomb.Constants.FLOORBELOW,fg,bg];
+        //return [HTomb.Constants.FLOORBELOW,fg,bg];
+        return [HTomb.Constants.FLOORBELOW,fg, bg || HTomb.Constants.BELOWBG];
       } else if (tile===Tiles.FloorTile && tiles[z+1][x][y]!==Tiles.EmptyTile) {
-        return [HTomb.Constants.ROOFABOVE,fg,bg];
+        return [HTomb.Constants.ROOFABOVE,fg,tile.bg];
       } else {
         // terrain on current level
-        return [tile.symbol || "X",fg,bg];
+        return [tile.symbol || "X",fg,tile.bg];
       }
     } else {
       // visible square
       var above = ABOVE;
       var below = BELOW;
       if (creatures[crd]) {
-        return [creatures[crd].symbol || "X", creatures[crd].fg || fg,bg];
+        return [creatures[crd].symbol || "X", creatures[crd].fg || fg, bg || tile.bg];
       } else if (zview===+1 && creatures[cabove]) {
-        return [creatures[cabove].symbol || "X",above,bg];
+        return [creatures[cabove].symbol || "X",above, bg || HTomb.Constants.WALLBG];
       } else if (zview===-1 && creatures[cbelow]) {
-        return [creatures[cbelow].symbol || "X",below,bg];
+        return [creatures[cbelow].symbol || "X",below, bg || HTomb.Constants.BELOWBG];
       } else if (items[crd]) {
-        return [items[crd][items[crd].length-1].symbol || "X",items[crd][items[crd].length-1].fg || fg,bg];
+        return [items[crd][items[crd].length-1].symbol || "X",items[crd][items[crd].length-1].fg || fg, bg || tile.bg];
       } else if (features[crd]) {
-        return [features[crd].symbol || "X", features[crd].fg || fg,bg];
+        return [features[crd].symbol || "X", features[crd].fg || fg, bg || tile.bg];
       } else if (zview===+1 && items[cabove]) {
-        return [items[cabove][items[cabove].length-1].symbol || "X",above,bg];
+        return [items[cabove][items[cabove].length-1].symbol || "X",above, bg || HTomb.Constants.WALLBG];
       } else if (zview===-1 && items[cbelow]) {
-        return [items[cbelow][items[cbelow].length-1].symbol || "X",below,bg];
+        return [items[cbelow][items[cbelow].length-1].symbol || "X",below, bg || HTomb.Constants.BELOWBG];
       } else if (zview===+1 && features[cabove]) {
-        return [features[cabove].symbol || "X",above,bg];
+        return [features[cabove].symbol || "X",above, bg || HTomb.Constants.WALLBG];
       } else if (zview===-1 && features[cbelow]) {
-        return [features[cbelow].symbol || "X",below,bg];
+        return [features[cbelow].symbol || "X",below, bg || HTomb.Constants.BELOWBG];
       } else if (liquids[crd] && liquids[cabove]===undefined) {
         return [liquids[crd].symbol,liquids[crd].fg,bg];
       } else if (zview===-1 && liquids[cbelow]) {
         return [HTomb.Constants.FLOORBELOW,liquids[cbelow].fg,liquids[cbelow].shimmer()];
       } else if (tile===Tiles.EmptyTile && tiles[z-1][x][y]===Tiles.FloorTile) {
-        return [HTomb.Constants.FLOORBELOW,below,bg];
-      //} else if (tile===Tiles.FloorTile) {
-        //fg = ROT.Color.fromString(tiles[z][x][y].fg] || HTomb.Constants.EARTHTONE);
-        //fg = ROT.Color.add(fg,HTomb.World.colors[x][y]);
-        //fg = ROT.Color.toHex(fg);
-        //return [tile.symbol || "X",fg,bg];
+        return [HTomb.Constants.FLOORBELOW,below, bg || HTomb.Constants.BELOWBG];
       } else if (tile===Tiles.FloorTile && tiles[z+1][x][y]!==Tiles.EmptyTile) {
-        return [HTomb.Constants.ROOFABOVE,tile.fg,bg];
+        return [HTomb.Constants.ROOFABOVE,tile.fg, bg || tile.bg];
       } else {
         fg = tile.fg || fg;
-        return [tile.symbol || "X",fg,bg];
+        return [tile.symbol || "X",fg, bg || tile.bg];
       }
     }
-    return ["X","red","black"];
+    return ["X","black","red"];
   };
 
   HTomb.Tiles.getSquare = function(x,y,z) {

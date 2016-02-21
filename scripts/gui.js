@@ -444,6 +444,9 @@ HTomb = (function(HTomb) {
     HTomb.GUI.pushMessage("Select a square.");
     var context = Object.create(survey);
     HTomb.Controls.context = context;
+    survey.saveX = gameScreen.xoffset;
+    survey.saveY = gameScreen.yoffset;
+    survey.saveZ = gameScreen.z;
     context.clickTile = function(x,y) {
       callb(x,y,gameScreen.z);
       GUI.reset();
@@ -470,6 +473,9 @@ HTomb = (function(HTomb) {
     HTomb.GUI.pushMessage("Select the first corner.");
     var context = Object.create(survey);
     HTomb.Controls.context = context;
+    survey.saveX = gameScreen.xoffset;
+    survey.saveY = gameScreen.yoffset;
+    survey.saveZ = gameScreen.z;
     context.clickTile = function (x,y) {
       HTomb.GUI.pushMessage("Select the second corner.");
       var context2 = new ControlContext({VK_ESCAPE: GUI.reset});
