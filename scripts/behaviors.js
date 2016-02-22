@@ -98,6 +98,9 @@ HTomb = (function(HTomb) {
           break;
         }
       }
+      // i0 ends up undefined if dx and dy are both zero
+      // that causes an error
+
       // Then try moving in other nearby directions
       for (i=1; i<5; i++) {
         one = (i0+i)%8;
@@ -107,6 +110,10 @@ HTomb = (function(HTomb) {
           one = one^two;
           two = one^two;
           one = one^two;
+        }
+        if (dirs[one]===undefined) {
+          // For now, just bail out...we'll eventually do a better fix
+          return false;
         }
         dx = dirs[one][0];
         dy = dirs[one][1];

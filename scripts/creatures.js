@@ -13,8 +13,7 @@ HTomb = (function(HTomb) {
         Movement: {},
         Inventory: {},
         Sight: {},
-        // Issue...those these be template names?  or reference to actual templates?
-        //Master: {tasks: ["FullDig","FullBuild","HalfDig","HalfBuild","BuildDoor","PatrolTask","Undesignate"]},
+        AI: {},
         Master: {tasks: ["Dig","Build","BuildDoor","PatrolTask","Undesignate"]},
         SpellCaster: {spells: ["RaiseZombie"]}
       }
