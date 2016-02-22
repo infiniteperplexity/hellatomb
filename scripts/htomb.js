@@ -35,6 +35,43 @@ var HTomb = (function() {
   function coord(x,y,z) {
     return z*LEVELH*LEVELW + x*LEVELH + y;
   }
+  //useful for parsing
+  function decoord(c) {
+    var x=0, y=0, z=0;
+    while(c-LEVELH*LEVELW>=0) {
+      c-=LEVELH*LEVELW;
+      z+=1;
+    }
+    while(c-LEVELH>=0) {
+      c-=LEVELH;
+      x+=1;
+    }
+    y = c;
+    return [x,y,z];
+  }
+  // the shuffle function in ROT.js empties the original array
+  function shuffle(arr) {
+    var a = arr.shuffle();
+    for(var i=0; i<a.length;i++) {
+      arr.push(a[i]);
+    }
+  }
+  function coordInArray(c, a) {
+    var match;
+    var mis;
+    for (var i=0; i<a.length; i++) {
+      match = true;
+      for (var j=0; j<c.length; j++) {
+        if (c[j]!==a[i][j]) {
+          match = false;
+        }
+      }
+      if (match===true) {
+        return i;
+      }
+    }
+    return -1;
+  }
 
   // Begin the game
   var init = function() {
@@ -96,6 +133,9 @@ var HTomb = (function() {
     Constants: Constants,
     init: init,
     coord: coord,
+    decoord: decoord,
+    shuffle: shuffle,
+    coordInArray: coordInArray,
     Controls: Controls,
     Commands: Commands,
     turn: turn,
