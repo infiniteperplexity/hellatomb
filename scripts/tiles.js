@@ -304,5 +304,26 @@ HTomb = (function(HTomb) {
     HTomb.World.explored[z][x][y] = true;
   };
 
+  // any tile that can be touched by a worker from a square
+  HTomb.Tiles.touchableFrom = function(x,y,z) {
+    var touchable = [];
+    //sideways
+    var t, x1, y1;
+    for (var i=0; i<ROT.DIRS[8].length; i++) {
+      x1 = x+ROT.DIRS[8][i][0];
+      y1 = y+ROT.DIRS[8][i][1];
+      touchable.push([x1,y1,z]);
+      t = HTomb.World.tiles[z][x1][y1];
+      if (t.zmove===-1 || t.fallable) {
+        touchable.push([x1,y1,z-1]);
+      }
+    }
+    t = HTomb.World.tiles[z][x][y];
+    if (t.zmove===+1) {
+      touchable.push([x,y,z+1]);
+    }
+    return touchable;
+  }
+  
   return HTomb;
 })(HTomb);

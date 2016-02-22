@@ -69,7 +69,7 @@ HTomb = (function(HTomb) {
     if (HTomb.Debug.mobility===true) {
       Commands.movePlayer(x,y,z+1);
     } else if (square.terrain.zmove===+1) {
-      if (HTomb.Player.movement.canPass(x,y,z+1)) {
+      if (HTomb.Player.movement.canPass(x,y,z+1) && HTomb.World.tiles[z+1][x][y].zmove===-1) {
         HTomb.GUI.pushMessage("You scramble up the slope.");
         Commands.movePlayer(x,y,z+1);
         // This is allows player to move through floors

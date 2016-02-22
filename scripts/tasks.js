@@ -190,55 +190,84 @@ HTomb = (function(HTomb) {
 
 
   HTomb.Things.defineTask({
-    template: "FullDig",
+    template: "Dig",
     name: "dig",
     zoneTemplate: {
-      template: "FullDigZone",
-      name: "(full dig)",
+      template: "DigZone",
+      name: "dig",
       bg: "#553300"
     },
     featureTemplate: {
       name: "incomplete excavation",
       symbol: "\u2022",
-      steps: 10,
+      steps: 5,
       fg: HTomb.Constants.BELOW
     },
     allowedTiles: [
       HTomb.Tiles.FloorTile,
       HTomb.Tiles.WallTile,
-      HTomb.Tiles.UpSlopeTile
+      HTomb.Tiles.UpSlopeTile,
+      HTomb.Tiles.DownSlopeTile,
+      HTomb.Tiles.EmptyTile
     ],
     finish: function() {
+      var tiles = HTomb.World.tiles;
+      var EmptyTile = HTomb.Tiles.EmptyTile;
+      var FloorTile = HTomb.Tiles.FloorTile;
+      var WallTile = HTomb.Tiles.WallTile;
+      var UpSlopeTile = HTomb.Tiles.UpSlopeTile;
+      var DownSlopeTile = HTomb.Tiles.DownSlopeTile;
       var c = this.feature;
       var x = c.x;
       var y = c.y;
       var z = c.z;
-      c.remove();
-      var t = HTomb.World.tiles[z][x][y];
-      // If we dug out a wall, build a tunnel
-      if (t===HTomb.Tiles.WallTile) {
-        // note: does not remove ceiling, usually
-        HTomb.Tiles.excavate(x,y,z);
-      // If we dug out a floor, build a pit
-      } else if (t===HTomb.Tiles.FloorTile || t===HTomb.Tiles.UpSlopeTile) {
-        HTomb.Tiles.excavate(x,y,z-1,{removeCeiling: true});
+      var t = tiles[z][x][y];
+      // If there is a slope below, dig out the floor
+      if (tiles[z-1][x][y]===UpSlopeTile && HTomb.World.explored[z-1][x][y] && (t===WallTile || t===FloorTile)) {
+        tiles[z][x][y] = DownSlopeTile;
+      // If it's a wall, dig a tunnel
+      } else if (t===WallTile) {
+        tiles[z][x][y] = FloorTile;
+      } else if (t===FloorTile) {
+        // If it's a floor with a wall underneath dig a trench
+        if (tiles[z-1][x][y]===WallTile) {
+          tiles[z][x][y] = DownSlopeTile;
+          tiles[z-1][x][y] = UpSlopeTile;
+        // Otherwise just remove the floor
+        } else {
+          tiles[z][x][y] = EmptyTile;
+        }
+      // If it's a down slope tile, remove the slopes
+      } else if (t===DownSlopeTile) {
+        tiles[z][x][y] = EmptyTile;
+        tiles[z-1][x][y] = FloorTile;
+      // if it's an upward slope, remove the slope
+      } else if (t===UpSlopeTile) {
+        tiles[z][x][y] = FloorTile;
+        if (tiles[z+1][x][y]===DownSlopeTile) {
+          tiles[z+1][x][y] = EmptyTile;
+        }
+      } else if (t===EmptyTile) {
+        tiles[z-1][x][y] = FloorTile;
       }
+      c.remove();
+      HTomb.World.validate();
     }
   });
 
   HTomb.Things.defineTask({
-    template: "FullBuild",
+    template: "Build",
     name: "build",
     zoneTemplate: {
-      template: "FullBuildZone",
-      name: "(full build)",
+      template: "BuildZone",
+      name: "build",
       bg: "#444444"
     },
     featureTemplate: {
       name: "incomplete construction",
       symbol: "\u25AB",
       fg: HTomb.Constants.ABOVE,
-      steps: 10
+      steps: 5
     },
     allowedTiles: [
       // for now, can't build unless there is a floor
@@ -248,16 +277,34 @@ HTomb = (function(HTomb) {
       HTomb.Tiles.EmptyTile
     ],
     finish: function() {
+      var tiles = HTomb.World.tiles;
+      var EmptyTile = HTomb.Tiles.EmptyTile;
+      var FloorTile = HTomb.Tiles.FloorTile;
+      var WallTile = HTomb.Tiles.WallTile;
+      var UpSlopeTile = HTomb.Tiles.UpSlopeTile;
+      var DownSlopeTile = HTomb.Tiles.DownSlopeTile;
       var c = this.feature;
       var x = c.x;
       var y = c.y;
       var z = c.z;
-      var t = HTomb.World.tiles[z][x][y];
-      if (t===HTomb.Tiles.EmptyTile || t===HTomb.Tiles.DownSlopeTile) {
-        HTomb.Tiles.fill(x,y,z-1);
-      } else {
-        HTomb.Tiles.fill(x,y,z);
+      var t = tiles[z][x][y];
+      // If it's a floor, build a slope
+      if (t===FloorTile) {
+        tiles[z][x][y] = UpSlopeTile;
+        if (tiles[z+1][x][y]===EmptyTile) {
+          tiles[z+1][x][y] = DownSlopeTile;
+        }
+      // If it's a slope, make it into a wall
+    } else if (t===UpSlopeTile) {
+        tiles[z][x][y] = WallTile;
+        if (tiles[z+1][x][y] = DownSlopeTile) {
+          tiles[z+1][x][y] = FloorTile;
+        }
+      // If it's empty, add a floor
+      } else if (t===DownSlopeTile || t===EmptyTile) {
+        tiles[z][x][y] = FloorTile;
       }
+      HTomb.World.validate();
       c.remove();
     },
     designate: function(master) {
@@ -304,95 +351,6 @@ HTomb = (function(HTomb) {
   });
 
   HTomb.Things.defineTask({
-    template: "HalfDig",
-    name: "partial dig",
-    zoneTemplate: {
-      template: "HalfDigZone",
-      name: "(partial dig)",
-      bg: "#553300"
-    },
-    featureTemplate: {
-      name: "incomplete excavation",
-      symbol: "\u25BF",
-      steps: 5,
-      fg: HTomb.Constants.BELOW
-    },
-    allowedTiles: [
-      HTomb.Tiles.FloorTile,
-      HTomb.Tiles.WallTile,
-      HTomb.Tiles.UpSlopeTile
-    ],
-    finish: function() {
-      var c = this.feature;
-      var x = c.x;
-      var y = c.y;
-      var z = c.z;
-      c.remove();
-      var t = HTomb.World.tiles[z][x][y];
-      // If we dug out a wall, cut it down to a slope
-      if (t===HTomb.Tiles.WallTile) {
-        HTomb.World.tiles[z][x][y] = HTomb.Tiles.UpSlopeTile;
-      } else if (t===HTomb.Tiles.FloorTile) {
-        if (HTomb.World.tiles[z-1][x][y]===HTomb.Tiles.VoidTile) {
-          HTomb.GUI.pushMessage("Can't dig here!");
-          // Either cut a slope into the floor...
-        } else if (HTomb.World.tiles[z-1][x][y]===HTomb.Tiles.WallTile) {
-          HTomb.World.tiles[z-1][x][y] = HTomb.Tiles.UpSlopeTile;
-          HTomb.World.tiles[z][x][y] = HTomb.Tiles.DownSlopeTile;
-          // Or cut a hole in the floor
-        } else if (HTomb.World.tiles[z-1][x][y].solid!==true) {
-          HTomb.World.tiles[z][x][y] = HTomb.Tiles.EmptyTile;
-        }
-        // If it's a slope, level it
-      } else if (t===HTomb.Tiles.UpSlopeTile) {
-        HTomb.World.tiles[z][x][y] = HTomb.Tiles.FloorTile;
-      }
-      HTomb.World.validate();
-    }
-  });
-
-  HTomb.Things.defineTask({
-    template: "HalfBuild",
-    name: "partial build",
-    zoneTemplate: {
-      template: "HalfBuildZone",
-      name: "(partial build)",
-      bg: "#444444"
-    },
-    featureTemplate: {
-      name: "incomplete construction",
-      symbol: "\u25B5",
-      steps: 5,
-      fg: HTomb.Constants.ABOVE
-    },
-    allowedTiles: [
-      HTomb.Tiles.EmptyTile,
-      HTomb.Tiles.FloorTile,
-      HTomb.Tiles.DownSlopeTile,
-      HTomb.Tiles.UpSlopeTile
-    ],
-    finish: function() {
-      var c = this.feature;
-      var x = c.x;
-      var y = c.y;
-      var z = c.z;
-      c.remove();
-      var t = HTomb.World.tiles[z][x][y];
-      if (t===HTomb.Tiles.EmptyTile) {
-        HTomb.World.tiles[z][x][y] = HTomb.Tiles.FloorTile;
-      } else if (t===HTomb.Tiles.FloorTile) {
-        HTomb.World.tiles[z][x][y] = HTomb.Tiles.UpSlopeTile;
-      } else if (t===HTomb.Tiles.UpSlopeTile) {
-        HTomb.World.tiles[z][x][y] = HTomb.Tiles.WallTile;
-      } else if (t===HTomb.Tiles.DownSlopeTile) {
-        HTomb.World.tiles[z-1][x][y] = HTomb.Tiles.WallTile;
-      }
-      HTomb.World.validate();
-    }
-  });
-
-
-  HTomb.Things.defineTask({
     template: "BuildDoor",
     name: "build door",
     zoneTemplate: {
@@ -436,6 +394,52 @@ HTomb = (function(HTomb) {
     }
   });
 
-
   return HTomb;
 })(HTomb);
+
+
+/*
+
+Q: Turn a floor tile into a wall tile?
+A: Build on the tile once to create a slope, and then build on the tile again to create a wall.
+
+Q: Turn an upward slope into a wall tile?
+A: Build once on the slope.
+
+Q: Build a passage to the next level up?
+A: Build once on a floor tile to create a slope.  If there is no ceiling above, you can reach the next level up.  Otherwise, dig a hole in the ceiling (see below.)
+
+Q: Turn a deep pit or trench into a shallow pit or trench?
+A: Build once in the pit.  Do not build above the pit or a worker may place a floor above the slope.
+
+Q: Fill in a pit from above?
+A: Build once in the pit to create a slope, then build in it a second time to fill in the pit.
+
+Q: Build a floor in an empty tile?
+A: Build once in the empty tile.
+
+Q: Build a ceiling from above?
+A: Same as building a floor.
+
+Q: Build a ceiling from below?
+A: Build an upward slope directly below, then build on the level above.
+
+Q: Dig a shallow pit or trench in the floor?
+A: Dig once on a floor tile to create a downward slope.
+
+Q: Dig a deep pit or trench in the floor?
+A: Dig once on a floor tile to create a downward slope; then dig once more either above or on the slope.  Do not dig in the pit if there is an upward slope directly below the tile, or a worker might remove the floor of the pit.
+
+Q: Build a passage to the next level down?
+A: Dig once on a floor tile.
+
+Q: Create a tunnel (with floor and ceiling intact) from a wall tile?
+A: Dig once in the wall tile.  Make sure there is not an upward slope directly below the tile, or a worker might remove the floor of the tunnel.
+
+Q: Dig a hole in the ceiling from below?
+A: Build once on the floor directly below to create an upward slope.  Then dig once in the wall tile above.
+
+Q: Dig a hole in the ceiling from above?
+A: Same as digging a shallow pit.
+
+*/

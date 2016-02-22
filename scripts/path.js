@@ -71,7 +71,8 @@ Tomb = (function(HTomb) {
       // calculate the fast lookup
       crd = coord(current[0],current[1],current[2]);
       // check if we have found the target square (or maybe distance==1?)
-      if ((current[0]===x1 && current[1]===y1 && current[2]===z1) || (HTomb.Path.distance(current[0],current[1],x1,y1)<=1 && current[2]===z1 && useLast===false)) {
+      if ((current[0]===x1 && current[1]===y1 && current[2]===z1) || (useLast===false &&
+          HTomb.coordInArray([x1,y1,z1],HTomb.Tiles.touchableFrom(current[0],current[1],current[2]))>-1)) {
       // if (current[6]===1) {
         // start with the goal square
         path = [[current[0],current[1],current[2]]];
