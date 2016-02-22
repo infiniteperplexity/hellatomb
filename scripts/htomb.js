@@ -51,7 +51,7 @@ var HTomb = (function() {
   }
   // the shuffle function in ROT.js empties the original array
   function shuffle(arr) {
-    var a = arr.shuffle();
+    var a = arr.randomize();
     for(var i=0; i<a.length;i++) {
       arr.push(a[i]);
     }
@@ -72,7 +72,6 @@ var HTomb = (function() {
     }
     return -1;
   }
-
   // Begin the game
   var init = function() {
     // Initialize the world...could be generate()?

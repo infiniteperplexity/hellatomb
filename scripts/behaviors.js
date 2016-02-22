@@ -34,10 +34,15 @@ HTomb = (function(HTomb) {
     climbs: true,
     // Walk in one of the eight random directions
     walkRandom: function() {
-      var r = Math.floor(Math.random()*8);
-      var dx = ROT.DIRS[8][r][0];
-      var dy = ROT.DIRS[8][r][1];
-      return this.tryStep(dx,dy);
+      //var r = Math.floor(Math.random()*8);
+      //var dx = ROT.DIRS[8][r][0];
+      //var dy = ROT.DIRS[8][r][1];
+      //return this.tryStep(dx,dy);
+      var r = Math.floor(Math.random()*26);
+      var dx = HTomb.dirs[26][r][0];
+      var dy = HTomb.dirs[26][r][1];
+      var dz = HTomb.dirs[26][r][2];
+      return this.tryStep(dx,dy,dz);
     },
     // Walk along a path toward the target
     walkToward: function(x,y,z) {
@@ -64,67 +69,28 @@ HTomb = (function(HTomb) {
       }
       var dx = line[1][0] - x0;
       var dy = line[1][1] - y0;
-      return this.tryStep(-dx,-dy);
+      return this.tryStep(-dx,-dy,0);
     },
     // Try to step in a certain direction
     tryStep: function(dx, dy, dz) {
+      var backoffs = HTomb.dirs.getBackoffs(dx, dy, dz);
       var x = this.entity.x;
       var y = this.entity.y;
       var z = this.entity.z;
-      // Move up or down
-      if (dz) {
-        if(this.climbs===undefined) {
-          return false;
-        }
-        var p = HTomb.World.portals[coord(x,y,z)];
-        if (p) {
-          if (p[0]===x+dx && p[1]===y+dy && p[2]===z+dz && this.canPass(x+dx,y+dy,z+dz) && this.canMove(x+dx, y+dy,z+dz)) {
-            this.entity.place(x+dx,y+dy,z+dz);
-            return true;
-          }
-        }
-      }
-      var i0;
-      var one;
-      var two;
-      var dirs = ROT.DIRS[8];
-      // Try moving in the exact direction
-      if (this.canPass(x+dx,y+dy,z) && this.canMove(x+dx, y+dy,z)) {
-        this.entity.place(x+dx,y+dy,z);
-        return true;
-      } else for (var i=0; i<8; i++) {
-        if (dx===dirs[i][0] && dy===dirs[i][1]) {
-          i0 = i;
-          break;
-        }
-      }
-      // i0 ends up undefined if dx and dy are both zero
-      // that causes an error
-
-      // Then try moving in other nearby directions
-      for (i=1; i<5; i++) {
-        one = (i0+i)%8;
-        two = (i0-i>=0) ? i0-i : 8+i0-i;
-        if (Math.random>=0.5) {
-          //perform XOR swap
-          one = one^two;
-          two = one^two;
-          one = one^two;
-        }
-        if (dirs[one]===undefined) {
-          // For now, just bail out...we'll eventually do a better fix
-          return false;
-        }
-        dx = dirs[one][0];
-        dy = dirs[one][1];
-        if (this.canPass(x+dx,y+dy,z) && this.canMove(x+dx, y+dy,z)) {
-          this.entity.place(x+dx,y+dy,z);
+      for (var i=0; i<backoffs.length; i++) {
+        var dir = backoffs[i];
+        var t = HTomb.World.tiles[z+dir[2]][x+dir[0]][y+dir[1]];
+        // modify this to allow non-player creatures to displace
+        if (this.canPass(x+dir[0],y+dir[1],z+dir[2])===false || this.canMove(x+dir[0],y+dir[1],z+dir[2])===false) {
+          continue;
+        } else if (dir[2]===+1 && (this.flies===true || (t.zmove===+1 && this.climbs===true && dir[0]===0 && dir[1]===0))) {
+          this.stepTo(x+dir[0],y+dir[1],z+dir[2]);
           return true;
-        }
-        dx = dirs[two][0];
-        dy = dirs[two][1];
-        if (this.canPass(x+dx,y+dy,z) && this.canMove(x+dx, y+dy,z)) {
-          this.entity.place(x+dx,y+dy,z);
+        } else if (  dir[2]===-1 && (this.flies===true || (t.zmove===-1 && this.climbs===true && dir[0]===0 && dir[1]===0))) {
+          this.stepTo(x+dir[0],y+dir[1],z+dir[2]);
+          return true;
+        } else if (this.walks===true) {
+          this.stepTo(x+dir[0],y+dir[1],z+dir[2]);
           return true;
         }
       }
@@ -141,7 +107,11 @@ HTomb = (function(HTomb) {
       cr.place(x0,y0,z0);
       HTomb.GUI.pushMessage(this.entity.describe() + " displaces " + cr.describe() + ".");
     },
-    moveTo: function(x,y,z) {
+    stepTo: function(x,y,z) {
+      this.entity.place(x,y,z);
+      if (this.entity.ai) {
+        this.entity.ai.acted = true;
+      }
       // unimplemented...use action points?
     },
     // If the square is crossable and unoccupied

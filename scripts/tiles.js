@@ -324,6 +324,6 @@ HTomb = (function(HTomb) {
     }
     return touchable;
   }
-  
+
   return HTomb;
 })(HTomb);

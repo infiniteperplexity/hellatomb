@@ -128,8 +128,8 @@ HTomb = (function(HTomb) {
     addSlopes();
   };
   function scatter(template,p) {
-    for (var x=0; x<LEVELW; x++) {
-      for (var y=0; y<LEVELH; y++) {
+    for (var x=1; x<LEVELW-1; x++) {
+      for (var y=1; y<LEVELH-1; y++) {
         var z = HTomb.Tiles.groundLevel(x,y);
         var e = HTomb.Things.create(template);
         if (e.isCreature && HTomb.World.creatures[coord(x,y,z)]===HTomb.Player) {
