@@ -199,7 +199,8 @@ HTomb = (function(HTomb) {
     },
     featureTemplate: {
       name: "incomplete excavation",
-      symbol: "\u2022",
+      //symbol: "\u2022",
+      symbol: "\u2717",
       steps: 5,
       fg: HTomb.Constants.BELOW
     },

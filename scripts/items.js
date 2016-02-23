@@ -4,7 +4,7 @@ HTomb = (function(HTomb) {
   HTomb.Things.defineItem({
     template: "Rock",
     name: "rock",
-    symbol: "*",
+    symbol: "\u2022",
     fg: "#CCCCCC",
     behaviors: {Stackable: {n: 10}},
     onPlace: function() {
@@ -34,7 +34,7 @@ HTomb = (function(HTomb) {
   HTomb.Things.defineItem({
     template: "Bloodstone",
     name: "bloodstone",
-    symbol: "*",
+    symbol: "\u2235",
     fg: "red",
     behaviors: {Stackable: {n: 10}},
     onPlace: function() {
@@ -47,7 +47,7 @@ HTomb = (function(HTomb) {
   HTomb.Things.defineItem({
     template: "IronOre",
     name: "iron ore",
-    symbol: "*",
+    symbol: "\u2235",
     fg: "gray",
     behaviors: {Stackable: {n: 10}},
     onPlace: function() {
@@ -60,7 +60,7 @@ HTomb = (function(HTomb) {
   HTomb.Things.defineItem({
     template: "GoldOre",
     name: "gold ore",
-    symbol: "*",
+    symbol: "\u2235",
     fg: "yellow",
     behaviors: {Stackable: {n: 10}},
     onPlace: function() {
@@ -73,7 +73,7 @@ HTomb = (function(HTomb) {
   HTomb.Things.defineItem({
     template: "Moonstone",
     name: "moonstone",
-    symbol: "*",
+    symbol: "\u2235",
     fg: "cyan",
     behaviors: {Stackable: {n: 10}},
     onPlace: function() {
@@ -86,7 +86,7 @@ HTomb = (function(HTomb) {
   HTomb.Things.defineItem({
     template: "Jade",
     name: "jade",
-    symbol: "*",
+    symbol: "\u2235",
     fg: "green",
     behaviors: {Stackable: {n: 10}},
     onPlace: function() {
