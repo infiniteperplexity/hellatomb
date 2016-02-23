@@ -37,7 +37,7 @@ HTomb = (function(HTomb) {
     fg: "#999999",
     behaviors: {
       AI: {},
-      Movement: {}
+      Movement: {flies: true}
     }
   });
 

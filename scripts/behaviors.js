@@ -80,32 +80,68 @@ HTomb = (function(HTomb) {
       for (var i=0; i<backoffs.length; i++) {
         var dir = backoffs[i];
         var t = HTomb.World.tiles[z+dir[2]][x+dir[0]][y+dir[1]];
+        var cr = HTomb.World.creatures[coord(x+dir[0],y+dir[1],z+dir[2])];
         // modify this to allow non-player creatures to displace
-        if (this.canPass(x+dir[0],y+dir[1],z+dir[2])===false || this.canMove(x+dir[0],y+dir[1],z+dir[2])===false) {
+        if (this.canMove(x+dir[0],y+dir[1],z+dir[2])===false) {
           continue;
         } else if (dir[2]===+1 && (this.flies===true || (t.zmove===+1 && this.climbs===true && dir[0]===0 && dir[1]===0))) {
-          this.stepTo(x+dir[0],y+dir[1],z+dir[2]);
-          return true;
+          if (cr) {
+            if (cr.ai && cr.ai.isFriendly()) {
+              this.displaceCreature(cr);
+              return true;
+            } else {
+              continue;
+            }
+          } else {
+            this.stepTo(x+dir[0],y+dir[1],z+dir[2]);
+            return true;
+          }
         } else if (  dir[2]===-1 && (this.flies===true || (t.zmove===-1 && this.climbs===true && dir[0]===0 && dir[1]===0))) {
-          this.stepTo(x+dir[0],y+dir[1],z+dir[2]);
-          return true;
+          if (cr) {
+            if (cr.ai && cr.ai.isFriendly()) {
+              this.displaceCreature(cr);
+              return true;
+            } else {
+              continue;
+            }
+          } else {
+            this.stepTo(x+dir[0],y+dir[1],z+dir[2]);
+            return true;
+          }
         } else if (this.walks===true) {
-          this.stepTo(x+dir[0],y+dir[1],z+dir[2]);
-          return true;
+          if (cr) {
+            if (cr.ai && cr.ai.isFriendly()) {
+              this.displaceCreature(cr);
+              return true;
+            } else {
+              continue;
+            }
+          } else {
+            this.stepTo(x+dir[0],y+dir[1],z+dir[2]);
+            return true;
+          }
         }
       }
       console.log("creature couldn't move.");
       return false;
     },
-    displaceCreature: function(x,y,z) {
+    displaceCreature: function(cr) {
       var x0 = this.entity.x;
       var y0 = this.entity.y;
       var z0 = this.entity.z;
-      var cr = HTomb.World.creatures[coord(x,y,z)];
+      var x = cr.x;
+      var y = cr.y;
+      var z = cr.z;
       cr.remove();
       this.entity.place(x,y,z);
       cr.place(x0,y0,z0);
       HTomb.GUI.pushMessage(this.entity.describe() + " displaces " + cr.describe() + ".");
+      if (this.entity.ai) {
+        this.entity.ai.acted = true;
+      }
+      if (cr.ai) {
+        cr.ai.acted = true;
+      }
     },
     stepTo: function(x,y,z) {
       this.entity.place(x,y,z);
@@ -345,6 +381,7 @@ HTomb = (function(HTomb) {
     each: ["target","mood","acted"],
     // We may want to save a path for the entity
     init: function(){this.entity.path = [];},
+    isFriendly: function() {return true;},
     act: function() {
       // If the entity is the player, don't choose for it...maybe this should be a Behavior?
       if (this.entity===HTomb.Player) {
