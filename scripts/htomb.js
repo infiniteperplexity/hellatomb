@@ -86,9 +86,24 @@ var HTomb = (function() {
     // Throw up a welcome splash screen
     //GUI.splash("Welcome to HellaTomb!");
     //Events.subscribe(World.dailyCycle,"TurnBegin");
+
   };
+
+  var timePassing;
+  var speed = 1000;
+  function startTime() {
+    timePassing = setInterval(passTime,speed);
+  }
+  function stopTime() {
+    clearInterval(timePassing);
+  }
+  function passTime() {
+    HTomb.turn();
+  }
+
   // Process a turn of play
   var turn = function() {
+    stopTime();
   //  Events.publish({type: "TurnBegin"});
     var Player = HTomb.Player;
     // Assign tasks to minions
@@ -110,6 +125,7 @@ var HTomb = (function() {
     GUI.recenter();
     // Render the GUI
     GUI.render();
+    startTime();
 //    Events.publish({type: "TurnEnd"});
   };
 
@@ -148,7 +164,10 @@ var HTomb = (function() {
     Tiles: Tiles,
     Debug: Debug,
     Save: Save,
-    Things: Things
+    Things: Things,
+    stopTime: stopTime,
+    startTime: startTime,
+    speed: speed
   };
 })();
 // Start the game when the window loads

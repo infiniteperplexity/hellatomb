@@ -25,6 +25,7 @@ HTomb = (function(HTomb) {
   document.body.appendChild(display.getContainer());
   // Attach input events
   var keydown = function(key) {
+    HTomb.stopTime();
     // Pass the keystroke to the current control context
     Controls.context.keydown(key);
   };
