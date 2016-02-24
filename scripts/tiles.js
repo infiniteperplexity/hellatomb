@@ -111,15 +111,18 @@ HTomb = (function(HTomb) {
     }
     var tile = tiles[z][x][y];
     var zview = tiles[z][x][y].zview;
+    var fg = "white";
+    var bg = null;
+    if (zones[crd]!==undefined) {
+      bg = zones[crd].bg;
+    }
     //if the square has not been explored, don't show it
     if (!explored[z][x][y] && HTomb.Debug.explored!==true) {
       //return [" ","black","black"];
-      return [" ","black","black"];
+      return [" ","black",bg || "black"];
     }
     // background color for explored squares is based on zoning
       // maybe at some point, liquids
-    var fg = "white";
-    var bg = null;
     if (liquids[crd]!==undefined) {
       bg = liquids[crd].shimmer();
     }

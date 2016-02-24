@@ -128,6 +128,14 @@ var HTomb = (function() {
     if (Player.sight) {
       FOV.findVisible(Player.x, Player.y, Player.z, Player.sight.range);
     }
+    if (Player.master) {
+      for (var i=0; i<Player.master.minions.length; i++) {
+        var cr = Player.master.minions[i];
+        if (cr.sight) {
+          FOV.findVisible(cr.x,cr.y,cr.z, cr.sight.range);
+        }
+      }
+    }
     // Recenter the GUI on the player
     GUI.recenter();
     // Render the GUI

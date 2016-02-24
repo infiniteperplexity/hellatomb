@@ -16,7 +16,6 @@ HTomb = (function(HTomb) {
     feature: null,
     featureTemplate: null,
     each: ["assigner","assignee","zone","feature"],
-    allowedTiles: [],
     onDefine: function() {
       if (this.zoneTemplate) {
         HTomb.Things.defineZone(this.zoneTemplate);
@@ -43,13 +42,7 @@ HTomb = (function(HTomb) {
       }
     },
     canDesignateTile: function(x,y,z) {
-      if (this.allowedTiles==="all") {
-        return true;
-      } else if (this.allowedTiles.indexOf(HTomb.World.tiles[z][x][y])>=0) {
-        return true;
-      } else {
-        return false;
-      }
+      return true;
     },
     assignTo: function(cr) {
       if (cr.minion===undefined) {
@@ -108,6 +101,13 @@ HTomb = (function(HTomb) {
         t.zone = zone;
         t.assigner = master;
         t.assigner.master.taskList.push(t);
+      } else if (HTomb.World.explored[z][x][y]!==true) {
+        var dzone = HTomb.Things.DummyZone({name: this.zoneTemplate.name, bg: this.zoneTemplate.bg});
+        dzone.place(x,y,z);
+        var dt = HTomb.Things.DummyTask({name: this.name});
+        dt.zone = dzone;
+        dt.assigner = master;
+        dt.assigner.master.taskList.push(dt);
       }
     },
     // note that this passes the behavior, not the entity
@@ -204,13 +204,18 @@ HTomb = (function(HTomb) {
       steps: 5,
       fg: HTomb.Constants.BELOW
     },
-    allowedTiles: [
-      HTomb.Tiles.FloorTile,
-      HTomb.Tiles.WallTile,
-      HTomb.Tiles.UpSlopeTile,
-      HTomb.Tiles.DownSlopeTile,
-      HTomb.Tiles.EmptyTile
-    ],
+    canDesignateTile: function(x,y,z) {
+      var t = HTomb.World.tiles[z][x][y];
+      var tb = HTomb.World.tiles[z-1][x][y];
+      if (t===HTomb.Tiles.VoidTile) {
+        return false;
+      } else if (t===HTomb.Tiles.FloorTile && tb===HTomb.Tiles.VoidTile) {
+        return false;
+      } else if (t===HTomb.Tiles.EmptyTile && (tb===HTomb.Tiles.EmptyTile || tb===HTomb.Tiles.FloorTile)) {
+        return false;
+      }
+      return true;
+    },
     finish: function() {
       var tiles = HTomb.World.tiles;
       var EmptyTile = HTomb.Tiles.EmptyTile;
@@ -270,13 +275,15 @@ HTomb = (function(HTomb) {
       fg: HTomb.Constants.ABOVE,
       steps: 5
     },
-    allowedTiles: [
-      // for now, can't build unless there is a floor
-      HTomb.Tiles.FloorTile,
-      HTomb.Tiles.UpSlopeTile,
-      HTomb.Tiles.DownSlopeTile,
-      HTomb.Tiles.EmptyTile
-    ],
+    canDesignateTile: function(x,y,z) {
+      //shouldn't be able to build surrounded by emptiness
+      var t = HTomb.World.tiles[z][x][y];
+      if (t===HTomb.Tiles.VoidTile || t===HTomb.Tiles.WallTile) {
+        return false;
+      } else {
+        return true;
+      }
+    },
     finish: function() {
       var tiles = HTomb.World.tiles;
       var EmptyTile = HTomb.Tiles.EmptyTile;
@@ -392,6 +399,35 @@ HTomb = (function(HTomb) {
     // note that this passes the behavior, not the entity
     designate: function(master) {
       this.designateSquare({master: master});
+    }
+  });
+
+
+  HTomb.Things.defineTask({
+    template: "DummyTask",
+    zoneTemplate: {
+      template: "DummyZone"
+    },
+    tryAssign: function(cr) {
+      var zone = this.zone;
+      if (HTomb.World.explored[zone.z][zone.x][zone.y]) {
+        HTomb.GUI.pushMessage("Designation invalid");
+        this.cancel();
+        return false;
+      } else if (this.canReachZone(cr)) {
+        this.assignTo(cr);
+        return true;
+      } else {
+        return false;
+      }
+    },
+    canDesignateTile: function(x,y,z) {
+      return true;
+    },
+    work: function(x,y,z) {
+      HTomb.World.explored[z][x][y] = true;
+      HTomb.GUI.pushMessage("Designation invalid");
+      this.cancel();
     }
   });
 
