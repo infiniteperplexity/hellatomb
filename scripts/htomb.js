@@ -91,7 +91,14 @@ var HTomb = (function() {
 
   var timePassing;
   var speed = 1000;
+  function setSpeed(spd) {
+    speed = spd;
+  }
+  function getSpeed() {
+    return speed;
+  }
   function startTime() {
+    console.log(speed);
     timePassing = setInterval(passTime,speed);
   }
   function stopTime() {
@@ -167,7 +174,8 @@ var HTomb = (function() {
     Things: Things,
     stopTime: stopTime,
     startTime: startTime,
-    speed: speed
+    getSpeed: getSpeed,
+    setSpeed: setSpeed
   };
 })();
 // Start the game when the window loads

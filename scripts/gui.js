@@ -400,7 +400,17 @@ HTomb = (function(HTomb) {
     VK_J: Commands.showJobs,
     VK_P: Commands.showSpells,
     VK_SHIFT: GUI.surveyMode,
-    VK_SPACE: Commands.wait
+    VK_SPACE: Commands.wait,
+    VK_ESCAPE: HTomb.stopTime,
+    VK_PAGE_UP: function() {
+      HTomb.setSpeed(Math.max(262.14,HTomb.getSpeed()/1.25));
+      HTomb.GUI.pushMessage("Speed set to " + parseInt(HTomb.getSpeed()) + ".");
+      HTomb.startTime();
+    },
+    VK_PAGE_DOWN: function() {
+      HTomb.setSpeed(Math.min(4768.37,HTomb.getSpeed()*1.25));
+      HTomb.GUI.pushMessage("Speed set to " + parseInt(HTomb.getSpeed()) + ".");
+    }
   });
 
   // Clicking outside the game screen does nothing
