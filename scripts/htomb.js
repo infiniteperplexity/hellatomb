@@ -98,7 +98,6 @@ var HTomb = (function() {
     return speed;
   }
   function startTime() {
-    console.log(speed);
     timePassing = setInterval(passTime,speed);
   }
   function stopTime() {

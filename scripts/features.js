@@ -55,36 +55,29 @@ HTomb = (function(HTomb) {
     template: "Door",
     name: "door",
     active: true,
-    get symbol() {
-      if (this.active) {
-        return "\u25A5";
-      } else {
-        return "\u25FB";
-      }
-    },
+    symbol: "\u25A5",
     fg: "#BB9922",
     each: ["active"],
     activate: function() {
       if (this.active) {
         this.active=false;
+        this.passable=true;
+        this.symbol="\u25FB";
       } else {
         this.active=true;
+        this.passable=false;
+        this.symbol="\u25A5"
       }
       HTomb.GUI.reset();
     },
-    get passable() {
-      if (this.active) {
-        return false;
-      } else {
-        return true;
-      }
-    }
+    passable: false
   });
 
   HTomb.Things.defineLiquid({
     template: "Water",
     name: "water",
     symbol: "~",
+    //symbol: "\u2652",
     fg: "#3388FF",
     bg: "#1144BB",
     darkbg: "#002288",

@@ -14,8 +14,8 @@ HTomb = (function(HTomb) {
         Inventory: {},
         Sight: {},
         AI: {},
-        Master: {tasks: ["Dig","Build","BuildDoor","PatrolTask","Undesignate"]},
-        SpellCaster: {spells: ["RaiseZombie"]}
+        Master: {tasks: ["DigTask","BuildTask","BuildDoor","PatrolTask","Undesignate"]},
+        SpellCaster: {spells: ["RaiseZombie","SummonBat"]}
       }
   });
 
@@ -27,7 +27,8 @@ HTomb = (function(HTomb) {
     behaviors: {
       AI: {},
       Movement: {},
-      Sight: {}
+      Sight: {},
+      Worker: {}
     }
   });
 
@@ -38,7 +39,8 @@ HTomb = (function(HTomb) {
     fg: "#999999",
     behaviors: {
       AI: {},
-      Movement: {flies: true}
+      Movement: {flies: true},
+      Sight: {}
     }
   });
 

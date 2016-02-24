@@ -42,12 +42,15 @@ HTomb = (function(HTomb) {
     } else if (dir==='E') {
       newx+=1;
     }
+    var square = HTomb.Tiles.getSquare(newx,newy,z);
     // If you can't go that way...
     if (HTomb.Player.movement) {
       if (HTomb.Player.movement.canPass(newx,newy,z)) {
         Commands.movePlayer(newx,newy,z);
       } else if (HTomb.World.creatures[coord(newx,newy,z)]!==undefined) {
         Commands.displaceCreature(newx,newy,z);
+      } else if (square.feature && square.feature.activate) {
+        square.feature.activate();
       } else if (HTomb.Debug.mobility===true) {
         Commands.movePlayer(newx,newy,z);
       } else if (HTomb.World.tiles[z][x][y].zmove===+1) {
@@ -99,6 +102,16 @@ HTomb = (function(HTomb) {
       HTomb.GUI.pushMessage("Can't go down here.");
     }
   };
+  Commands.act = function() {
+    function activate(x,y,z) {
+      var f = HTomb.World.features[coord(x,y,z)];
+      if (f && f.activate) {
+        f.activate();
+        HTomb.turn();
+      }
+    }
+    HTomb.GUI.pickDirection(activate);
+  }
   // Do nothing
   Commands.wait = function() {
     HTomb.turn();

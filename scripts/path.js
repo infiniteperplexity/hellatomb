@@ -18,6 +18,7 @@ Tomb = (function(HTomb) {
     }
     t = tiles[z][x][y];
 // t = _fastgrid[z*LEVELH*NLEVELS+y*LEVELH+x];
+    // should this be able to handle doors?
     return (t.solid===undefined && t.fallable===undefined);
   }
 

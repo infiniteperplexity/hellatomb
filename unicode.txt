@@ -4,3 +4,8 @@ check mark 2713
 bullet 2022
 up arrowhead 2303
 down arrowhead 2304
+9911 ⚷ CHIRON
+2648 Aries
+2652 Aquarius
+2692 hammer and pick
+http://www.unicode.org/charts/PDF/U2600.pdf

@@ -384,6 +384,7 @@ HTomb = (function(HTomb) {
     VK_Q: Commands.tryMoveNorthWest,
     VK_W: Commands.tryMoveNorth,
     VK_E: Commands.tryMoveNorthEast,
+    VK_O: Commands.act,
     VK_NUMPAD7: Commands.tryMoveNorthWest,
     VK_NUMPAD8: Commands.tryMoveNorth,
     VK_NUMPAD9: Commands.tryMoveNorthEast,
@@ -477,6 +478,45 @@ HTomb = (function(HTomb) {
     }
   };
 
+  HTomb.GUI.pickDirection = function(callb) {
+    GUI.updateMenu(["Pick a direction","Or press Escape to cancel"]);
+    function actToward(dx,dy,dz) {
+      return function() {
+        var x = HTomb.Player.x+dx;
+        var y = HTomb.Player.y+dy;
+        var z = HTomb.Player.z+dz;
+        callb(x,y,z);
+        HTomb.GUI.reset();
+      };
+    }
+    var context = new ControlContext({
+      VK_LEFT: actToward(-1,0,0),
+      VK_RIGHT: actToward(+1,0,0),
+      VK_UP: actToward(0,-1,0),
+      VK_DOWN: actToward(0,+1,0),
+      // bind keyboard movement
+      VK_Z: actToward(-1,+1,0),
+      VK_S: actToward(0,+1,0),
+      VK_X: actToward(0,+1,0),
+      VK_C: actToward(+1,+1,0),
+      VK_A: actToward(-1,0,0),
+      VK_D: actToward(+1,0,0),
+      VK_Q: actToward(-1,-1,0),
+      VK_W: actToward(0,-1,0),
+      VK_E: actToward(+1,-1,0),
+      VK_PERIOD: actToward(0,0,-1),
+      VK_COMMA: actToward(0,0,+1),
+      VK_NUMPAD7: actToward(-1,-1,0),
+      VK_NUMPAD8: actToward(0,-1,0),
+      VK_NUMPAD9: actToward(+1,-1,0),
+      VK_NUMPAD4: actToward(-1,0,0),
+      VK_NUMPAD6: actToward(+1,0,0),
+      VK_NUMPAD1: actToward(-1,+1,0),
+      VK_NUMPAD2: actToward(0,+1,0),
+      VK_NUMPAD3: actToward(+1,+1,0),
+    });
+    HTomb.Controls.context = context;
+  };
   // Select a rectangular zone using its two corners
   HTomb.GUI.selectSquareZone = function(z, callb, options) {
     options = options || {};
@@ -607,6 +647,14 @@ HTomb = (function(HTomb) {
     VK_E: surveyMove(+1,-1,0),
     VK_PERIOD: surveyMove(0,0,-1),
     VK_COMMA: surveyMove(0,0,+1),
+    VK_NUMPAD7: surveyMove(-1,-1,0),
+    VK_NUMPAD8: surveyMove(0,-1,0),
+    VK_NUMPAD9: surveyMove(+1,-1,0),
+    VK_NUMPAD4: surveyMove(-1,0,0),
+    VK_NUMPAD6: surveyMove(+1,0,0),
+    VK_NUMPAD1: surveyMove(-1,+1,0),
+    VK_NUMPAD2: surveyMove(0,+1,0),
+    VK_NUMPAD3: surveyMove(+1,+1,0),
     // Exit survey mode and return to the original position
     VK_ESCAPE: function() {
       gameScreen.xoffset = survey.saveX;

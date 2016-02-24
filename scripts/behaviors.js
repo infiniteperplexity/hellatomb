@@ -81,6 +81,7 @@ HTomb = (function(HTomb) {
         var dir = backoffs[i];
         var t = HTomb.World.tiles[z+dir[2]][x+dir[0]][y+dir[1]];
         var cr = HTomb.World.creatures[coord(x+dir[0],y+dir[1],z+dir[2])];
+        var f = HTomb.World.features[coord(x+dir[0],y+dir[1],z+dir[2])];
         // modify this to allow non-player creatures to displace
         if (this.canMove(x+dir[0],y+dir[1],z+dir[2])===false) {
           continue;
@@ -92,6 +93,8 @@ HTomb = (function(HTomb) {
             } else {
               continue;
             }
+          } else if (f && f.passable===false) {
+            continue;
           } else {
             this.stepTo(x+dir[0],y+dir[1],z+dir[2]);
             return true;
@@ -104,6 +107,8 @@ HTomb = (function(HTomb) {
             } else {
               continue;
             }
+          } else if (f && f.passable===false) {
+            continue;
           } else {
             this.stepTo(x+dir[0],y+dir[1],z+dir[2]);
             return true;
@@ -116,6 +121,8 @@ HTomb = (function(HTomb) {
             } else {
               continue;
             }
+          } else if (f && f.passable===false) {
+            continue;
           } else {
             this.stepTo(x+dir[0],y+dir[1],z+dir[2]);
             return true;
@@ -156,6 +163,9 @@ HTomb = (function(HTomb) {
         return false;
       }
       var square = HTomb.Tiles.getSquare(x,y,z);
+      if (square.feature && square.feature.passable===false) {
+        return false;
+      }
       if (square.creature) {
         return false;
       }
@@ -292,6 +302,14 @@ HTomb = (function(HTomb) {
           if (minions[j].minion.task!==null) {
             continue;
           }
+          if (minions[j].worker===undefined) {
+            continue;
+          }
+          if (minions[j].worker.allowedTasks.indexOf(tsk.template)===-1 && minions[j].worker.allowedTasks.indexOf(tsk.fakeAs)===-1) {
+            console.log(tsk.template);
+            continue;
+          }
+          console.log("trying at least");
           var assigned = tsk.tryAssign(minions[j]);
           if (assigned) {
             break;
@@ -366,6 +384,12 @@ HTomb = (function(HTomb) {
     name: "Durability",
     durability: 10,
     each: ["durability"]
+  });
+
+  HTomb.Things.defineBehavior({
+    template: "Worker",
+    name: "worker",
+    allowedTasks: ["DigTask","BuildTask","PatrolTask","BuildDoor"]
   });
 
 

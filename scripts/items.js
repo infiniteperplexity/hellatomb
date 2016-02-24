@@ -18,6 +18,7 @@ HTomb = (function(HTomb) {
     template: "Corpse",
     name: "corpse",
     symbol: "%",
+    //symbol: "\u2620",
     fg: "brown",
     randomColor: 10
   });

@@ -104,7 +104,7 @@ HTomb = (function(HTomb) {
       } else if (HTomb.World.explored[z][x][y]!==true) {
         var dzone = HTomb.Things.DummyZone({name: this.zoneTemplate.name, bg: this.zoneTemplate.bg});
         dzone.place(x,y,z);
-        var dt = HTomb.Things.DummyTask({name: this.name});
+        var dt = HTomb.Things.DummyTask({fakeAs: this.template, name: this.name});
         dt.zone = dzone;
         dt.assigner = master;
         dt.assigner.master.taskList.push(dt);
@@ -190,7 +190,7 @@ HTomb = (function(HTomb) {
 
 
   HTomb.Things.defineTask({
-    template: "Dig",
+    template: "DigTask",
     name: "dig",
     zoneTemplate: {
       template: "DigZone",
@@ -262,7 +262,7 @@ HTomb = (function(HTomb) {
   });
 
   HTomb.Things.defineTask({
-    template: "Build",
+    template: "BuildTask",
     name: "build",
     zoneTemplate: {
       template: "BuildZone",
@@ -271,7 +271,8 @@ HTomb = (function(HTomb) {
     },
     featureTemplate: {
       name: "incomplete construction",
-      symbol: "\u25AB",
+      //symbol: "\u25AB",
+      symbol: "\u2692",
       fg: HTomb.Constants.ABOVE,
       steps: 5
     },
@@ -348,7 +349,9 @@ HTomb = (function(HTomb) {
       name: "patrol",
       bg: "#880000"
     },
-    allowedTiles: "all",
+    canDesignateTile: function() {
+      return true;
+    },
     designate: function(master) {
       this.designateSquare({master: master});
     },
@@ -390,7 +393,7 @@ HTomb = (function(HTomb) {
     },
     canDesignateTile: function(x,y,z) {
       var square = HTomb.Tiles.getSquare(x,y,z);
-      if (square.terrain===HTomb.Tiles.FloorTile) {
+      if (square.terrain===HTomb.Tiles.FloorTile && HTomb.World.features[coord(x,y,z)]===undefined) {
         return true;
       } else {
         return false;
@@ -405,6 +408,7 @@ HTomb = (function(HTomb) {
 
   HTomb.Things.defineTask({
     template: "DummyTask",
+    fakeTemplate: null,
     zoneTemplate: {
       template: "DummyZone"
     },
