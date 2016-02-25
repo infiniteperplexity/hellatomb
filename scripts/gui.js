@@ -188,7 +188,7 @@ HTomb = (function(HTomb) {
     display.drawText(this.x0+21,this.y0+1,"Y: " + HTomb.Player.y);
     display.drawText(this.x0+27,this.y0+1,"Elevation: " + gameScreen.z);
     display.drawText(this.x0+42,this.y0+1,
-      HTomb.World.dailyCycle.getPhase() + "  Time: " 
+      HTomb.World.dailyCycle.getPhase().symbol + "  Time: " 
       + HTomb.World.dailyCycle.day + ":"
       + HTomb.World.dailyCycle.hour + ":"
       + HTomb.World.dailyCycle.minute);

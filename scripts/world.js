@@ -282,9 +282,9 @@ HTomb = (function(HTomb) {
   }
 
   HTomb.World.dailyCycle = {
-    hour: 8,
+    hour: 0,
     minute: 0,
-    day: 0,
+    day: 28,
     turn: 0,
     onTurnBegin: function() {
       this.turn+=1;
@@ -298,42 +298,60 @@ HTomb = (function(HTomb) {
         }
       }
     },
+    sunlight: {symbol: "\u263C"},
+    waning: {symbol: "\u263E", light: 32},
+    twilight: {symbol: "\u25D2"},
+    fullMoon: {symbol: "\u26AA", light: 64},
+    waxing: {symbol: "\u263D", light: 32},
+    newMoon: {symbol: "\u25CF", light: 0},
+    times: {
+      dawn: 6,
+      dusk: 17,
+      waxing: 8,
+      fullMoon: 7,
+      waning: 8,
+      newMoon: 7,
+      order: ["waxing","fullMoon","waning","newMoon"]
+    },
     getPhase: function() {
-      if (this.hour<18 && this.hour>=8) {
-        return "\u26ED";
-      } else if (this.hour<20 && this.hour>=6) {
-        return "\u25D2";
+      if (this.hour<this.times.dusk && this.hour>=this.times.dawn+1) {
+        return this.sunlight;
+      } else if (this.hour<this.times.dusk+1 && this.hour>=this.times.dawn) {
+        return this.twilight;
       } else {
         var phase = this.day%30;
-        if (phase<=7) {
-          return "\u26AA";
-        } else if (phase<=15) {
-          return " ";
-        } else if (phase<=23) {
-          return "\u263E";
-        } else {
-          return "\u263D";
+        var tally = 0;
+        for (var i=0; i<this.times.order.length; i++) {
+          tally+=this.times[this.times.order[i]];
+          if (phase<=tally) {
+            console.log(this[this.times.order[i]]);
+          }
         }
       }
     },
     lightLevel: function() {
-      if (this.hour>=20 || this.hour<6) {
-        return 160;
-      } else if (this.hour>=19 || this.hour<7) {
-        return 192;
-      } else if (this.hour>=18 || this.hour<8) {
-        return 224;
+      var dawn = 6;
+      var dusk = 17;
+      var darkest = 128;
+      if (this.hour < dawn || this.hour >= dusk+1) {
+        return darkest;
+      } else if (this.hour < dawn+1) {
+        var moonlight = this.getPhase().light;
+        var light = Math.min(255,(this.minute/60)*(255-darkest)+darkest+moonlight);
+        return light;
+      } else if (this.hour >= dusk) {
+        var moonlight = this.getPhase().light;
+        var light = Math.min(255,((60-this.minute)/60)*(255-darkest)+darkest+moonlight);
+        return light;
       } else {
         return 255;
       }
     },
     shade: function(arr,x,y,z) {
-      //if (HTomb.World.visible[z][x][y]) {
-        var c = ROT.Color.fromString(arr[1]);
-        c = ROT.Color.multiply(c,[this.lightLevel(),this.lightLevel(),255]);
-        c = ROT.Color.toHex(c);
-        arr[1] = c;
-      //}
+      var c = ROT.Color.fromString(arr[1]);
+      c = ROT.Color.multiply(c,[this.lightLevel(),this.lightLevel(),255]);
+      c = ROT.Color.toHex(c);
+      arr[1] = c;
       return arr;
     }
   };
