@@ -113,7 +113,8 @@ HTomb = (function(HTomb) {
     simplex_features("Tombstone",{p1: 0.25, p2: 0.1, filter: function(x,y,z) {
       return (HTomb.Tiles.getNeighbors(x,y,z).fallables.length===0);
     }});
-    simplex_features("Shrub",{hscale: 40, vthresh: 1, p1: 0.25, p2: 0.1});
+    //simplex_features("Shrub",{hscale: 40, vthresh: 1, p1: 0.25, p2: 0.1});
+    simplex_features("WolfsbanePlant",{hscale: 40, vthresh: 1, p1: 0.25, p2: 0.1, callback: function(thing) {thing.crop.mature();}});
     simplex_features("Tree",{vthresh: 1, p1: 0.75, p2: 0.25});
     simplex_features("Rock",{hscale: 10, vtresh: 3, p1: 0.25, p2: 0.1});
     simplex_features("Stick",{hscale: 10, vtresh: 3, p1: 0.15, p2: 0.05});
@@ -185,6 +186,7 @@ HTomb = (function(HTomb) {
   }
   function simplex_features(template,options) {
     options = options || {};
+    var callb = options.callback;
     var hscale = options.hscale || 20;
     var vscale = options.vscale || 4;
     var vthresh = options.vthresh || 2;
@@ -198,7 +200,11 @@ HTomb = (function(HTomb) {
         var r = Math.random();
         if ((val>vthresh && r<p1) || (val===vthresh && r<p2)) {
           if (options.filter===undefined || options.filter(x,y,z)===true) {
-            HTomb.Things.create(template).place(x,y,z);
+            var thing = HTomb.Things.create(template);
+            thing.place(x,y,z);
+            if (options.callback) {
+              options.callback(thing);
+            }
           }
         }
       }
@@ -282,9 +288,9 @@ HTomb = (function(HTomb) {
   }
 
   HTomb.World.dailyCycle = {
-    hour: 0,
+    hour: 8,
     minute: 0,
-    day: 28,
+    day: 0,
     turn: 0,
     onTurnBegin: function() {
       this.turn+=1;

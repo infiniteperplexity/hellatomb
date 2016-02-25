@@ -111,8 +111,8 @@ var HTomb = (function() {
 
   // Process a turn of play
   var turn = function() {
+    Events.publish({type: "TurnBegin"});
     stopTime();
-  //  Events.publish({type: "TurnBegin"});
     var Player = HTomb.Player;
     // Assign tasks to minions
     if (Player.master) {
@@ -144,7 +144,7 @@ var HTomb = (function() {
     GUI.render();
     startTime();
     World.dailyCycle.onTurnBegin();
-    //Events.publish({type: "TurnEnd"});
+    Events.publish({type: "TurnEnd"});
   };
 
   // Set up the various submodules that will be used

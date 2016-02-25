@@ -11,6 +11,9 @@ HTomb = (function(HTomb) {
     Events[etype].push(listener);
   };
   Events.publish = function(event) {
+    if (Events[event.type] === undefined) {
+      Events[event.type] = [];
+    }
     var listeners = Events[event.type] || [];
     for (var j=0; j<listeners.length; j++) {
       listeners[j]["on"+event.type](event);
@@ -18,6 +21,9 @@ HTomb = (function(HTomb) {
     }
   };
   Events.unsubscribe = function(listener, etype) {
+    if (Events[etype] === undefined) {
+      Events[etype] = [];
+    }
     Events[etype].splice(Events[etype].indexOf(listener),1);
   };
   return HTomb;

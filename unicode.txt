@@ -8,7 +8,8 @@ down arrowhead 2304
 2648 Aries
 2652 Aquarius
 2692 hammer and pick
-
+273F: flower
+2698: flower
 
 cross: "\u271F",
 
@@ -17,3 +18,4 @@ http://www.unicode.org/charts/PDF/U2600.pdf
 http://www.unicode.org/charts/PDF/U2A00.pdf
 http://www.unicode.org/charts/PDF/U2200.pdfhttp://www.unicode.org/charts/PDF/U2300.pdf
 http://www.unicode.org/charts/PDF/U2500.pdf
+http://unicode-table.com/en/sets/flowers-symbols/

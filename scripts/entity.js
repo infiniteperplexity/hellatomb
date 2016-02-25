@@ -9,9 +9,6 @@ HTomb = (function(HTomb) {
     x: null,
     y: null,
     z: null,
-    symbol: "X",
-    fg: "white",
-    bg: "black",
     behaviors: {},
     hp: 10,
     maxhp: 10,
@@ -29,15 +26,9 @@ HTomb = (function(HTomb) {
       }
       var items = HTomb.World.items;
       if (this.isItem) {
-        var pile = items[c];        // remove it from the old pile
-        if (pile) {
-          pile.splice(pile.indexOf(this),1);
-          if (pile.length===0) {
-            delete items[c];
-          }
-        }
+        this.remove();
         // put it on the new pile
-        pile = items[c];
+        var pile = items[c];
         if (pile===undefined) {
           pile = items[c] = [];
         }
@@ -205,8 +196,8 @@ HTomb = (function(HTomb) {
         ent.each = each;
       }
       ent.each.push(this.name);
-      if (this.init) {
-        this.init(this.options);
+      if (this.onAdd) {
+        this.onAdd(this.options);
       }
     },
     each: ["entity"]
