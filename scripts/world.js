@@ -281,22 +281,62 @@ HTomb = (function(HTomb) {
     }
   }
 
-  HTomb.World.dailyCycle = {hour: 8, minute: 0,
+  HTomb.World.dailyCycle = {
+    hour: 8,
+    minute: 0,
+    day: 0,
+    turn: 0,
     onTurnBegin: function() {
+      this.turn+=1;
       this.minute+=1;
       if (this.minute>=60) {
         this.minute = 0;
-        this.hour = (this.hour+1)%24;
-      }},
-    shade: function(color) {
-      color = ROT.Color.fromString(color);
-      //color = ROT.Color.add(color,[0,50,50]); //midday?
-      //color = ROT.Color.add(color,[50,50,0]); //dawn?
-      //color = ROT.Color.add(color,[50,0,0]); //dusk?
-      //color = ROT.Color.add(color,[-50,-50,0]); //night?
-      //at this point we need to add daylight stuff
-      return ROT.Color.toHex(color);
-  }};
+        this.hour+=1;
+        if (this.hour>=24) {
+          this.hour = 0;
+          this.day+=1;
+        }
+      }
+    },
+    getPhase: function() {
+      if (this.hour<18 && this.hour>=8) {
+        return "\u26ED";
+      } else if (this.hour<20 && this.hour>=6) {
+        return "\u25D2";
+      } else {
+        var phase = this.day%30;
+        if (phase<=7) {
+          return "\u26AA";
+        } else if (phase<=15) {
+          return " ";
+        } else if (phase<=23) {
+          return "\u263E";
+        } else {
+          return "\u263D";
+        }
+      }
+    },
+    lightLevel: function() {
+      if (this.hour>=20 || this.hour<6) {
+        return 160;
+      } else if (this.hour>=19 || this.hour<7) {
+        return 192;
+      } else if (this.hour>=18 || this.hour<8) {
+        return 224;
+      } else {
+        return 255;
+      }
+    },
+    shade: function(arr,x,y,z) {
+      //if (HTomb.World.visible[z][x][y]) {
+        var c = ROT.Color.fromString(arr[1]);
+        c = ROT.Color.multiply(c,[this.lightLevel(),this.lightLevel(),255]);
+        c = ROT.Color.toHex(c);
+        arr[1] = c;
+      //}
+      return arr;
+    }
+  };
 
   return HTomb;
 })(HTomb);

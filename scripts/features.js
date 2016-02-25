@@ -9,6 +9,7 @@ HTomb = (function(HTomb) {
     template: "Tombstone",
     name: "tombstone",
     symbol: "\u271F",
+    //symbol: "\u2A4D",
     fg: "#AAAAAA",
     randomColor: 5,
     onPlace: function(x,y,z) {
@@ -57,20 +58,20 @@ HTomb = (function(HTomb) {
     locked: false,
     symbol: "\u25A5",
     fg: "#BB9922",
-    each: ["locked","name","passable","bg"],
+    each: ["locked","name","passable","symbol"],
     activate: function() {
       if (this.locked) {
         HTomb.GUI.pushMessage("Unlocked " + this.describe()+".");
         this.locked = false;
         this.solid = false;
         this.name = "door";
-        this.bg = undefined;
+        this.symbol = "\u25A5";
       } else {
         HTomb.GUI.pushMessage("Locked " + this.describe()+".");
         this.locked = true;
         this.solid = true;
         this.name = "locked door";
-        this.bg = HTomb.Constants.WALLBG;
+        this.symbol = "\u26BF";
       }
       HTomb.GUI.reset();
     },

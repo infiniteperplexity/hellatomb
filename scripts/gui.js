@@ -173,6 +173,7 @@ HTomb = (function(HTomb) {
         }
         // Draw every symbol in the right place
         var sym = HTomb.Tiles.getSymbol(x,y,z);
+        sym = HTomb.World.dailyCycle.shade(sym,x,y,z);
         display.draw(this.x0+x-xoffset,this.y0+y-yoffset, sym[0], sym[1], sym[2]);
       }
     }
@@ -187,7 +188,10 @@ HTomb = (function(HTomb) {
     display.drawText(this.x0+21,this.y0+1,"Y: " + HTomb.Player.y);
     display.drawText(this.x0+27,this.y0+1,"Elevation: " + gameScreen.z);
     display.drawText(this.x0+42,this.y0+1,
-      HTomb.World.dailyCycle.hour + ":"+HTomb.World.dailyCycle.minute);
+      HTomb.World.dailyCycle.getPhase() + "  Time: " 
+      + HTomb.World.dailyCycle.day + ":"
+      + HTomb.World.dailyCycle.hour + ":"
+      + HTomb.World.dailyCycle.minute);
   };
   // Show messages
   var scroll = new Panel(1,SCREENH+STATUSH);

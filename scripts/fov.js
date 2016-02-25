@@ -63,5 +63,5 @@ HTomb = (function(HTomb) {
     caster.compute(x,y,r,show);
   };
 
-  return   HTomb;
+  return HTomb;
 })(HTomb);

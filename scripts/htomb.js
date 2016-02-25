@@ -88,10 +88,7 @@ var HTomb = (function() {
     if (p.sight) {
       FOV.findVisible(p.x, p.y, p.z, p.sight.range);
     }
-    // Throw up a welcome splash screen
-    //GUI.splash("Welcome to HellaTomb!");
     //Events.subscribe(World.dailyCycle,"TurnBegin");
-
   };
 
   var timePassing;
@@ -146,7 +143,8 @@ var HTomb = (function() {
     // Render the GUI
     GUI.render();
     startTime();
-//    Events.publish({type: "TurnEnd"});
+    World.dailyCycle.onTurnBegin();
+    //Events.publish({type: "TurnEnd"});
   };
 
   // Set up the various submodules that will be used

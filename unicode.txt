@@ -8,4 +8,12 @@ down arrowhead 2304
 2648 Aries
 2652 Aquarius
 2692 hammer and pick
+
+
+cross: "\u271F",
+
+tombstone: "\u2A4D",
 http://www.unicode.org/charts/PDF/U2600.pdf
+http://www.unicode.org/charts/PDF/U2A00.pdf
+http://www.unicode.org/charts/PDF/U2200.pdfhttp://www.unicode.org/charts/PDF/U2300.pdf
+http://www.unicode.org/charts/PDF/U2500.pdf
