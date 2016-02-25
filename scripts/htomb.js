@@ -119,6 +119,7 @@ var HTomb = (function() {
     var Player = HTomb.Player;
     // Assign tasks to minions
     if (Player.master) {
+      HTomb.shuffle(Player.master.taskList);
       Player.master.assignTasks();
     }
     // Run the AI for each creature...should I deal with action points here?

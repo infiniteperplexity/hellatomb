@@ -4,6 +4,7 @@ HTomb = (function(HTomb) {
   var LEVELW = HTomb.Constants.LEVELW;
   var LEVELH = HTomb.Constants.LEVELH;
   var NLEVELS = HTomb.Constants.NLEVELS;
+  var coord = HTomb.coord;
   var grid;
   var x0,y0,z0,r0;
 
@@ -19,7 +20,14 @@ HTomb = (function(HTomb) {
       }
       //only opaque tiles block light
       //if this ever changes use a different FOV
-      return (grid[x][y].opaque === undefined);
+      if (grid[x][y].opaque===true) {
+        return false;
+      }
+      var f = HTomb.World.features[coord(x,y,z0)];
+      if (f && f.opaque===true) {
+        return false;
+      }
+      return true;
   };
 
   var show = function(x,y,r,v) {

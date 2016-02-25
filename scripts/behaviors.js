@@ -79,13 +79,17 @@ HTomb = (function(HTomb) {
       var z = this.entity.z;
       for (var i=0; i<backoffs.length; i++) {
         var dir = backoffs[i];
-        var t = HTomb.World.tiles[z+dir[2]][x+dir[0]][y+dir[1]];
+        var t = HTomb.World.tiles[z][x][y];
         var cr = HTomb.World.creatures[coord(x+dir[0],y+dir[1],z+dir[2])];
         var f = HTomb.World.features[coord(x+dir[0],y+dir[1],z+dir[2])];
         // modify this to allow non-player creatures to displace
         if (this.canMove(x+dir[0],y+dir[1],z+dir[2])===false) {
           continue;
-        } else if (dir[2]===+1 && (this.flies===true || (t.zmove===+1 && this.climbs===true && dir[0]===0 && dir[1]===0))) {
+        // climbing creatures can't move diagonally up or down
+        } else if (this.flies!==true && dir[2]!==0 && (dir[0]!==0 || dir[1]!==0)) {
+          continue;
+          //maybe having trouble with ceilings...
+        } else if (dir[2]===+1 && (this.flies===true || (t.zmove===+1 && this.climbs===true))) {
           if (cr) {
             if (cr.ai && cr.ai.isFriendly()) {
               this.displaceCreature(cr);
@@ -93,13 +97,13 @@ HTomb = (function(HTomb) {
             } else {
               continue;
             }
-          } else if (f && f.passable===false) {
+          } else if (f && f.solid===true) {
             continue;
           } else {
             this.stepTo(x+dir[0],y+dir[1],z+dir[2]);
             return true;
           }
-        } else if (  dir[2]===-1 && (this.flies===true || (t.zmove===-1 && this.climbs===true && dir[0]===0 && dir[1]===0))) {
+        } else if (dir[2]===-1 && (this.flies===true || (t.zmove===-1 && this.climbs===true))) {
           if (cr) {
             if (cr.ai && cr.ai.isFriendly()) {
               this.displaceCreature(cr);
@@ -107,7 +111,7 @@ HTomb = (function(HTomb) {
             } else {
               continue;
             }
-          } else if (f && f.passable===false) {
+          } else if (f && f.solid===true) {
             continue;
           } else {
             this.stepTo(x+dir[0],y+dir[1],z+dir[2]);
@@ -121,7 +125,7 @@ HTomb = (function(HTomb) {
             } else {
               continue;
             }
-          } else if (f && f.passable===false) {
+          } else if (f && f.solid===true) {
             continue;
           } else {
             this.stepTo(x+dir[0],y+dir[1],z+dir[2]);
@@ -178,6 +182,8 @@ HTomb = (function(HTomb) {
       }
       var square = HTomb.Tiles.getSquare(x,y,z);
       if (square.terrain.solid===true && this.phases===undefined) {
+        return false;
+      } else if (square.feature && square.feature.solid===true) {
         return false;
       } else if (square.terrain.fallable===true && this.flies===undefined) {
         //if (square.feature!==undefined && square.feature.template==="DownSlope") {

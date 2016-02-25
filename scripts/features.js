@@ -54,23 +54,28 @@ HTomb = (function(HTomb) {
   HTomb.Things.defineFeature({
     template: "Door",
     name: "door",
-    active: true,
+    locked: false,
     symbol: "\u25A5",
     fg: "#BB9922",
-    each: ["active"],
+    each: ["locked","name","passable","bg"],
     activate: function() {
-      if (this.active) {
-        this.active=false;
-        this.passable=true;
-        this.symbol="\u25FB";
+      if (this.locked) {
+        HTomb.GUI.pushMessage("Unlocked " + this.describe()+".");
+        this.locked = false;
+        this.solid = false;
+        this.name = "door";
+        this.bg = undefined;
       } else {
-        this.active=true;
-        this.passable=false;
-        this.symbol="\u25A5"
+        HTomb.GUI.pushMessage("Locked " + this.describe()+".");
+        this.locked = true;
+        this.solid = true;
+        this.name = "locked door";
+        this.bg = HTomb.Constants.WALLBG;
       }
       HTomb.GUI.reset();
     },
-    passable: false
+    solid: false,
+    opaque: true
   });
 
   HTomb.Things.defineLiquid({

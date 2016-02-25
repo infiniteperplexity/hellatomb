@@ -160,7 +160,7 @@ HTomb = (function(HTomb) {
         //return [HTomb.Constants.FLOORBELOW,fg,bg];
         return [HTomb.Constants.FLOORBELOW,fg, bg || HTomb.Constants.BELOWBG];
       } else if (tile===Tiles.FloorTile && tiles[z+1][x][y]!==Tiles.EmptyTile) {
-        return [HTomb.Constants.ROOFABOVE,fg,tile.bg];
+        return [Tiles.WallTile.symbol,fg,tile.bg];
       } else {
         // terrain on current level
         return [tile.symbol || "X",fg,tile.bg];
@@ -178,7 +178,7 @@ HTomb = (function(HTomb) {
       } else if (items[crd]) {
         return [items[crd][items[crd].length-1].symbol || "X",items[crd][items[crd].length-1].fg || fg, bg || tile.bg];
       } else if (features[crd]) {
-        return [features[crd].symbol || "X", features[crd].fg || fg, bg || tile.bg];
+        return [features[crd].symbol || "X", features[crd].fg || fg, bg || features[crd].bg || tile.bg];
       } else if (zview===+1 && items[cabove]) {
         return [items[cabove][items[cabove].length-1].symbol || "X",above, bg || HTomb.Constants.WALLBG];
       } else if (zview===-1 && items[cbelow]) {
@@ -191,8 +191,6 @@ HTomb = (function(HTomb) {
         return [liquids[crd].symbol,liquids[crd].fg,bg];
       } else if (zview===-1 && liquids[cbelow]) {
         return [HTomb.Constants.FLOORBELOW,liquids[cbelow].fg,liquids[cbelow].shimmer()];
-      } else if (tile===Tiles.WallTile && tiles[z+1][x][y]===Tiles.FloorTile && explored[z+1][x][y]) {
-        return[HTomb.Constants.FLOORABOVE,HTomb.Constants.SHADOW,HTomb.Constants.WALLBG];
       } else if (tile===Tiles.EmptyTile && tiles[z-1][x][y]===Tiles.FloorTile) {
         return [HTomb.Constants.FLOORBELOW,below, bg || HTomb.Constants.BELOWBG];
       } else if (tile===Tiles.FloorTile && tiles[z+1][x][y]!==Tiles.EmptyTile) {
