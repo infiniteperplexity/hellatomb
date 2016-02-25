@@ -15,6 +15,18 @@ HTomb = (function(HTomb) {
   });
 
   HTomb.Things.defineItem({
+    template: "FlintStone",
+    name: "flint stone",
+    symbol: "\u2022",
+    fg: "#CCCCCC",
+    behaviors: {Stackable: {n: 10}},
+    onPlace: function() {
+      this.stack.n = 1;
+    },
+    randomColor: 10
+  });
+
+  HTomb.Things.defineItem({
     template: "Corpse",
     name: "corpse",
     symbol: "%",

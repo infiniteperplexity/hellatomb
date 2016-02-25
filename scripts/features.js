@@ -30,7 +30,15 @@ HTomb = (function(HTomb) {
   HTomb.Things.defineFeature({
     template: "Shrub",
     name: "shrub",
-    symbol: "\u262B",
+    symbol: "\u2698",
+    fg: "#779922",
+    randomColor: 20
+  });
+
+  HTomb.Things.defineFeature({
+    template: "Seaweed",
+    name: "seaweed",
+    symbol: ["\u2648","\u2724","\u060F"],
     fg: "#779922",
     randomColor: 20
   });

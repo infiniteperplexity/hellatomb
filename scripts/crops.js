@@ -122,3 +122,27 @@ HTomb.Things.defineCrop({
   name: "wolfsbane",
   fg: "#BB55FF"
 });
+
+HTomb.Things.defineCrop({
+  template: "Mandrake",
+  name: "mandrake",
+  fg: "#FFAA55"
+});
+
+HTomb.Things.defineCrop({
+  template: "Wormwood",
+  name: "wormwood",
+  fg: "#55FFCC"
+});
+
+HTomb.Things.defineCrop({
+  template: "Amanita",
+  name: "amanita",
+  fg: "#FF2288"
+});
+
+HTomb.Things.defineCrop({
+  template: "Bloodwort",
+  name: "bloodwort",
+  fg: "#CCCCCC"
+});

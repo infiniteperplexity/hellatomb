@@ -94,6 +94,9 @@ HTomb = (function(HTomb) {
 
   // Create a new object based on the template
   HTomb.Things.create = function(template, args) {
+    if (HTomb.Things.templates[template]===undefined) {
+      console.log([template,args]);
+    }
     var t = Object.create(HTomb.Things.templates[template]);
     for (var i=0; i<t.each.length; i++) {
       t[t.each[i]] = HTomb.Things.templates[template][t.each[i]];

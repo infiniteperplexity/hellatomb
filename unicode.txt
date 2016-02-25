@@ -16,6 +16,7 @@ cross: "\u271F",
 tombstone: "\u2A4D",
 http://www.unicode.org/charts/PDF/U2600.pdf
 http://www.unicode.org/charts/PDF/U2A00.pdf
-http://www.unicode.org/charts/PDF/U2200.pdfhttp://www.unicode.org/charts/PDF/U2300.pdf
+http://www.unicode.org/charts/PDF/U2200.pdf
+http://www.unicode.org/charts/PDF/U2300.pdf
 http://www.unicode.org/charts/PDF/U2500.pdf
 http://unicode-table.com/en/sets/flowers-symbols/

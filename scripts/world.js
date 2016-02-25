@@ -113,11 +113,23 @@ HTomb = (function(HTomb) {
     simplex_features("Tombstone",{p1: 0.25, p2: 0.1, filter: function(x,y,z) {
       return (HTomb.Tiles.getNeighbors(x,y,z).fallables.length===0);
     }});
-    //simplex_features("Shrub",{hscale: 40, vthresh: 1, p1: 0.25, p2: 0.1});
-    simplex_features("WolfsbanePlant",{hscale: 40, vthresh: 1, p1: 0.25, p2: 0.1, callback: function(thing) {thing.crop.mature();}});
+    simplex_features("Shrub",{hscale: 40, vthresh: 1, p1: 0.25, p2: 0.1});
+    simplex_features("WolfsbanePlant",{hscale: 40, vthresh: 1.5, p1: 0.15, p2: 0.05, callback: function(thing) {thing.crop.mature();}});
+    simplex_features("WormwoodPlant",{hscale: 40, vthresh: 1.5, p1: 0.15, p2: 0.05, callback: function(thing) {thing.crop.mature();}});
+    simplex_features("MandrakePlant",{hscale: 40, vthresh: 1.5, p1: 0.15, p2: 0.05, callback: function(thing) {thing.crop.mature();}});
+    simplex_features("BloodwortPlant",{hscale: 40, vthresh: 1.5, p1: 0.15, p2: 0.05, callback: function(thing) {thing.crop.mature();}});
+    simplex_features("AmanitaPlant",{hscale: 40, vthresh: 1.5, p1: 0.15, p2: 0.05, callback: function(thing) {thing.crop.mature();}});
     simplex_features("Tree",{vthresh: 1, p1: 0.75, p2: 0.25});
-    simplex_features("Rock",{hscale: 10, vtresh: 3, p1: 0.25, p2: 0.1});
-    simplex_features("Stick",{hscale: 10, vtresh: 3, p1: 0.15, p2: 0.05});
+    simplex_features("Rock",{hscale: 10, vtresh: 3, p1: 0.25, p2: 0.1,
+      callback(thing) {
+        if (Math.random()<=0.1) {
+          var x = thing.x;
+          var y = thing.y;
+          var z = thing.z;
+          thing.remove();
+          HTomb.Things.FlintStone().place(x,y,z);
+        }
+    }});
     water_table(23);
     scatter("Bat",0.005);
     scatter("Spider",0.005);
@@ -229,16 +241,23 @@ HTomb = (function(HTomb) {
     for (var x=1; x<LEVELW-1; x++) {
       for (var y=1; y<LEVELH-1; y++) {
         for (var z=HTomb.Tiles.groundLevel(x,y); z<=elev; z++) {
+
           var square = HTomb.Tiles.getSquare(x,y,z);
           HTomb.Things.create("Water").place(x,y,z);
           if (square.items) {
             for (var i=0; i<square.items.length; i++) {
-              square.items[i].remove();
+              //square.items[i].remove();
             }
           }
           if (square.feature) {
             square.feature.remove();
+            if (Math.random()<0.5) {
+              HTomb.Things.create("Seaweed").place(x,y,z);
+            }
           }
+          // if (z===HTomb.Tiles.groundLevel(x,y) && Math.random()<0.1) {
+          //   HTomb.Things.create("Seaweed").place(x,y,z);
+          // }
           if (z===elev) {
             HTomb.Things.create("Water").place(x,y,z+1);
           }

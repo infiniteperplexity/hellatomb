@@ -169,7 +169,6 @@ HTomb = (function(HTomb) {
         return [features[cabove].symbol || "X",fg, bg || HTomb.Constants.WALLBG];
       } else if (zview===-1 && features[cbelow]) {
         // feature on level below
-        //return [features[cbelow].symbol || "X",fg,bg];
         return [features[cbelow].symbol || "X",fg, bg || HTomb.Constants.BELOWBG];
       } else if (liquids[crd] && liquids[cabove]===undefined) {
         return [liquids[crd].symbol,liquids[crd].fg,bg];
@@ -177,15 +176,15 @@ HTomb = (function(HTomb) {
         return [HTomb.Constants.FLOORBELOW,liquids[cbelow].fg,liquids[cbelow].darkbg];
         // an empty space with floor below it
       } else if (tile===Tiles.WallTile && tiles[z+1][x][y]===Tiles.FloorTile && explored[z+1][x][y]) {
-        return[HTomb.Constants.FLOORABOVE,fg,HTomb.Constants.WALLBG];
+        return[HTomb.Constants.FLOORABOVE,fg,bg || HTomb.Constants.WALLBG];
       } else if (tile===Tiles.EmptyTile && tiles[z-1][x][y]===Tiles.FloorTile) {
         //return [HTomb.Constants.FLOORBELOW,fg,bg];
         return [HTomb.Constants.FLOORBELOW,fg, bg || HTomb.Constants.BELOWBG];
       } else if (tile===Tiles.FloorTile && tiles[z+1][x][y]!==Tiles.EmptyTile) {
-        return [Tiles.WallTile.symbol,fg,tile.bg];
+        return [Tiles.WallTile.symbol,fg,bg || tile.bg];
       } else {
         // terrain on current level
-        return [tile.symbol || "X",fg,tile.bg];
+        return [tile.symbol || "X",fg,bg || tile.bg];
       }
     } else {
       // visible square
