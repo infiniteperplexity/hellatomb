@@ -97,7 +97,7 @@ var HTomb = (function() {
   var timePassing;
   var speed = 1000;
   function setSpeed(spd) {
-    speed = spd;
+    speed = Math.min(Math.max(100,spd),5000);
   }
   function getSpeed() {
     return speed;

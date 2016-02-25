@@ -404,12 +404,12 @@ HTomb = (function(HTomb) {
     VK_SPACE: Commands.wait,
     VK_ESCAPE: HTomb.stopTime,
     VK_PAGE_UP: function() {
-      HTomb.setSpeed(Math.max(262.14,HTomb.getSpeed()/1.25));
+      HTomb.setSpeed(HTomb.getSpeed()/1.25);
       HTomb.GUI.pushMessage("Speed set to " + parseInt(HTomb.getSpeed()) + ".");
       HTomb.startTime();
     },
     VK_PAGE_DOWN: function() {
-      HTomb.setSpeed(Math.min(4768.37,HTomb.getSpeed()*1.25));
+      HTomb.setSpeed(HTomb.getSpeed()*1.25);
       HTomb.GUI.pushMessage("Speed set to " + parseInt(HTomb.getSpeed()) + ".");
     }
   });
@@ -657,9 +657,10 @@ HTomb = (function(HTomb) {
     VK_NUMPAD3: surveyMove(+1,+1,0),
     // Exit survey mode and return to the original position
     VK_ESCAPE: function() {
-      gameScreen.xoffset = survey.saveX;
-      gameScreen.yoffset = survey.saveY;
+      //gameScreen.xoffset = survey.saveX;
+      //gameScreen.yoffset = survey.saveY;
       gameScreen.z = survey.saveZ;
+      GUI.recenter();
       GUI.reset();
     }
   });

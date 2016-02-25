@@ -80,57 +80,22 @@ HTomb = (function(HTomb) {
       for (var i=0; i<backoffs.length; i++) {
         var dir = backoffs[i];
         var t = HTomb.World.tiles[z][x][y];
+        var tu = HTomb.World.tiles[z+1][x][y];
+        var td = HTomb.World.tiles[z-1][x][y];
         var cr = HTomb.World.creatures[coord(x+dir[0],y+dir[1],z+dir[2])];
         var f = HTomb.World.features[coord(x+dir[0],y+dir[1],z+dir[2])];
         // modify this to allow non-player creatures to displace
         if (this.canMove(x+dir[0],y+dir[1],z+dir[2])===false) {
           continue;
-        // climbing creatures can't move diagonally up or down
-        } else if (this.flies!==true && dir[2]!==0 && (dir[0]!==0 || dir[1]!==0)) {
-          continue;
-          //maybe having trouble with ceilings...
-        } else if (dir[2]===+1 && (this.flies===true || (t.zmove===+1 && this.climbs===true))) {
-          if (cr) {
-            if (cr.ai && cr.ai.isFriendly()) {
-              this.displaceCreature(cr);
-              return true;
-            } else {
-              continue;
-            }
-          } else if (f && f.solid===true) {
-            continue;
+        } else if (cr) {
+          if (cr.ai && cr.ai.isFriendly && cr.movement) {
+            this.displaceCreature(cr);
           } else {
-            this.stepTo(x+dir[0],y+dir[1],z+dir[2]);
-            return true;
-          }
-        } else if (dir[2]===-1 && (this.flies===true || (t.zmove===-1 && this.climbs===true))) {
-          if (cr) {
-            if (cr.ai && cr.ai.isFriendly()) {
-              this.displaceCreature(cr);
-              return true;
-            } else {
-              continue;
-            }
-          } else if (f && f.solid===true) {
             continue;
-          } else {
-            this.stepTo(x+dir[0],y+dir[1],z+dir[2]);
-            return true;
           }
-        } else if (this.walks===true) {
-          if (cr) {
-            if (cr.ai && cr.ai.isFriendly()) {
-              this.displaceCreature(cr);
-              return true;
-            } else {
-              continue;
-            }
-          } else if (f && f.solid===true) {
-            continue;
-          } else {
-            this.stepTo(x+dir[0],y+dir[1],z+dir[2]);
-            return true;
-          }
+        } else {
+          this.stepTo(x+dir[0],y+dir[1],z+dir[2]);
+          return true;
         }
       }
       console.log("creature couldn't move.");
@@ -167,9 +132,6 @@ HTomb = (function(HTomb) {
         return false;
       }
       var square = HTomb.Tiles.getSquare(x,y,z);
-      if (square.feature && square.feature.passable===false) {
-        return false;
-      }
       if (square.creature) {
         return false;
       }
@@ -180,17 +142,35 @@ HTomb = (function(HTomb) {
       if (x<0 || x>=LEVELW || y<0 || y>=LEVELH) {
         return false;
       }
+      var dx = x-this.entity.x;
+      var dy = y-this.entity.y;
+      var dz = z-this.entity.z;
       var square = HTomb.Tiles.getSquare(x,y,z);
-      if (square.terrain.solid===true && this.phases===undefined) {
+      var t = HTomb.World.tiles[z-dz][x-dx][y-dy];
+      var tu = HTomb.World.tiles[z+1-dz][x-dx][y-dy];
+      var td = HTomb.World.tiles[z-1-dz][x-dx][y-dy];
+      // can't go through solid feature
+      if (square.feature && square.feature.solid===true && this.phases!==true) {
         return false;
-      } else if (square.feature && square.feature.solid===true) {
+      // can't go through solid terrain
+      } else if (square.terrain.solid===true && this.phases!==true) {
         return false;
+      // can't walk over a pit
       } else if (square.terrain.fallable===true && this.flies===undefined) {
-        //if (square.feature!==undefined && square.feature.template==="DownSlope") {
-        //  return true;
-        //} else {
-          return false;
-        //}
+        return false;
+      // non-flyers can't climb diagonally
+      } else if (this.flies!==true && dz!==0 && (dx!==0 || dy!==0)) {
+        return false;
+      // non-flyers need a slope in order to go up
+      } else if (dz===+1 && this.flies!==true && t.zmove!==+1) {
+        return false;
+      // non-phasers can't go through a ceiling
+      } else if (dz===+1 && this.phases!==true && tu.fallable!==true && tu.zmove!==-1) {
+        return false;
+      // non-phasers can't go down through a floor
+      } else if (dz===-1 && t.fallable!==true && t.zmove!==-1 && this.phases!==true) {
+        return false;
+      // sort of a perfunctory check...
       } else if (this.walks===true) {
         return true;
       } else {
