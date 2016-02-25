@@ -118,8 +118,12 @@ HTomb = (function(HTomb) {
     }
     //if the square has not been explored, don't show it
     if (!explored[z][x][y] && HTomb.Debug.explored!==true) {
+      if (tiles[z+1][x][y]===Tiles.FloorTile && explored[z+1][x][y]) {
+        return[HTomb.Constants.FLOORABOVE,HTomb.Constants.SHADOW,HTomb.Constants.WALLBG];
+      } else {
       //return [" ","black","black"];
-      return [" ","black",bg || "black"];
+        return [" ","black",bg || "black"];
+      }
     }
     // background color for explored squares is based on zoning
       // maybe at some point, liquids
@@ -150,6 +154,8 @@ HTomb = (function(HTomb) {
       } else if (zview===-1 && liquids[cbelow]) {
         return [HTomb.Constants.FLOORBELOW,liquids[cbelow].fg,liquids[cbelow].darkbg];
         // an empty space with floor below it
+      } else if (tile===Tiles.WallTile && tiles[z+1][x][y]===Tiles.FloorTile && explored[z+1][x][y]) {
+        return[HTomb.Constants.FLOORABOVE,fg,HTomb.Constants.WALLBG];
       } else if (tile===Tiles.EmptyTile && tiles[z-1][x][y]===Tiles.FloorTile) {
         //return [HTomb.Constants.FLOORBELOW,fg,bg];
         return [HTomb.Constants.FLOORBELOW,fg, bg || HTomb.Constants.BELOWBG];
@@ -185,6 +191,8 @@ HTomb = (function(HTomb) {
         return [liquids[crd].symbol,liquids[crd].fg,bg];
       } else if (zview===-1 && liquids[cbelow]) {
         return [HTomb.Constants.FLOORBELOW,liquids[cbelow].fg,liquids[cbelow].shimmer()];
+      } else if (tile===Tiles.WallTile && tiles[z+1][x][y]===Tiles.FloorTile && explored[z+1][x][y]) {
+        return[HTomb.Constants.FLOORABOVE,HTomb.Constants.SHADOW,HTomb.Constants.WALLBG];
       } else if (tile===Tiles.EmptyTile && tiles[z-1][x][y]===Tiles.FloorTile) {
         return [HTomb.Constants.FLOORBELOW,below, bg || HTomb.Constants.BELOWBG];
       } else if (tile===Tiles.FloorTile && tiles[z+1][x][y]!==Tiles.EmptyTile) {
