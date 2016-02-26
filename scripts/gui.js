@@ -101,7 +101,7 @@ HTomb = (function(HTomb) {
     var x = Math.floor((move.clientX+xskew)/HTomb.Constants.CHARWIDTH-1);
     var y = Math.floor((move.clientY+yskew)/HTomb.Constants.CHARHEIGHT-1);
     // If the hover is not on the game screen, pass the actual X and Y positions
-    if (GUI.panels.overlay!==null || x>=SCREENW || y>=SCREENH) {
+    if (GUI.panels.overlay!==null || x>=SCREENW || y>=SCREENH || x<0 || y<0) {
       Controls.context.mouseOver(x,y);
     } else {
       // If the hover is on the game screen, pass the X and Y tile coordinates
@@ -141,7 +141,6 @@ HTomb = (function(HTomb) {
       GUI.panels.middle.render();
       GUI.panels.bottom.render();
       GUI.panels.right.render();
-      GUI.panels.corner.render();
     }
   };
   // Draw a character at the appropriate X and Y tile
@@ -189,11 +188,10 @@ HTomb = (function(HTomb) {
       middle: status,
       bottom: scroll,
       right: menu,
-      corner: hover,
       overlay: null
     };
-    menu.text = defaultText;
     Controls.context = main;
+    GUI.updateMenu();
     GUI.recenter();
     GUI.render();
   };
@@ -255,28 +253,16 @@ HTomb = (function(HTomb) {
   };
   // Provide the player with instructions
   var menu = new Panel(SCREENW+1,1);
-  var defaultText = menu.text = [
-    "To move use numpad",
-    "or arrows.  Shift+arrows",
-    "to go diagonally",
-    "(release shift between",
-    "diagonals.)",
-    "G to pick up,",
-    "D to drop.",
-    ", or . to go down or up.",
-    "Z to cast a spell",
-    "J to assign a job",
-    "A to act or apply",
-    "Space to wait",
-    "Hover mouse to examine",
-    "a square.",
-    "Tab to enter survey mode."
+  var defaultText = [
+    "Use numpad or arrows to move, shift+arrows to move diagonally, J to assign a job, A to act or apply, "+
+    "Z to cast a spell, space to wait, or tab to enter survey mode.",
+    "Hover mouse to examine a square."
   ];
   menu.render = function() {
-    for (var i=0; i<SCREENH; i++) {
-      display.drawText(this.x0, this.y0+i+1, "%c{black}"+(UNIBLOCK.repeat(MENUW-2)));
+    for (var i=0; i<SCREENH+SCROLLH; i++) {
+      display.drawText(this.x0, this.y0+i, "%c{black}"+(UNIBLOCK.repeat(MENUW-2)));
       if (menu.text[i]) {
-        display.drawText(this.x0, this.y0+1+i, menu.text[i]);
+        display.drawText(this.x0, this.y0+i, menu.text[i]);
       }
     }
   };
@@ -340,83 +326,120 @@ HTomb = (function(HTomb) {
     }
     return mesg;
   };
-  // By default, hovering over a tile describes its contents
+
   ControlContext.prototype.mouseTile = function(x,y) {
     if (GUI.panels.overlay===null) {
       GUI.panels.main.render();
     }
-    var z = gameScreen.z;
     GUI.highlightTile(x,y,"#0000FF");
-    var square = HTomb.Tiles.getSquare(x,y,z);
-    if (square.explored===false) {
-      hover.text[0][4] = "";
-      hover.text[0][5] = "";
-      hover.text[1] = ["","","","","",""];
-      hover.render();
-      return;
-    }
-    hover.text[1][0] = square.terrain.name + " at " + x +", " + y + ", " + z + ".";
-    if (square.creature) {
-      hover.text[1][1] = square.creature.describe();
-    } else {
-      hover.text[1][1] = "";
-    }
-    var mesg = "";
-    var i;
-    if (square.items) {
-      hover.text[1][2] = GUI.listItems(square.items);
-    } else {
-      hover.text[1][2] = "";
-    }
-    if (square.feature) {
-      hover.text[0][3] = "Feature: ";
-      hover.text[1][3] = square.feature.describe();
-    } else {
-      hover.text[1][3] = "";
-    }
-    var vis;
-    if (square.terrain.zview===+1 && z+1<NLEVELS) {
-    //if (square.feature && square.feature.zView===+1 && z+1<NLEVELS) {
-      hover.text[0][4] = "Above: ";
-      hover.text[0][5] = "Above: ";
-      vis = HTomb.Tiles.getSquare(x,y,z+1);
-      if (vis.creature) {
-        hover.text[1][4] = vis.creature.describe();
-      } else {
-        hover.text[1][4] = "";
-      }
-      if (vis.items) {
-        hover.text[1][5] = GUI.listItems(vis.items);
-      } else {
-        hover.text[1][5] = "";
-      }
-    //} else if (square.feature && square.feature.zView===-1 && z-1>=0) {
-    } else if (square.terrain.zview===-1 && z-1>=0) {
-      hover.text[0][4] = "Below: ";
-      hover.text[0][5] = "Below: ";
-      vis = HTomb.Tiles.getSquare(x,y,z-1);
-      if (vis.creature) {
-        hover.text[1][4] = vis.creature.describe();
-      } else {
-        hover.text[1][4] = "";
-      }
-      if (vis.items) {
-        hover.text[1][5] = GUI.listItems(vis.items);
-      } else {
-        hover.text[1][5] = "";
-      }
-      if (vis.feature && !square.feature) {
-        hover.text[0][3] = "Below: ";
-        hover.text[1][3] = vis.feature.describe();
-      }
-    } else {
-      hover.text[1][4] = "";
-      hover.text[1][5] = "";
-      hover.text[0][4] = "";
-      hover.text[0][5] = "";
-    }
-    hover.render();
+    var z = gameScreen.z;
+    var txt = examineSquare(x,y,z);
+    var myText = this.menuText || defaultText;
+    GUI.displayMenu(myText.concat(" ").concat(txt));
   };
+
+  GUI.updateMenu = function() {
+    GUI.displayMenu(Controls.context.menuText || defaultText);
+  };
+
+  function examineSquare(x,y,z) {
+    var square = HTomb.Tiles.getSquare(x,y,z);
+    var below = HTomb.Tiles.getSquare(x,y,z-1);
+    var above = HTomb.Tiles.getSquare(x,y,z+1);
+    var text = [];
+    var next;
+    if(square.explored) {
+      next = "Here: "+square.terrain.name + " at " + square.x +", " + square.y + ", " + square.z + ".";
+      text.push(next);
+      next = "Creature: ";
+      if (square.creature && square.visible) {
+        next+=square.creature.describe();
+        text.push(next);
+      }
+      next = "Items: ";
+      if (square.items && square.visible) {
+        next+=GUI.listItems(square.items);
+      }
+      text.push(next);
+      next = "Feature: ";
+      if (square.feature) {
+        next+=square.feature.describe();
+      }
+      text.push(next);
+      next = "Zone: ";
+      if (square.zone) {
+        next+=square.zone.describe();
+      }
+      text.push(next);
+      next = "Liquid: ";
+      if (square.liquid) {
+        next+=square.liquid.describe();
+      }
+      text.push(next);
+      text.push(" ");
+    }
+    if (below.exploredBelow) {
+      next = "Below: "+below.terrain.name  + " at " + below.x +", " + below.y + ", " + below.z + ".";
+      text.push(next);
+      next = "Creature: ";
+      if (below.creature && below.visibleBelow) {
+        next+=below.creature.describe();
+        text.push(next);
+      }
+      next = "Items: ";
+      if (below.items && below.visibleBelow) {
+        next+=GUI.listItems(below.items);
+      }
+      text.push(next);
+      next = "Feature: ";
+      if (below.feature) {
+        next+=below.feature.describe();
+      }
+      text.push(next);
+      next = "Zone: ";
+      if (below.zone) {
+        next+=below.zone.describe();
+      }
+      text.push(next);
+      next = "Liquid: ";
+      if (below.liquid) {
+        next+=below.liquid.describe();
+      }
+      text.push(next);
+      text.push(" ");
+    }
+    if (above.exploredAbove) {
+      next = "Above: "+above.terrain.name + " at " + above.x +", " + above.y + ", " + above.z + ".";
+      text.push(next);
+      next = "Creature: ";
+      if (above.creature && above.visibleAbove) {
+        next+=above.creature.describe();
+        text.push(next);
+      }
+      next = "Items: ";
+      if (above.items && above.visibleAbove) {
+        next+=GUI.listItems(above.items);
+      }
+      text.push(next);
+      next = "Feature: ";
+      if (above.feature) {
+        next+=above.feature.describe();
+      }
+      text.push(next);
+      next = "Zone: ";
+      if (above.zone) {
+        next+=above.zone.describe();
+      }
+      text.push(next);
+      next = "Liquid: ";
+      if (above.liquid) {
+        next+=above.liquid.describe();
+      }
+      text.push(next);
+    }
+    return text;
+  }
+
 
   // Survey mode lets to scan the play area independently from the player's position
   GUI.surveyMode = function() {
@@ -424,7 +447,7 @@ HTomb = (function(HTomb) {
     survey.saveX = gameScreen.xoffset;
     survey.saveY = gameScreen.yoffset;
     survey.saveZ = gameScreen.z;
-    GUI.updateMenu(["You are now in survey mode.","Use movement keys to navigate.","Comma go down.","Period to go up.","Escape to exit."]);
+    GUI.updateMenu();
   };
 
   // These are the default controls
@@ -475,10 +498,39 @@ HTomb = (function(HTomb) {
     var square = HTomb.Tiles.getSquare(x,y,gameScreen.z);
     Commands.look(square);
   };
+  main.mouseOver = function() {
+    if (GUI.panels.overlay===null) {
+      // The main control context always wants to show the instructions
+      GUI.displayMenu(defaultText);
+      gameScreen.render();
+    }
+  };
 
   // Update the right-hand menu instructions
-  GUI.updateMenu = function(txt) {
-    menu.text = txt;
+  GUI.displayMenu = function(arr) {
+    var i=0;
+    var br=null;
+    while(i<arr.length) {
+      if (arr[i].length<MENUW-2) {
+        i++;
+        continue;
+      }
+      for (var j=0; j<arr[i].length; j++) {
+        if (arr[i][j]===" ") {
+          br = j;
+        }
+        if (j>=MENUW-2) {
+          var one = arr[i].substring(0,br);
+          var two = arr[i].substring(br+1);
+          arr[i] = one;
+          arr.splice(i+1,0,two);
+          break;
+        }
+      }
+      i++;
+      br = null;
+    }
+    menu.text = arr;
     menu.render();
   };
 
@@ -498,16 +550,18 @@ HTomb = (function(HTomb) {
     contrls.VK_ESCAPE = GUI.reset;
     choices.push("Esc to cancel");
     Controls.context = new ControlContext(contrls);
-    GUI.updateMenu(choices);
+    Controls.context.menuText = choices;
+    GUI.updateMenu();
   };
 
   // Select a single square with the mouse
   HTomb.GUI.selectSquare = function(z, callb, options) {
     options = options || {};
-    GUI.updateMenu(["Use movement keys to navigate.","Comma go down.","Period to go up.","Escape to exit."]);
     HTomb.GUI.pushMessage("Select a square.");
     var context = Object.create(survey);
+    context.menuText = ["Use movement keys to navigate.","Comma go down.","Period to go up.","Escape to exit."];
     HTomb.Controls.context = context;
+    GUI.updateMenu();
     survey.saveX = gameScreen.xoffset;
     survey.saveY = gameScreen.yoffset;
     survey.saveZ = gameScreen.z;
@@ -526,12 +580,14 @@ HTomb = (function(HTomb) {
           var sq = line[i];
           HTomb.GUI.highlightSquare(sq[0],sq[1],bg);
         }
+        var txt = examineSquare(x1,y1,gameScreen.z);
+        var myText = HTomb.Controls.context.menuText;
+        GUI.displayMenu(myText.concat(" ").concat(txt));
       };
     }
   };
 
   HTomb.GUI.pickDirection = function(callb) {
-    GUI.updateMenu(["Pick a direction","Or press Escape to cancel"]);
     function actToward(dx,dy,dz) {
       return function() {
         var x = HTomb.Player.x+dx;
@@ -558,15 +614,17 @@ HTomb = (function(HTomb) {
       VK_NUMPAD2: actToward(0,+1,0),
       VK_NUMPAD3: actToward(+1,+1,0),
     });
+    context.menuText = ["Pick a direction","Or press Escape to cancel"];
     HTomb.Controls.context = context;
   };
   // Select a rectangular zone using its two corners
   HTomb.GUI.selectSquareZone = function(z, callb, options) {
     options = options || {};
-    GUI.updateMenu(["Use movement keys to navigate.","Comma go down.","Period to go up.","Escape to exit."]);
     HTomb.GUI.pushMessage("Select the first corner.");
     var context = Object.create(survey);
+    context.menuText = ["Use movement keys to navigate.","Comma go down.","Period to go up.","Escape to exit."];
     HTomb.Controls.context = context;
+    GUI.updateMenu();
     survey.saveX = gameScreen.xoffset;
     survey.saveY = gameScreen.yoffset;
     survey.saveZ = gameScreen.z;
@@ -574,6 +632,7 @@ HTomb = (function(HTomb) {
       HTomb.GUI.pushMessage("Select the second corner.");
       var context2 = new ControlContext({VK_ESCAPE: GUI.reset});
       HTomb.Controls.context = context2;
+      context2.menuText = context.menuText;
       context2.clickTile = secondSquare(x,y);
       context2.mouseTile = drawSquareBox(x,y);
     };
@@ -605,6 +664,9 @@ HTomb = (function(HTomb) {
           var coord = squares[k];
           GUI.highlightTile(coord[0],coord[1],bg);
         }
+        var txt = examineSquare(x1,y1,gameScreen.z);
+        var myText = HTomb.Controls.context.menuText;
+        GUI.displayMenu(myText.concat(" ").concat(txt));
       };
     };
     var secondSquare = function(x0,y0) {
@@ -698,6 +760,7 @@ HTomb = (function(HTomb) {
       GUI.reset();
     }
   });
+  survey.menuText = ["You are now in survey mode.","Use movement keys to navigate.","Comma go down.","Period to go up.","Escape to exit."];
   survey.clickTile = main.clickTile;
 
   // Currently implemented, seems slow and I don't know where to put it

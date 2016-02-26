@@ -128,9 +128,6 @@ HTomb = (function(HTomb) {
     var zones = HTomb.World.zones;
     var visible = HTomb.World.visible;
     var explored = HTomb.World.explored;
-    if (tiles[z]===undefined) {
-      console.log([x,y,z]);
-    }
     var tile = tiles[z][x][y];
     var zview = tiles[z][x][y].zview;
     fg = "white";
@@ -233,8 +230,14 @@ HTomb = (function(HTomb) {
     square.feature = HTomb.World.features[crd];
     square.portals = HTomb.World.portals[crd];
     square.zone = HTomb.World.zones[crd];
+    square.liquid = HTomb.World.liquids[crd];
     square.explored = HTomb.World.explored[z][x][y];
     square.visible = HTomb.World.visible[z][x][y];
+    // until we get the real code in place...
+    square.visibleBelow = true;
+    square.visibleAbove = true;
+    square.exploredBelow = true;
+    square.exploredAbove = true;
     square.x = x;
     square.y = y;
     square.z = z;
