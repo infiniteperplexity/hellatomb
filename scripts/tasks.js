@@ -71,7 +71,10 @@ HTomb = (function(HTomb) {
         this.assignee.minion.unassign();
       }
       if (this.zone) {
-        this.zone.remove();
+        //prevent recursion traps
+        var z = this.zone;
+        this.zone = null;
+        z.remove();
       }
     },
     complete: function() {
@@ -331,7 +334,7 @@ HTomb = (function(HTomb) {
           for (var i=0; i<squares.length; i++) {
             var crd = squares[i];
             var z = HTomb.World.zones[coord(crd[0], crd[1], crd[2])];
-            if (z) {
+            if (z && z.task) {
               z.task.cancel();
             }
           }

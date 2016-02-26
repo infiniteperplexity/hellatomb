@@ -1,32 +1,46 @@
 HTomb = (function(HTomb) {
   "use strict";
   var Constants = HTomb.Constants;
-  var testedFonts = ["Monaco","Verdana","Arial","Trebuchet MS"];
+
   //Ideally I think I want Lucida Console for the text and Verdana for the play area
   //var useFont = "Lucida Console";
-  var useFont = "Verdana";
-  var testContext = document.createElement("canvas").getContext('2d');
-  var testText = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-  testContext.font = "72px monospace";
-  testContext.font = FONTSIZE + "px " + FONTFAMILY;
-  var baselineSize = testContext.measureText(testText).width;
-  testContext.font = "72px '" + useFont + "', monospace";
-  var newSize = testContext.measureText(testText).width;
-  var FONTFAMILY = Constants.FONTFAMILY = (newSize===baselineSize) ? "Lucida Console" : useFont;
-  if (newSize===baselineSize) {
-    console.log("Font " + useFont + " not available; using Lucida Console instead.");
-  } else {
-    console.log("Font " + useFont + " is available and will be used.");
+
+  function fontFallback(fontArr) {
+    if (fontArr.length===0) {
+      fontArr.push(["Courier New",15]);
+    }
+    var font = fontArr[0][0];
+    var size = fontArr[0][1];
+    var spacing = font[0][2] || 1;
+    var testContext = document.createElement("canvas").getContext('2d');
+    var testText = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+    testContext.font = "72px monospace";
+    testContext.font = size + "px " + font;
+    var baselineSize = testContext.measureText(testText).width;
+    testContext.font = "72px '" + fontArr[0][0] + "', monospace";
+    var newSize = testContext.measureText(testText).width;
+    testContext.font = size + "px '" + font + "', monospace";
+    var measuredWidth = 1+Math.floor(testContext.measureText(testText).width/testText.length);
+    var measuredFonts = ["Lucida Console","Courier New"];
+    var width = (measuredFonts.indexOf(font)===-1) ? size : measuredWidth;
+    var xskew = (measuredFonts.indexOf(font)===-1) ? +9 : +3;
+    if (newSize!==baselineSize) {
+      console.log("Using " + font+".");
+      return {font: font, size: size, width: width, xskew: xskew, yskew: +7, spacing: spacing};
+    }
+    else {
+      console.log("Font " + font + " is not available.");
+      fontArr.shift();
+      return fontFallback(fontArr,size);
+    }
   }
-  var FONTSIZE = Constants.FONTSIZE = 18;
-  var CHARHEIGHT = Constants.CHARHEIGHT = Constants.FONTSIZE;
-  testContext.font = FONTSIZE + "px " + FONTFAMILY;
-  var measuredWidth =
-    1+Math.floor(testContext.measureText(testText).width/testText.length);
-  var CHARWIDTH = Constants.CHARWIDTH = (testedFonts.indexOf(FONTFAMILY)>-1) ? CHARHEIGHT : measuredWidth;
-  // nudge based on font
-  var XSKEW = Constants.XSKEW = (testedFonts.indexOf(FONTFAMILY)>-1) ? +9 : +3;
-  var YSKEW = Constants.YSKEW = +7;
+  var font = fontFallback([["Verdana",18]]);
+  var FONTFAMILY = Constants.FONTFAMILY = font.font;
+  var FONTSIZE = Constants.FONTSIZE = font.size;
+  var CHARHEIGHT = Constants.CHARHEIGHT = font.size;
+  var CHARWIDTH = Constants.CHARWIDTH = font.width;
+  var XSKEW = Constants.XSKEW = font.xskew;
+  var YSKEW = Constants.YSKEW = font.yskew;
 
   // Dimensions of the display panels
   var GAMEW = 600;
@@ -35,14 +49,12 @@ HTomb = (function(HTomb) {
   var SCREENH = Constants.SCREENH = Math.floor(GAMEH/CHARHEIGHT);
   console.log("Playing area will be " + SCREENW + "x" + SCREENH + ".");
 
-  //Merienda is good...
-  var TEXTFONT = Constants.TEXTFONT = "Lucida Console";
-  //var TEXTFONT = Constants.TEXTFONT = "Courier New";
-  var TEXTSIZE = Constants.TEXTSIZE = 15;
-  testContext.font = TEXTSIZE + "px " + TEXTFONT;
-  measuredWidth =
-    1+Math.floor(testContext.measureText(testText).width/testText.length);
-  var TEXTWIDTH = Constants.TEXTWIDTH = (testedFonts.indexOf(TEXTFONT)>-1) ? TEXTSIZE : measuredWidth;
+  font = fontFallback([["Caudex",15,0.9],["Lucida Console",15]]);
+  var TEXTFONT = Constants.TEXTFONT = font.font;
+  var TEXTSIZE = Constants.TEXTSIZE = font.size;
+  var TEXTWIDTH = Constants.TEXTWIDTH = font.width;
+  var TEXTSPACING = Constants.TEXTSPACING = font.spacing;
+
   var TOTALH = GAMEH+8*TEXTSIZE;
   var TOTALW = 900;
   var MENUW = Constants.MENUW = Math.floor((TOTALW-GAMEW)/TEXTWIDTH);

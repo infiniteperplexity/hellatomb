@@ -6,10 +6,10 @@ HTomb = (function(HTomb) {
     name: "rock",
     symbol: "\u2022",
     fg: "#CCCCCC",
-    behaviors: {Stackable: {n: 10}},
-    onPlace: function() {
-      var r = parseInt(Math.random()*5);
-      this.stack.n = r;
+    stackable: true,
+    maxn: 10,
+    stackSize: function() {
+      return parseInt(Math.random()*5)+1;
     },
     randomColor: 10
   });
@@ -19,9 +19,10 @@ HTomb = (function(HTomb) {
     name: "flint stone",
     symbol: "\u2022",
     fg: "#CCCCCC",
-    behaviors: {Stackable: {n: 10}},
-    onPlace: function() {
-      this.stack.n = 1;
+    stackable: true,
+    maxn: 10,
+    stackSize: function() {
+      return parseInt(Math.random()*5)+1;
     },
     randomColor: 10
   });
@@ -49,10 +50,10 @@ HTomb = (function(HTomb) {
     name: "bloodstone",
     symbol: "\u2234",
     fg: "red",
-    behaviors: {Stackable: {n: 10}},
-    onPlace: function() {
-      var r = parseInt(Math.random()*5);
-      this.stack.n = r;
+    stackable: true,
+    maxn: 10,
+    stackSize: function() {
+      return parseInt(Math.random()*5)+1;
     },
     randomColor: 10
   });
@@ -62,10 +63,10 @@ HTomb = (function(HTomb) {
     name: "iron ore",
     symbol: "\u2234",
     fg: "gray",
-    behaviors: {Stackable: {n: 10}},
-    onPlace: function() {
-      var r = parseInt(Math.random()*5);
-      this.stack.n = r;
+    stackable: true,
+    maxn: 10,
+    stackSize: function() {
+      return parseInt(Math.random()*5)+1;
     },
     randomColor: 10
   });
@@ -75,10 +76,10 @@ HTomb = (function(HTomb) {
     name: "gold ore",
     symbol: "\u2234",
     fg: "yellow",
-    behaviors: {Stackable: {n: 10}},
-    onPlace: function() {
-      var r = parseInt(Math.random()*5);
-      this.stack.n = r;
+    stackable: true,
+    maxn: 10,
+    stackSize: function() {
+      return parseInt(Math.random()*5)+1;
     },
     randomColor: 10
   });
@@ -88,10 +89,10 @@ HTomb = (function(HTomb) {
     name: "moonstone",
     symbol: "\u2234",
     fg: "cyan",
-    behaviors: {Stackable: {n: 10}},
-    onPlace: function() {
-      var r = parseInt(Math.random()*5);
-      this.stack.n = r;
+    stackable: true,
+    maxn: 10,
+    stackSize: function() {
+      return parseInt(Math.random()*5)+1;
     },
     randomColor: 10
   });
@@ -101,10 +102,10 @@ HTomb = (function(HTomb) {
     name: "jade",
     symbol: "\u2234",
     fg: "green",
-    behaviors: {Stackable: {n: 10}},
-    onPlace: function() {
-      var r = parseInt(Math.random()*5);
-      this.stack.n = r;
+    stackable: true,
+    maxn: 10,
+    stackSize: function() {
+      return parseInt(Math.random()*5)+1;
     },
     randomColor: 10
   });

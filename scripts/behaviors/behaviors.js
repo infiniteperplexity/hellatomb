@@ -32,6 +32,7 @@ HTomb = (function(HTomb) {
     capacity: 10,
     onAdd: function() {this.items = [];},
     pickup: function(item) {
+      var e = this.entity;
       item.remove();
       this.add(item);
       HTomb.GUI.sensoryEvent(this.entity.describe() + " picks up " + item.describe(),e.x,e.y,e.z);
@@ -47,8 +48,8 @@ HTomb = (function(HTomb) {
     add: function(item) {
       if (this.items.length>=this.capacity) {
         HTomb.GUI.pushMessage("Can't pick that up.");
-      } else if (item.stack) {
-        item.stack.stackInto(this.items);
+      } else if (item.item.stackable) {
+        item.item.stackInto(this.items);
       } else {
         this.items.push(item);
       }
@@ -68,14 +69,6 @@ HTomb = (function(HTomb) {
     template: "Attacker",
     name: "attack"
   });
-  HTomb.Things.defineBehavior({
-    template: "Defender",
-    name: "defend",
-    hp: 10,
-    maxhp: 10,
-    each: ["hp","maxhp"]
-  });
-
   // The Minion behavior allows a creature to serve a master and take orders
   HTomb.Things.defineBehavior({
     template: "Minion",
@@ -158,35 +151,7 @@ HTomb = (function(HTomb) {
   });
 
   // The Stackable behavior allows items to be stacked into piles
-  HTomb.Things.defineBehavior({
-    template: "Stackable",
-    name: "stack",
-    maxn: 10,
-    n: 1,
-    each: ["n","maxn"],
-    stackInto: function(arr) {
-      var one;
-      var two;
-      for (var i=0; i<arr.length; i++) {
-        if ((this.n>0) && (arr[i].template===this.entity.template) && (arr[i].stack.n<arr[i].stack.maxn)) {
-          one = this.n;
-          two = arr[i].stack.n;
-          if ((one+two)>this.maxn) {
-            arr[i].stack.n = this.maxn;
-            this.n = one+two-this.maxn;
-          } else {
-            arr[i].stack.n = one+two;
-            this.n = 0;
-          }
-        }
-      }
-      if (this.n>0) {
-        if (this.n>1) {
-        }
-        arr.push(this.entity);
-      }
-    }
-  });
+
 
   // The SpellCaster behavior maintains a list of castable spells
   HTomb.Things.defineBehavior({
@@ -207,14 +172,6 @@ HTomb = (function(HTomb) {
       }
       return spells;
     }
-  });
-
-  // The Construction behavior keeps track of steps until completion
-  HTomb.Things.defineBehavior({
-    template: "Durability",
-    name: "Durability",
-    durability: 10,
-    each: ["durability"]
   });
 
   HTomb.Things.defineBehavior({

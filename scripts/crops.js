@@ -46,9 +46,9 @@ HTomb.Things.defineBehavior({
     var seeds = Math.floor(Math.random()*(this.maxSeeds+1));
     var t = HTomb.Things.templates[this.entity.baseTemplate+"Seed"];
     var f = HTomb.Things[this.entity.baseTemplate+"Seed"];
-    if (t.behaviors.Stackable) {
+    if (t.stackable) {
       item = f();
-      item.stack.n = seeds;
+      item.item.n = seeds;
       item.place(x,y,z);
     } else {
       for (i=0; i<seeds; i++) {
@@ -59,9 +59,9 @@ HTomb.Things.defineBehavior({
     t = HTomb.Things.templates[this.entity.baseTemplate+"Herb"];
     f = HTomb.Things[this.entity.baseTemplate+"Herb"];
     var item, i;
-    if (t.behaviors.Stackable) {
+    if (t.stackable) {
       item = f();
-      item.stack.n = herbs;
+      item.item.n = herbs;
       item.place(x,y,z);
     } else {
       for (i=0; i<herbs; i++) {
@@ -103,7 +103,7 @@ HTomb.Things.defineCrop = function(args) {
   herb.fg = herb.fg || args.fg || "white";
   herb.behaviors = {CropBehavior: behavior};
   herb.behaviors.CropBehavior.stage = "herb";
-  herb.behaviors.Stackable = {};
+  herb.stackable = true;
   seed.template = args.template + "Seed";
   seed.baseTemplate = args.template;
   seed.name = seed.name || args.name + " seed";
@@ -111,7 +111,7 @@ HTomb.Things.defineCrop = function(args) {
   seed.fg = seed.fg || args.fg || "white";
   seed.behaviors = {CropBehavior: behavior};
   seed.behaviors.CropBehavior.stage = "seed";
-  seed.behaviors.Stackable = {};
+  seed.stackable = true;
   HTomb.Things.defineFeature(plant);
   HTomb.Things.defineItem(herb);
   HTomb.Things.defineItem(seed);

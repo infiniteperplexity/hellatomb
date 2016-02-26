@@ -68,7 +68,7 @@ HTomb = (function(HTomb) {
         if (this.canMove(x+dir[0],y+dir[1],z+dir[2])===false) {
           continue;
         } else if (cr) {
-          if (cr.ai && cr.ai.isFriendly && cr.movement) {
+          if (cr.ai && cr.ai.isFriendly && cr.player===undefined && cr.movement) {
             this.displaceCreature(cr);
           } else {
             continue;

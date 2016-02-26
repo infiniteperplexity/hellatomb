@@ -28,51 +28,8 @@ HTomb = (function(HTomb) {
 
   // set up GUI and display
   var GUI = HTomb.GUI;
-  GUI.panels = {};
   var Controls = HTomb.Controls;
   var Commands = HTomb.Commands;
-  var display = new ROT.Display({
-    width: SCREENW,
-    height: SCREENH,
-    fontSize: FONTSIZE,
-    fontFamily: FONTFAMILY
-  });
-  var scrollDisplay = new ROT.Display({
-    width: SCROLLW,
-    height: STATUSH+SCROLLH,
-    fontSize: TEXTSIZE,
-    fontFamily: TEXTFONT,
-    spacing: TEXTSPACING
-  });
-  var menuDisplay = new ROT.Display({
-    width: MENUW,
-    height: MENUH,
-    fontSize: TEXTSIZE,
-    fontFamily: TEXTFONT,
-    spacing: TEXTSPACING
-  });
-  GUI.domInit = function() {
-    var body = document.body;
-    var div = document.createElement("div");
-    div.id = "main";
-    var contain = document.createElement("div");
-    contain.id = "contain";
-    var game = document.createElement("div");
-    game.id = "game";
-    var menu = document.createElement("div");
-    menu.id = "menu";
-    var scroll = document.createElement("div");
-    scroll.id = "scroll";
-    body.appendChild(div);
-    div.appendChild(contain);
-    div.appendChild(menu);
-    contain.appendChild(game);
-    contain.appendChild(document.createElement("br"));
-    contain.appendChild(scroll);
-    game.appendChild(display.getContainer());
-    menu.appendChild(menuDisplay.getContainer());
-    scroll.appendChild(scrollDisplay.getContainer());
-  };
 
   // Attach input events
   var shiftArrow = null;
@@ -163,169 +120,6 @@ HTomb = (function(HTomb) {
   display.getContainer().addEventListener("mousedown",mousedown);
   display.getContainer().addEventListener("mousemove",mousemove);
 
-  // set up message buffer
-  GUI.sensoryEvent = function(strng,x,y,z) {
-    if (HTomb.World.visible[z][x][y]) {
-      GUI.pushMessage(strng);
-    }
-  };
-  GUI.pushMessage = function(strng) {
-    scroll.buffer.push(strng);
-    if (scroll.buffer.length>=SCROLLH-1) {
-      scroll.buffer.shift();
-    }
-    // Render the message immediatey if the scroll is visible
-    if (GUI.panels.bottom===scroll) {
-      scroll.render();
-    }
-  };
-  // Render display panels
-  GUI.render = function() {
-    if (GUI.panels.overlay !== null) {
-      // The overlay, if any, obscures all other panels
-      // Shoudl we add one for the minimap?
-      GUI.panels.overlay.render();
-    } else {
-      // Draw all the panels
-      GUI.panels.main.render();
-      GUI.panels.middle.render();
-      GUI.panels.bottom.render();
-      GUI.panels.right.render();
-    }
-  };
-  // Draw a character at the appropriate X and Y tile
-  GUI.drawTile = function(x,y,ch,fg,bg) {
-    var xoffset = gameScreen.xoffset || 0;
-    var yoffset = gameScreen.yoffset || 0;
-    fg = fg || "white"  ;
-    bg = bg || "black";
-    display.draw(
-      x-xoffset,
-      y-yoffset,
-      ch,
-      fg,
-      bg
-    );
-  };
-  // Change the background color of the appropriate X and Y tile
-  GUI.highlightTile = function(x,y,bg) {
-    var xoffset = gameScreen.xoffset || 0;
-    var yoffset = gameScreen.yoffset || 0;
-    var z = gameScreen.z;
-    var sym = HTomb.Tiles.getSymbol(x,y,z);
-    display.draw(
-      x-xoffset,
-      y-yoffset,
-      sym[0],
-      sym[1],
-      bg
-    );
-  };
-  // Display a splash screen
-  GUI.splash = function(txt) {
-    Controls.context = new ControlContext();
-    var splash = new Panel(0,0);
-    splash.render = function() {
-      for (var i=0; i<SCREENH+SCROLLH; i++) {
-        display.drawText(this.x0,this.y0+i,"%c{black}"+(UNIBLOCK.repeat(SCREENW+MENUW+1)));
-      }
-      display.drawText(splash.x0+3,splash.y0+2, txt);
-    };
-    GUI.panels.overlay = splash;
-    GUI.render();
-  };
-  // Reset the GUI
-  GUI.reset = function() {
-    GUI.panels = {
-      main: gameScreen,
-      middle: status,
-      bottom: scroll,
-      right: menu,
-      overlay: null
-    };
-    Controls.context = main;
-    GUI.updateMenu();
-    GUI.recenter();
-    GUI.render();
-  };
-
-  // **************** GUI Panels ******************
-  // Each panel knows where it belongs on the screen
-  function Panel(leftx,topy) {
-    this.x0 = leftx;
-    this.y0 = topy;
-  }
-  Panel.prototype.render = function() {};
-  // The main game screen where you see tiles
-  var gameScreen = new Panel(0,0);
-  // Keep track of how many tiles it is offset from 0, 0
-  gameScreen.xoffset = 0;
-  gameScreen.yoffset = 0;
-  // Keep track of which Z level it is on
-  gameScreen.z = 1;
-  gameScreen.render = function() {
-    var z = gameScreen.z;
-    var xoffset = gameScreen.xoffset;
-    var yoffset = gameScreen.yoffset;
-    for (var x = xoffset; x < xoffset+SCREENW; x++) {
-      for (var y = yoffset; y < yoffset+SCREENH; y++) {
-        if (gameScreen.z===undefined) {
-          alert("wtf!");
-        }
-        // Draw every symbol in the right place
-        var sym = HTomb.Tiles.getSymbol(x,y,z);
-        sym = HTomb.World.dailyCycle.shade(sym,x,y,z);
-        display.draw(this.x0+x-xoffset,this.y0+y-yoffset, sym[0], sym[1], sym[2]);
-      }
-    }
-  };
-  // Show status, currently including hit points and coordinates
-  var status = new Panel(1,0);
-  status.render = function() {
-    //black out the entire line with solid blocks
-    var cursor = 0;
-    scrollDisplay.drawText(this.x0+cursor,this.y0+1,"%c{black}"+(UNIBLOCK.repeat(SCREENW-2)));
-    scrollDisplay.drawText(this.x0+cursor,this.y0+1,"HP:" + 5 + "/" + 5);
-    cursor+=9;
-    scrollDisplay.drawText(this.x0+cursor,this.y0+1,"X:" + HTomb.Player.x);
-    cursor+=6;
-    scrollDisplay.drawText(this.x0+cursor,this.y0+1,"Y:" + HTomb.Player.y);
-    cursor+=6;
-    scrollDisplay.drawText(this.x0+cursor,this.y0+1,"Z:" + gameScreen.z);
-    cursor+=6;
-    scrollDisplay.drawText(this.x0+cursor,this.y0+1,
-      HTomb.World.dailyCycle.getPhase().symbol + " "
-      + HTomb.World.dailyCycle.day + ":"
-      + HTomb.World.dailyCycle.hour + ":"
-      + HTomb.World.dailyCycle.minute);
-  };
-  // Show messages
-  var scroll = new Panel(1,STATUSH);
-  scroll.buffer = [];
-  scroll.render = function() {
-    for (var s=0; s<this.buffer.length; s++) {
-      //black out the entire line with solid blocks
-      scrollDisplay.drawText(this.x0,this.y0+s+1,"%c{black}"+(UNIBLOCK.repeat(SCREENW+MENUW-2)));
-      scrollDisplay.drawText(this.x0,this.y0+s+1,this.buffer[s]);
-    }
-  };
-  // Provide the player with instructions
-  var menu = new Panel(0,1);
-  var defaultText = [
-    "Use numpad or arrows to move, shift+arrows to move diagonally, J to assign a job, A to act or apply, "+
-    "Z to cast a spell, space to wait, or tab to enter survey mode.",
-    "Hover mouse to examine a square."
-  ];
-  menu.render = function() {
-    for (var i=0; i<SCREENH+SCROLLH; i++) {
-      menuDisplay.drawText(this.x0, this.y0+i, "%c{black}"+(UNIBLOCK.repeat(MENUW-2)));
-      if (menu.text[i]) {
-        menuDisplay.drawText(this.x0, this.y0+i, menu.text[i]);
-      }
-    }
-  };
-  // Show properties of the tile the mouse is hovering over
-
   // Prototype for control contexts
   function ControlContext(bindings) {
     // Pass a map of keystroke / function bindings
@@ -370,109 +164,6 @@ HTomb = (function(HTomb) {
     var myText = this.menuText || defaultText;
     GUI.displayMenu(myText.concat(" ").concat(txt));
   };
-
-  GUI.updateMenu = function() {
-    GUI.displayMenu(Controls.context.menuText || defaultText);
-  };
-
-  function examineSquare(x,y,z) {
-    var square = HTomb.Tiles.getSquare(x,y,z);
-    var below = HTomb.Tiles.getSquare(x,y,z-1);
-    var above = HTomb.Tiles.getSquare(x,y,z+1);
-    var text = ["Coord: " + square.x +"," + square.y + "," + square.z];
-    var next;
-    if(square.explored) {
-      next = "Terrain: "+square.terrain.name;
-      text.push(next);
-      next = "Creature: ";
-      if (square.creature && square.visible) {
-        next+=square.creature.describe();
-        text.push(next);
-      }
-      next = "Items: ";
-      if (square.items && square.visible) {
-        next+=HTomb.Things.templates.ItemBehavior.listItems(square.items);
-      }
-      text.push(next);
-      next = "Feature: ";
-      if (square.feature) {
-        next+=square.feature.describe();
-      }
-      text.push(next);
-      next = "Zone: ";
-      if (square.zone) {
-        next+=square.zone.describe();
-      }
-      text.push(next);
-      next = "Liquid: ";
-      if (square.liquid) {
-        next+=square.liquid.describe();
-      }
-      text.push(next);
-      text.push(" ");
-    }
-    if (square.exploredAbove) {
-      next = "Above: "+above.terrain.name;
-      text.push(next);
-      next = "Creature: ";
-      if (above.creature && square.visibleAbove) {
-        next+=above.creature.describe();
-        text.push(next);
-      }
-      next = "Items: ";
-      if (above.items && square.visibleAbove) {
-        next+=HTomb.Things.templates.ItemBehavior.listItems(above.items);
-      }
-      text.push(next);
-      next = "Feature: ";
-      if (above.feature) {
-        next+=above.feature.describe();
-      }
-      text.push(next);
-      next = "Zone: ";
-      if (above.zone) {
-        next+=above.zone.describe();
-      }
-      text.push(next);
-      next = "Liquid: ";
-      if (above.liquid) {
-        next+=above.liquid.describe();
-      }
-      text.push(next);
-      text.push(" ");
-    }
-    if (square.exploredBelow) {
-      next = "Below: "+below.terrain.name;
-      text.push(next);
-      next = "Creature: ";
-      if (below.creature && square.visibleBelow) {
-        next+=below.creature.describe();
-        text.push(next);
-      }
-      next = "Items: ";
-      if (below.items && square.visibleBelow) {
-        next+=HTomb.Things.templates.ItemBehavior.listItems(below.items);
-      }
-      text.push(next);
-      next = "Feature: ";
-      if (below.feature) {
-        next+=below.feature.describe();
-      }
-      text.push(next);
-      next = "Zone: ";
-      if (below.zone) {
-        next+=below.zone.describe();
-      }
-      text.push(next);
-      next = "Liquid: ";
-      if (below.liquid) {
-        next+=below.liquid.describe();
-      }
-      text.push(next);
-    }
-    return text;
-  }
-
 
   // Survey mode lets to scan the play area independently from the player's position
   GUI.surveyMode = function() {
@@ -540,55 +231,6 @@ HTomb = (function(HTomb) {
       gameScreen.render();
     }
   };
-
-  // Update the right-hand menu instructions
-  GUI.displayMenu = function(arr) {
-    var i=0;
-    var br=null;
-    while(i<arr.length) {
-      if (arr[i].length<MENUW-2) {
-        i++;
-        continue;
-      }
-      for (var j=0; j<arr[i].length; j++) {
-        if (arr[i][j]===" ") {
-          br = j;
-        }
-        if (j>=MENUW-2) {
-          var one = arr[i].substring(0,br);
-          var two = arr[i].substring(br+1);
-          arr[i] = one;
-          arr.splice(i+1,0,two);
-          break;
-        }
-      }
-      i++;
-      br = null;
-    }
-    menu.text = arr;
-    menu.render();
-  };
-
-  // Display a menu of letter-bound choices
-  GUI.choosingMenu = function(s,arr, func) {
-    var alpha = "abcdefghijklmnopqrstuvwxyz";
-    var contrls = {};
-    var choices = [s];
-    // there is probably a huge danger of memory leaks here
-    for (var i=0; i<arr.length; i++) {
-      var desc = arr[i].describe();
-      var choice = arr[i];
-      // Bind a callback function and its closure to each keystroke
-      contrls["VK_" + alpha[i].toUpperCase()] = func(choice);
-      choices.push(alpha[i]+") " + arr[i].describe());
-    }
-    contrls.VK_ESCAPE = GUI.reset;
-    choices.push("Esc to cancel");
-    Controls.context = new ControlContext(contrls);
-    Controls.context.menuText = choices;
-    GUI.updateMenu();
-  };
-
   // Select a single square with the mouse
   HTomb.GUI.selectSquare = function(z, callb, options) {
     options = options || {};
@@ -752,23 +394,6 @@ HTomb = (function(HTomb) {
     // Actually this returns a custom function for each type of movement
     return f;
   };
-
-  // Recenter the game screen on the player
-  GUI.recenter = function() {
-    var Player = HTomb.Player;
-    gameScreen.z = Player.z;
-    if (Player.x >= gameScreen.xoffset+SCREENW-2) {
-      gameScreen.xoffset = Player.x-SCREENW+2;
-    } else if (Player.x <= gameScreen.xoffset) {
-      gameScreen.xoffset = Player.x-1;
-    }
-    if (Player.y >= gameScreen.yoffset+SCREENH-2) {
-      gameScreen.yoffset = Player.y-SCREENH+2;
-    } else if (Player.y <= gameScreen.yoffset) {
-      gameScreen.yoffset = Player.y-1;
-    }
-  };
-
   // The control context for surveying
   var survey = new ControlContext({
     VK_LEFT: surveyMove(-1,0,0),
@@ -797,24 +422,6 @@ HTomb = (function(HTomb) {
   });
   survey.menuText = ["You are now in survey mode.","Use movement keys to navigate.","Comma go down.","Period to go up.","Escape to exit."];
   survey.clickTile = main.clickTile;
-
-  // Currently implemented, seems slow and I don't know where to put it
-  var minimap = {};
-  minimap.render = function() {
-    var x0 = HTomb.Constants.CHARWIDTH*SCREENW;
-    var y0 = 15*HTomb.Constants.CHARHEIGHT;
-    var gridSize = 1;
-    var ctx = display._context;
-    ctx.fillStyle = "black";
-    ctx.fillRect(x0,y0,x0+LEVELW*gridSize,y0+LEVELH*gridSize);
-    for (var x=0; x<LEVELW; x++) {
-      for (var y=0; y<LEVELH; y++) {
-        var c = HTomb.Tiles.getSymbol(x,y,gameScreen.z)[1];
-        ctx.fillStyle = c;
-        ctx.fillRect(x0+x*gridSize,y0+y*gridSize,gridSize,gridSize);
-      }
-    }
-  };
 
   return HTomb;
 })(HTomb);
