@@ -15,13 +15,19 @@ HTomb = (function(HTomb) {
   var UNIBLOCK = HTomb.Constants.UNIBLOCK;
   var EARTHTONE = HTomb.Constants.EARTHTONE;
   var SHADOW = HTomb.Constants.SHADOW;
+  var FONTFAMILY = HTomb.Constants.FONTFAMILY;
   // set up GUI and display
   var GUI = HTomb.GUI;
   GUI.panels = {};
   var Controls = HTomb.Controls;
   var Commands = HTomb.Commands;
   // Lucida Console, Trebuchet MS, Monaco, Verdana, Arial, Courier New (may be default?)
-  var display = new ROT.Display({width: SCREENW+MENUW, height: SCREENH+STATUSH+SCROLLH, fontSize: FONTSIZE});
+  var display = new ROT.Display({
+    width: SCREENW+MENUW,
+    height: SCREENH+STATUSH+SCROLLH,
+    fontSize: FONTSIZE,
+    fontFamily: FONTFAMILY
+  });
   document.body.appendChild(display.getContainer());
   // Attach input events
   var shiftArrow = null;

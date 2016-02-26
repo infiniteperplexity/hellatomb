@@ -12,9 +12,11 @@ var HTomb = (function() {
   var SCREENH = Constants.SCREENH = 25;
   var MENUW = Constants.MENUW = 30;
   var STATUSH = Constants.STATUSH = 2;
-  var SCROLLH = Constants.SCROLLH = 6;
+  var SCROLLH = Constants.SCROLLH = 6
+  //var FONT = Constants.FONT = ;
   var FONTSIZE = Constants.FONTSIZE = 15;
-  var CHARWIDTH = Constants.CHARWIDTH = 9;
+  var FONTFAMILY = Constants.FONTFAMILY = "Lucida Console";
+  var CHARWIDTH = Constants.CHARWIDTH = 10;
   var CHARHEIGHT = Constants.CHARHEIGHT = 15;
   // Frequently-used colors and characters...not sure this should be here
   var UNIBLOCK = Constants.UNIBLOCK = '\u2588';
