@@ -24,11 +24,61 @@ HTomb = (function(HTomb) {
   var display = new ROT.Display({width: SCREENW+MENUW, height: SCREENH+STATUSH+SCROLLH, fontSize: FONTSIZE});
   document.body.appendChild(display.getContainer());
   // Attach input events
+  var shiftArrow = null;
   var keydown = function(key) {
+    key.preventDefault();
     HTomb.stopTime();
     // Pass the keystroke to the current control context
-    Controls.context.keydown(key);
+    var diagonal = null;
+    if (key.shiftKey && [ROT.VK_UP,ROT.VK_DOWN,ROT.VK_LEFT,ROT.VK_RIGHT].indexOf(key.keyCode)>-1) {
+      if (shiftArrow===null) {
+        shiftArrow = key.keyCode;
+      } else if (shiftArrow===ROT.VK_UP) {
+        if (key.keyCode===ROT.VK_LEFT) {
+          diagonal = ROT.VK_NUMPAD7;
+        } else if (key.keyCode===ROT.VK_RIGHT) {
+          diagonal = ROT.VK_NUMPAD9;
+        } else {
+          shiftArrow = key.keyCode;
+        }
+      } else if (shiftArrow===ROT.VK_DOWN) {
+        if (key.keyCode===ROT.VK_LEFT) {
+          diagonal = ROT.VK_NUMPAD1;
+        } else if (key.keyCode===ROT.VK_RIGHT) {
+          diagonal = ROT.VK_NUMPAD3;
+        } else {
+          shiftArrow = key.keyCode;
+        }
+      } else if (shiftArrow===ROT.VK_LEFT) {
+        if (key.keyCode===ROT.VK_UP) {
+          diagonal = ROT.VK_NUMPAD7;
+        } else if (key.keyCode===ROT.VK_DOWN) {
+          diagonal = ROT.VK_NUMPAD1;
+        } else {
+          shiftArrow = key.keyCode;
+        }
+      } else if (shiftArrow===ROT.VK_RIGHT) {
+        if (key.keyCode===ROT.VK_UP) {
+          diagonal = ROT.VK_NUMPAD9;
+        } else if (key.keyCode===ROT.VK_DOWN) {
+          diagonal = ROT.VK_NUMPAD3;
+        } else {
+          shiftArrow = key.keyCode;
+        }
+      }
+      if (diagonal!==null) {
+        Controls.context.keydown({keyCode: diagonal});
+      }
+    } else {
+      shiftArrow = null;
+      Controls.context.keydown(key);
+    }
   };
+  function keyup(key) {
+    if (key.keyCode===shiftArrow) {
+      shiftArrow=null;
+    }
+  }
   var mousedown = function(click) {
     // Due to borders and such, nudge the X and Y slightly
     var xskew = +3;
@@ -65,6 +115,7 @@ HTomb = (function(HTomb) {
   };
   // Set up event listeners
   window.addEventListener("keydown",keydown);
+  window.addEventListener("keyup",keyup);
   display.getContainer().addEventListener("mousedown",mousedown);
   display.getContainer().addEventListener("mousemove",mousemove);
 
@@ -188,7 +239,7 @@ HTomb = (function(HTomb) {
     display.drawText(this.x0+21,this.y0+1,"Y: " + HTomb.Player.y);
     display.drawText(this.x0+27,this.y0+1,"Elevation: " + gameScreen.z);
     display.drawText(this.x0+42,this.y0+1,
-      HTomb.World.dailyCycle.getPhase().symbol + "  Time: " 
+      HTomb.World.dailyCycle.getPhase().symbol + "  Time: "
       + HTomb.World.dailyCycle.day + ":"
       + HTomb.World.dailyCycle.hour + ":"
       + HTomb.World.dailyCycle.minute);
@@ -206,15 +257,21 @@ HTomb = (function(HTomb) {
   // Provide the player with instructions
   var menu = new Panel(SCREENW+1,1);
   var defaultText = menu.text = [
-    "To move use AWXD,",
-    "arrows, or keypad.",
+    "To move use numpad",
+    "or arrows.  Shift+arrows",
+    "to go diagonally",
+    "(release shift between",
+    "diagonals.)",
     "G to pick up,",
-    "F to drop.",
+    "D to drop.",
     ", or . to go down or up.",
-    "P to cast a spell",
+    "Z to cast a spell",
     "J to assign a job",
-    "Click to examine a square.",
-    "Shift to enter survey mode."
+    "A to act or apply",
+    "Space to wait",
+    "Hover mouse to examine",
+    "a square.",
+    "Tab to enter survey mode."
   ];
   menu.render = function() {
     for (var i=0; i<SCREENH; i++) {
@@ -379,16 +436,7 @@ HTomb = (function(HTomb) {
     VK_UP: Commands.tryMoveNorth,
     VK_DOWN: Commands.tryMoveSouth,
     // bind keyboard movement
-    VK_Z: Commands.tryMoveSouthWest,
-    VK_S: Commands.wait,
-    VK_X: Commands.tryMoveSouth,
-    VK_C: Commands.tryMoveSouthEast,
-    VK_A: Commands.tryMoveWest,
-    VK_D: Commands.tryMoveEast,
-    VK_Q: Commands.tryMoveNorthWest,
-    VK_W: Commands.tryMoveNorth,
-    VK_E: Commands.tryMoveNorthEast,
-    VK_O: Commands.act,
+    VK_A: Commands.act,
     VK_NUMPAD7: Commands.tryMoveNorthWest,
     VK_NUMPAD8: Commands.tryMoveNorth,
     VK_NUMPAD9: Commands.tryMoveNorthEast,
@@ -401,10 +449,11 @@ HTomb = (function(HTomb) {
     VK_PERIOD: Commands.tryMoveDown,
     VK_COMMA: Commands.tryMoveUp,
     VK_G: Commands.pickup,
-    VK_F: Commands.drop,
+    VK_D: Commands.drop,
     VK_J: Commands.showJobs,
-    VK_P: Commands.showSpells,
-    VK_SHIFT: GUI.surveyMode,
+    VK_Z: Commands.showSpells,
+    VK_TAB: GUI.surveyMode,
+//    VK_SHIFT: //this now handles diagonal movement
     VK_SPACE: Commands.wait,
     VK_ESCAPE: HTomb.stopTime,
     VK_PAGE_UP: function() {
@@ -499,15 +548,6 @@ HTomb = (function(HTomb) {
       VK_UP: actToward(0,-1,0),
       VK_DOWN: actToward(0,+1,0),
       // bind keyboard movement
-      VK_Z: actToward(-1,+1,0),
-      VK_S: actToward(0,+1,0),
-      VK_X: actToward(0,+1,0),
-      VK_C: actToward(+1,+1,0),
-      VK_A: actToward(-1,0,0),
-      VK_D: actToward(+1,0,0),
-      VK_Q: actToward(-1,-1,0),
-      VK_W: actToward(0,-1,0),
-      VK_E: actToward(+1,-1,0),
       VK_PERIOD: actToward(0,0,-1),
       VK_COMMA: actToward(0,0,+1),
       VK_NUMPAD7: actToward(-1,-1,0),
@@ -640,15 +680,6 @@ HTomb = (function(HTomb) {
     VK_UP: surveyMove(0,-1,0),
     VK_DOWN: surveyMove(0,+1,0),
     // bind keyboard movement
-    VK_Z: surveyMove(-1,+1,0),
-    VK_S: surveyMove(0,+1,0),
-    VK_X: surveyMove(0,+1,0),
-    VK_C: surveyMove(+1,+1,0),
-    VK_A: surveyMove(-1,0,0),
-    VK_D: surveyMove(+1,0,0),
-    VK_Q: surveyMove(-1,-1,0),
-    VK_W: surveyMove(0,-1,0),
-    VK_E: surveyMove(+1,-1,0),
     VK_PERIOD: surveyMove(0,0,-1),
     VK_COMMA: surveyMove(0,0,+1),
     VK_NUMPAD7: surveyMove(-1,-1,0),
