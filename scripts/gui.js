@@ -70,7 +70,6 @@ HTomb = (function(HTomb) {
         Controls.context.keydown({keyCode: diagonal});
       }
     } else {
-      shiftArrow = null;
       Controls.context.keydown(key);
     }
   };
