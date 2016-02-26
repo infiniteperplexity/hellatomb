@@ -69,13 +69,13 @@ HTomb = (function(HTomb) {
     each: ["locked","name","passable","symbol"],
     activate: function() {
       if (this.locked) {
-        HTomb.GUI.pushMessage("Unlocked " + this.describe()+".");
+        HTomb.GUI.sensoryEvent("Unlocked " + this.describe()+".",this.x, this.y, this.z);
         this.locked = false;
         this.solid = false;
         this.name = "door";
         this.symbol = "\u25A5";
       } else {
-        HTomb.GUI.pushMessage("Locked " + this.describe()+".");
+        HTomb.GUI.sensoryEvent("Locked " + this.describe()+".",this.x,this.y,this.z);
         this.locked = true;
         this.solid = true;
         this.name = "locked door";

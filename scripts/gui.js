@@ -119,6 +119,11 @@ HTomb = (function(HTomb) {
   display.getContainer().addEventListener("mousemove",mousemove);
 
   // set up message buffer
+  GUI.sensoryEvent = function(strng,x,y,z) {
+    if (HTomb.World.visible[z][x][y]) {
+      GUI.pushMessage(strng);
+    }
+  };
   GUI.pushMessage = function(strng) {
     scroll.buffer.push(strng);
     if (scroll.buffer.length>=SCROLLH-1) {
@@ -176,7 +181,10 @@ HTomb = (function(HTomb) {
     Controls.context = new ControlContext();
     var splash = new Panel(0,0);
     splash.render = function() {
-      display.drawText(splash.x0+1,splash.y0+1, txt);
+      for (var i=0; i<SCREENH+SCROLLH; i++) {
+        display.drawText(this.x0,this.y0+i,"%c{black}"+(UNIBLOCK.repeat(SCREENW+MENUW+1)));
+      }
+      display.drawText(splash.x0+3,splash.y0+2, txt);
     };
     GUI.panels.overlay = splash;
     GUI.render();
@@ -378,46 +386,16 @@ HTomb = (function(HTomb) {
       text.push(next);
       text.push(" ");
     }
-    if (below.exploredBelow) {
-      next = "Below: "+below.terrain.name  + " at " + below.x +", " + below.y + ", " + below.z + ".";
-      text.push(next);
-      next = "Creature: ";
-      if (below.creature && below.visibleBelow) {
-        next+=below.creature.describe();
-        text.push(next);
-      }
-      next = "Items: ";
-      if (below.items && below.visibleBelow) {
-        next+=GUI.listItems(below.items);
-      }
-      text.push(next);
-      next = "Feature: ";
-      if (below.feature) {
-        next+=below.feature.describe();
-      }
-      text.push(next);
-      next = "Zone: ";
-      if (below.zone) {
-        next+=below.zone.describe();
-      }
-      text.push(next);
-      next = "Liquid: ";
-      if (below.liquid) {
-        next+=below.liquid.describe();
-      }
-      text.push(next);
-      text.push(" ");
-    }
-    if (above.exploredAbove) {
+    if (square.exploredAbove) {
       next = "Above: "+above.terrain.name + " at " + above.x +", " + above.y + ", " + above.z + ".";
       text.push(next);
       next = "Creature: ";
-      if (above.creature && above.visibleAbove) {
+      if (above.creature && square.visibleAbove) {
         next+=above.creature.describe();
         text.push(next);
       }
       next = "Items: ";
-      if (above.items && above.visibleAbove) {
+      if (above.items && square.visibleAbove) {
         next+=GUI.listItems(above.items);
       }
       text.push(next);
@@ -434,6 +412,36 @@ HTomb = (function(HTomb) {
       next = "Liquid: ";
       if (above.liquid) {
         next+=above.liquid.describe();
+      }
+      text.push(next);
+      text.push(" ");
+    }
+    if (square.exploredBelow) {
+      next = "Below: "+below.terrain.name  + " at " + below.x +", " + below.y + ", " + below.z + ".";
+      text.push(next);
+      next = "Creature: ";
+      if (below.creature && square.visibleBelow) {
+        next+=below.creature.describe();
+        text.push(next);
+      }
+      next = "Items: ";
+      if (below.items && square.visibleBelow) {
+        next+=GUI.listItems(below.items);
+      }
+      text.push(next);
+      next = "Feature: ";
+      if (below.feature) {
+        next+=below.feature.describe();
+      }
+      text.push(next);
+      next = "Zone: ";
+      if (below.zone) {
+        next+=below.zone.describe();
+      }
+      text.push(next);
+      next = "Liquid: ";
+      if (below.liquid) {
+        next+=below.liquid.describe();
       }
       text.push(next);
     }
@@ -495,9 +503,11 @@ HTomb = (function(HTomb) {
   };
   // Clicking a tile looks...this may be obsolete
   main.clickTile = function(x,y) {
-    var square = HTomb.Tiles.getSquare(x,y,gameScreen.z);
-    Commands.look(square);
+    viewDetails(x,y,gameScreen.z);
   };
+  function viewDetails(x,y,z) {
+    GUI.splash("Detailed viewing not yet implemented");
+  }
   main.mouseOver = function() {
     if (GUI.panels.overlay===null) {
       // The main control context always wants to show the instructions

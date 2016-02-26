@@ -91,7 +91,7 @@ HTomb = (function(HTomb) {
       cr.remove();
       this.entity.place(x,y,z);
       cr.place(x0,y0,z0);
-      HTomb.GUI.pushMessage(this.entity.describe() + " displaces " + cr.describe() + ".");
+      HTomb.GUI.sensoryEvent(this.entity.describe() + " displaces " + cr.describe() + ".",x,y,z);
       if (this.entity.ai) {
         this.entity.ai.acted = true;
       }

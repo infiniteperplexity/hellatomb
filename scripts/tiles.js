@@ -234,10 +234,10 @@ HTomb = (function(HTomb) {
     square.explored = HTomb.World.explored[z][x][y];
     square.visible = HTomb.World.visible[z][x][y];
     // until we get the real code in place...
-    square.visibleBelow = true;
-    square.visibleAbove = true;
-    square.exploredBelow = true;
-    square.exploredAbove = true;
+    square.visibleBelow = (square.visible && square.terrain.zview===-1);
+    square.visibleAbove = (square.visible && (square.terrain.zview===+1 || HTomb.World.tiles[z+1][x][y].zview===-1));
+    square.exploredBelow = (square.explored && square.terrain.zview===-1);
+    square.exploredAbove = (square.explored && (square.terrain.zview===+1 || HTomb.World.tiles[z+1][x][y].zview===-1));
     square.x = x;
     square.y = y;
     square.z = z;

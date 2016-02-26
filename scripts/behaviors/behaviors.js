@@ -34,14 +34,14 @@ HTomb = (function(HTomb) {
     pickup: function(item) {
       item.remove();
       this.add(item);
-      HTomb.GUI.pushMessage(this.entity.describe() + " picks up " + item.describe());
+      HTomb.GUI.sensoryEvent(this.entity.describe() + " picks up " + item.describe(),e.x,e.y,e.z);
       this.entity.ai.acted = true;
     },
     drop: function(item) {
       var e = this.entity;
       this.remove(item);
       item.place(e.x,e.y,e.z);
-      HTomb.GUI.pushMessage(this.entity.describe() + " drops " + item.describe());
+      HTomb.GUI.sensoryEvent(this.entity.describe() + " drops " + item.describe(),e.x,e.y,e.z);
       this.entity.ai.acted = true;
     },
     add: function(item) {
