@@ -38,6 +38,7 @@ HTomb = (function(HTomb) {
   HTomb.Things.defineFeature({
     template: "Seaweed",
     name: "seaweed",
+    plural: true,
     symbol: ["\u2648","\u2724","\u060F"],
     fg: "#779922",
     randomColor: 20

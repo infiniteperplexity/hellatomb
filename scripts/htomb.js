@@ -7,17 +7,6 @@ var HTomb = (function() {
   var LEVELW = Constants.LEVELW = 100;
   var LEVELH = Constants.LEVELH = 100;
   var NLEVELS = Constants.NLEVELS = 50;
-  // Dimensions of the display panels
-  var SCREENW = Constants.SCREENW = 60;
-  var SCREENH = Constants.SCREENH = 25;
-  var MENUW = Constants.MENUW = 30;
-  var STATUSH = Constants.STATUSH = 2;
-  var SCROLLH = Constants.SCROLLH = 6
-  //var FONT = Constants.FONT = ;
-  var FONTSIZE = Constants.FONTSIZE = 15;
-  var FONTFAMILY = Constants.FONTFAMILY = "Lucida Console";
-  var CHARWIDTH = Constants.CHARWIDTH = 10;
-  var CHARHEIGHT = Constants.CHARHEIGHT = 15;
   // Frequently-used colors and characters...not sure this should be here
   var UNIBLOCK = Constants.UNIBLOCK = '\u2588';
   //HTomb.Constants.FLOORBELOW = "\u25E6";
@@ -82,6 +71,7 @@ var HTomb = (function() {
   // Begin the game
   var init = function() {
     // Initialize the world...could be generate()?
+    GUI.domInit();
     World.init();
     var p = Things.Necromancer();
     HTomb.Things.Player().addToEntity(p);

@@ -238,6 +238,9 @@ HTomb = (function(HTomb) {
     },
     describe: function() {
       // add options for capitalization?
+      if (this.plural) {
+        return this.name;
+      }
       if (this.isZone) {
         return this.name;
       }

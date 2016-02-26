@@ -9,26 +9,68 @@ HTomb = (function(HTomb) {
   var LEVELH = HTomb.Constants.LEVELH;
   var NLEVELS = HTomb.Constants.NLEVELS;
   var SCROLLH = HTomb.Constants.SCROLLH;
+  var SCROLLW = HTomb.Constants.SCROLLW;
   var MENUW = HTomb.Constants.MENUW;
+  var MENUH = HTomb.Constants.MENUH;
   var STATUSH = HTomb.Constants.STATUSH;
   var FONTSIZE = HTomb.Constants.FONTSIZE;
   var UNIBLOCK = HTomb.Constants.UNIBLOCK;
   var EARTHTONE = HTomb.Constants.EARTHTONE;
   var SHADOW = HTomb.Constants.SHADOW;
   var FONTFAMILY = HTomb.Constants.FONTFAMILY;
+  var CHARHEIGHT = HTomb.Constants.CHARHEIGHT;
+  var CHARWIDTH = HTomb.Constants.CHARWIDTH;
+  var TEXTFONT = HTomb.Constants.TEXTFONT;
+  var TEXTSIZE = HTomb.Constants.TEXTSIZE;
+  var XSKEW = HTomb.Constants.XSKEW;
+  var YSKEW = HTomb.Constants.YSKEW;
+
   // set up GUI and display
   var GUI = HTomb.GUI;
   GUI.panels = {};
   var Controls = HTomb.Controls;
   var Commands = HTomb.Commands;
-  // Lucida Console, Trebuchet MS, Monaco, Verdana, Arial, Courier New (may be default?)
   var display = new ROT.Display({
-    width: SCREENW+MENUW,
-    height: SCREENH+STATUSH+SCROLLH,
+    width: SCREENW,
+    height: SCREENH,
     fontSize: FONTSIZE,
     fontFamily: FONTFAMILY
   });
-  document.body.appendChild(display.getContainer());
+  var menuDisplay = new ROT.Display({
+    width: MENUW,
+    height: MENUH,
+    fontSize: TEXTSIZE,
+    fontFamily: TEXTFONT
+  });
+  var scrollDisplay = new ROT.Display({
+    width: SCROLLW,
+    height: STATUSH+SCROLLH,
+    fontSize: TEXTSIZE,
+    fontFamily: TEXTFONT
+  });
+  GUI.domInit = function() {
+    var body = document.body;
+    var div = document.createElement("div");
+    div.id = "main";
+    var contain = document.createElement("div");
+    contain.id = "contain";
+    var game = document.createElement("div");
+    game.id = "game";
+    var menu = document.createElement("div");
+    menu.id = "menu";
+    var scroll = document.createElement("div");
+    scroll.id = "scroll";
+    body.appendChild(div);
+    div.appendChild(contain);
+    div.appendChild(menu);
+    contain.appendChild(game);
+    contain.appendChild(document.createElement("br"));
+    contain.appendChild(scroll);
+    game.appendChild(display.getContainer());
+    menu.appendChild(menuDisplay.getContainer());
+    scroll.appendChild(scrollDisplay.getContainer());
+  };
+
   // Attach input events
   var shiftArrow = null;
   var keydown = function(key) {
@@ -85,12 +127,9 @@ HTomb = (function(HTomb) {
     }
   }
   var mousedown = function(click) {
-    // Due to borders and such, nudge the X and Y slightly
-    var xskew = +3;
-    var yskew = +7;
     // Convert X and Y from pixels to characters
-    var x = Math.floor((click.clientX+xskew)/HTomb.Constants.CHARWIDTH-1);
-    var y = Math.floor((click.clientY+yskew)/HTomb.Constants.CHARHEIGHT-1);
+    var x = Math.floor((click.clientX+XSKEW)/CHARWIDTH-1);
+    var y = Math.floor((click.clientY+YSKEW)/CHARHEIGHT-1);
     // If the click is not on the game screen, pass the actual X and Y positions
     if (GUI.panels.overlay!==null || x>=SCREENW || y>=SCREENH) {
       Controls.context.clickAt(x,y);
@@ -100,12 +139,9 @@ HTomb = (function(HTomb) {
     }
   };
   var mousemove = function(move) {
-    // Due to borders and such, nudge the X and Y slightly
-    var xskew = +3;
-    var yskew = +7;
     // Convert X and Y from pixels to characters
-    var x = Math.floor((move.clientX+xskew)/HTomb.Constants.CHARWIDTH-1);
-    var y = Math.floor((move.clientY+yskew)/HTomb.Constants.CHARHEIGHT-1);
+    var x = Math.floor((move.clientX+XSKEW)/CHARWIDTH-1);
+    var y = Math.floor((move.clientY+YSKEW)/CHARHEIGHT-1);
     // If the hover is not on the game screen, pass the actual X and Y positions
     if (GUI.panels.overlay!==null || x>=SCREENW || y>=SCREENH || x<0 || y<0) {
       Controls.context.mouseOver(x,y);
@@ -241,32 +277,32 @@ HTomb = (function(HTomb) {
     }
   };
   // Show status, currently including hit points and coordinates
-  var status = new Panel(1,SCREENH);
+  var status = new Panel(1,0);
   status.render = function() {
     //black out the entire line with solid blocks
-    display.drawText(this.x0,this.y0+1,"%c{black}"+(UNIBLOCK.repeat(SCREENW-2)));
-    display.drawText(this.x0,this.y0+1,"HP: " + 5 + "/" + 5);
-    display.drawText(this.x0+15,this.y0+1,"X: " + HTomb.Player.x);
-    display.drawText(this.x0+21,this.y0+1,"Y: " + HTomb.Player.y);
-    display.drawText(this.x0+27,this.y0+1,"Elevation: " + gameScreen.z);
-    display.drawText(this.x0+42,this.y0+1,
+    scrollDisplay.drawText(this.x0,this.y0+1,"%c{black}"+(UNIBLOCK.repeat(SCREENW-2)));
+    scrollDisplay.drawText(this.x0,this.y0+1,"HP: " + 5 + "/" + 5);
+    scrollDisplay.drawText(this.x0+11,this.y0+1,"X: " + HTomb.Player.x);
+    scrollDisplay.drawText(this.x0+17,this.y0+1,"Y: " + HTomb.Player.y);
+    scrollDisplay.drawText(this.x0+23,this.y0+1,"Z: " + gameScreen.z);
+    scrollDisplay.drawText(this.x0+32,this.y0+1,
       HTomb.World.dailyCycle.getPhase().symbol + "  Time: "
       + HTomb.World.dailyCycle.day + ":"
       + HTomb.World.dailyCycle.hour + ":"
       + HTomb.World.dailyCycle.minute);
   };
   // Show messages
-  var scroll = new Panel(1,SCREENH+STATUSH);
+  var scroll = new Panel(1,STATUSH);
   scroll.buffer = [];
   scroll.render = function() {
     for (var s=0; s<this.buffer.length; s++) {
       //black out the entire line with solid blocks
-      display.drawText(this.x0,this.y0+s+1,"%c{black}"+(UNIBLOCK.repeat(SCREENW+MENUW-2)));
-      display.drawText(this.x0,this.y0+s+1,this.buffer[s]);
+      scrollDisplay.drawText(this.x0,this.y0+s+1,"%c{black}"+(UNIBLOCK.repeat(SCREENW+MENUW-2)));
+      scrollDisplay.drawText(this.x0,this.y0+s+1,this.buffer[s]);
     }
   };
   // Provide the player with instructions
-  var menu = new Panel(SCREENW+1,1);
+  var menu = new Panel(1,1);
   var defaultText = [
     "Use numpad or arrows to move, shift+arrows to move diagonally, J to assign a job, A to act or apply, "+
     "Z to cast a spell, space to wait, or tab to enter survey mode.",
@@ -274,25 +310,13 @@ HTomb = (function(HTomb) {
   ];
   menu.render = function() {
     for (var i=0; i<SCREENH+SCROLLH; i++) {
-      display.drawText(this.x0, this.y0+i, "%c{black}"+(UNIBLOCK.repeat(MENUW-2)));
+      menuDisplay.drawText(this.x0, this.y0+i, "%c{black}"+(UNIBLOCK.repeat(MENUW-2)));
       if (menu.text[i]) {
-        display.drawText(this.x0, this.y0+i, menu.text[i]);
+        menuDisplay.drawText(this.x0, this.y0+i, menu.text[i]);
       }
     }
   };
   // Show properties of the tile the mouse is hovering over
-  var hover = new Panel(SCREENW+1,SCREENH+1);
-  hover.text = [
-    ["Square: ","Creature: ","Items: ","Feature: ","",""],
-    ["","","","","",""]
-  ];
-  hover.render = function() {
-    for (var i=0; i<SCROLLH; i++) {
-      display.drawText(this.x0, this.y0+i, "%c{black}"+(UNIBLOCK.repeat(MENUW)));
-      display.drawText(this.x0, this.y0+i, hover.text[0][i]);
-      display.drawText(this.x0+hover.text[0][i].length, this.y0+i, hover.text[1][i]);
-    }
-  };
 
   // Prototype for control contexts
   function ControlContext(bindings) {

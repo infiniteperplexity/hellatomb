@@ -111,6 +111,9 @@ HTomb = (function(HTomb) {
     },
     describe: function() {
       // add options for capitalization?
+      if (this.plural===true) {
+        return this.name;
+      }
       if (this.isZone) {
         return this.name;
       }
@@ -176,6 +179,7 @@ HTomb = (function(HTomb) {
   HTomb.Things.defineLiquid = function(args) {
     args = args || {};
     args.isLiquid = true;
+    args.plural = true;
     HTomb.Things.defineEntity(args);
   };
 

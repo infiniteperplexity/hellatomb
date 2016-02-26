@@ -2,16 +2,10 @@
 <html>
 	<head>
 		<title>HellaTomb</title>
-	</head>
-	<style>
-	@font-face {
-		font-family: test;
-		src: url('fonts/VIKING-N.TTF');
-	}
-	</style>
-	<body>
+		<link href='http://fonts.googleapis.com/css?family=PT+Mono|Merienda|Droid+Sans+Mono&subset=latin,latin-ext' rel='stylesheet' type='text/css' />
 		<script src="scripts/rot.min.js"></script>
 		<script src="scripts/htomb.js"></script>
+		<script src="scripts/fonts.js"></script>
 		<script src="scripts/dirs.js"></script>
 		<script src="scripts/world.js"></script>
 		<script src="scripts/things.js"></script>
@@ -32,7 +26,25 @@
 		<script src="scripts/fov.js"></script>
 		<script src="scripts/events.js"></script>
 		<script src="scripts/save.js"></script>
+	</head>
+	<style>
+		body {
+			font-size: 0
+			;
+		}
+		div {
+			float: left
+			;
+		}
+		#main {
+			background-color: black
+		}
+		#contain, #game {
+			clear: both
+			;
+		}
 
-
-</body>
+	</style>
+	<body>
+	</body>
 </html>
