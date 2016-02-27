@@ -46,14 +46,16 @@ HTomb.Things.defineBehavior({
     var seeds = Math.floor(Math.random()*(this.maxSeeds+1));
     var t = HTomb.Things.templates[this.entity.baseTemplate+"Seed"];
     var f = HTomb.Things[this.entity.baseTemplate+"Seed"];
-    if (t.stackable) {
-      item = f();
-      item.item.n = seeds;
-      item.place(x,y,z);
-    } else {
-      for (i=0; i<seeds; i++) {
+    if (seeds>0) {
+      if (t.stackable) {
         item = f();
+        item.item.n = seeds;
         item.place(x,y,z);
+      } else {
+        for (i=0; i<seeds; i++) {
+          item = f();
+          item.place(x,y,z);
+        }
       }
     }
     t = HTomb.Things.templates[this.entity.baseTemplate+"Herb"];
@@ -95,7 +97,7 @@ HTomb.Things.defineCrop = function(args) {
     } else {
       this.crop.plow();
     }
-  }
+  };
   herb.template = args.template + "Herb";
   herb.baseTemplate = args.template;
   herb.name = herb.name || args.name + " herb";

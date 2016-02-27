@@ -184,7 +184,7 @@ HTomb = (function(HTomb) {
   };
   GUI.pushMessage = function(strng) {
     scroll.buffer.push(strng);
-    if (scroll.buffer.length>=SCROLLH-1) {
+    if (scroll.buffer.length>=SCROLLH) {
       scroll.buffer.shift();
     }
     // Render the message immediatey if the scroll is visible
@@ -328,7 +328,7 @@ HTomb = (function(HTomb) {
   var menu = new Panel(0,1);
   var defaultText = [
     "Use numpad or arrows to move, shift+arrows to move diagonally, J to assign a job, A to act or apply, "+
-    "Z to cast a spell, space to wait, or tab to enter survey mode.",
+    "S to cast a spell, space to wait, G to pick up, D to drop, I to take inventory, or tab to enter survey mode.",
     "Hover mouse to examine a square."
   ];
   menu.render = function() {
@@ -520,8 +520,9 @@ HTomb = (function(HTomb) {
     VK_COMMA: Commands.tryMoveUp,
     VK_G: Commands.pickup,
     VK_D: Commands.drop,
+    VK_I: Commands.inventory,
     VK_J: Commands.showJobs,
-    VK_Z: Commands.showSpells,
+    VK_S: Commands.showSpells,
     VK_TAB: GUI.surveyMode,
 //    VK_SHIFT: //this now handles diagonal movement
     VK_SPACE: Commands.wait,

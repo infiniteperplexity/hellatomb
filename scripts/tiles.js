@@ -376,7 +376,7 @@ HTomb = (function(HTomb) {
       touchable.push([x,y,z+1]);
     }
     return touchable;
-  }
+  };
 
   return HTomb;
 })(HTomb);

@@ -120,8 +120,7 @@ HTomb = (function(HTomb) {
     simplex_features("BloodwortPlant",{hscale: 40, vthresh: 1.5, p1: 0.15, p2: 0.05, callback: function(thing) {thing.crop.mature();}});
     simplex_features("AmanitaPlant",{hscale: 40, vthresh: 1.5, p1: 0.15, p2: 0.05, callback: function(thing) {thing.crop.mature();}});
     simplex_features("Tree",{vthresh: 1, p1: 0.75, p2: 0.25});
-    simplex_features("Rock",{hscale: 10, vtresh: 3, p1: 0.25, p2: 0.1,
-      callback(thing) {
+    simplex_features("Rock",{hscale: 10, vtresh: 3, p1: 0.25, p2: 0.1, callback(thing) {
         if (Math.random()<=0.1) {
           var x = thing.x;
           var y = thing.y;
@@ -130,6 +129,7 @@ HTomb = (function(HTomb) {
           HTomb.Things.FlintStone().place(x,y,z);
         }
     }});
+    simplex_features("Stick",{hscale: 10, vtresh: 3, p1: 0.1, p2: 0.1});
     water_table(23);
     scatter("Bat",0.005);
     scatter("Spider",0.005);

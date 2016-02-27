@@ -204,7 +204,7 @@ HTomb = (function(HTomb) {
     Commands.glance(HTomb.Tiles.getSquare(x,y,z));
     HTomb.turn();
 
-  },
+  };
   // Try to pick up items
   Commands.pickup = function() {
     var p = HTomb.Player;
@@ -255,6 +255,23 @@ HTomb = (function(HTomb) {
           }
         );
       }
+    }
+  };
+  Commands.inventory = function() {
+    var p = HTomb.Player;
+    if (!p.inventory) {
+      HTomb.GUI.pushMessage("You cannot carry items.");
+    } else if (p.inventory.items.length===0) {
+      HTomb.GUI.pushMessage("You have no items.");
+    } else {
+        // If the player has multiple items, display a menu
+      GUI.choosingMenu("You are carrying:",p.inventory.items,
+        function(item) {
+          return function() {
+            HTomb.GUI.reset();
+          };
+        }
+      );
     }
   };
   // Show a menu of the spells the player can cast

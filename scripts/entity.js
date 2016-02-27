@@ -179,9 +179,11 @@ HTomb = (function(HTomb) {
       var pile = HTomb.World.items[c];
       // remove it from the old pile
       if (pile) {
-        pile.splice(pile.indexOf(this),1);
-        if (pile.length===0) {
-          delete HTomb.World.items[c];
+        if (pile.indexOf(this.entity)!==-1) {
+          pile.splice(pile.indexOf(this.entity),1);
+          if (pile.length===0) {
+            delete HTomb.World.items[c];
+          }
         }
       }
     },
