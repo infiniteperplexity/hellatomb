@@ -267,7 +267,7 @@ HTomb = (function(HTomb) {
       var zones = HTomb.World.zones;
       if (zones[c] && zones[c].task) {
         zones[c].task.cancel();
-      } 
+      }
       delete zones[c];
     },
     destroy: function() {

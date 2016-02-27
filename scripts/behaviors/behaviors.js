@@ -84,6 +84,9 @@ HTomb = (function(HTomb) {
       HTomb.Debug.pushMessage(this.entity.describe() + " was assigned " + tsk.describe());
     },
     unassign: function() {
+      if (this.task===null) {
+        return;
+      }
       HTomb.Debug.pushMessage(this.entity.describe() + " was unassigned from " + this.task.describe());
       this.task = null;
     }

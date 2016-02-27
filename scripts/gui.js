@@ -550,7 +550,8 @@ HTomb = (function(HTomb) {
     var details = [];
     details = details.concat(square.terrain.details());
     details = details.concat()
-    GUI.splash(details);
+    console.log(square);
+    //GUI.splash(details);
   }
   main.mouseOver = function() {
     if (GUI.panels.overlay===null) {

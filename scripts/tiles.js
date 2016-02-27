@@ -181,7 +181,7 @@ HTomb = (function(HTomb) {
     //if the square has not been explored, don't show it
     if (!explored[z][x][y] && HTomb.Debug.explored!==true) {
       if (tiles[z+1][x][y]===Tiles.FloorTile && explored[z+1][x][y]) {
-        return[HTomb.Constants.FLOORABOVE,HTomb.Constants.SHADOW,HTomb.Constants.WALLBG];
+        return[HTomb.Constants.FLOORABOVE,HTomb.Constants.SHADOW, bg || HTomb.Constants.WALLBG];
       } else {
       //return [" ","black","black"];
         return [" ","black",bg || "black"];

@@ -353,6 +353,7 @@ HTomb = (function(HTomb) {
           }
         }
       }
+      console.log(["how did we reach this?",this.day,this.tally]);
     },
     lightLevel: function() {
       var dawn = 6;

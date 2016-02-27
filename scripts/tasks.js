@@ -87,7 +87,9 @@ HTomb = (function(HTomb) {
         this.assignee.minion.unassign();
       }
       if (this.zone) {
+        console.log([this.zone.x,this.zone.y,this.zone.z]);
         this.zone.remove();
+        //this.zone = null;
       }
       if (this.onComplete) {
         this.onComplete();
@@ -108,6 +110,7 @@ HTomb = (function(HTomb) {
         var dzone = HTomb.Things.DummyZone({name: this.zoneTemplate.name, bg: this.zoneTemplate.bg});
         dzone.place(x,y,z);
         var dt = HTomb.Things.DummyTask({fakeAs: this.template, name: this.name});
+        dzone.task = t;
         dt.zone = dzone;
         dt.assigner = master;
         dt.assigner.master.taskList.push(dt);
@@ -186,6 +189,7 @@ HTomb = (function(HTomb) {
     },
     finish: function() {
       HTomb.Debug.pushMessage("Don't use default!");
+      alert("don't use this!");
     }
   });
 
