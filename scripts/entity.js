@@ -10,116 +10,65 @@ HTomb = (function(HTomb) {
     y: null,
     z: null,
     behaviors: {},
-    hp: 10,
-    maxhp: 10,
-    each: ["x","y","z","hp"],
+    each: ["x","y","z"],
     place: function(x,y,z) {
-      //ah...this is causing some problems...
       this.remove();
-      var c = coord(x,y,z);
-      var creatures = HTomb.World.creatures;
-      if (this.isCreature) {
-        if (creatures[c]) {
-          creatures[c].remove();
-        }
-        creatures[c] = this;
+      if (this.creature) {
+        this.creature.place(x,y,z);
       }
-      var items = HTomb.World.items;
-      if (this.isItem) {
-        this.remove();
-        // put it on the new pile
-        var pile = items[c];
-        if (pile===undefined) {
-          pile = items[c] = [];
-        }
-        if (this.stack) {
-          this.stack.stackInto(pile);
-        } else {
-          pile.push(this);
-        }
+      if (this.item) {
+        this.item.place(x,y,z);
       }
-      var features = HTomb.World.features;
-      if (this.isFeature) {
-        if (features[c]) {
-          features[c].remove();
-        }
-        features[c] = this;
+      if (this.feature) {
+        this.feature.place(x,y,z);
       }
-      var liquids = HTomb.World.liquids;
-      if (this.isLiquid) {
-        if (liquids[c]) {
-          liquids[c].remove();
-        }
-        liquids[c] = this;
+      if (this.zone) {
+        this.zone.place(x,y,z);
       }
-      var zones = HTomb.World.zones;
-      if (this.isZone) {
-        if (zones[c]) {
-          if (zones[c].task) {
-            zones[c].task.cancel();
-          } else {
-            zones[c].remove();
-          }
-        }
-        zones[c] = this;
+      if (this.liquid) {
+        this.liquid.place(x,y,z);
       }
       this.x = x;
       this.y = y;
       this.z = z;
-      // Fire off the onPlace method, if applicable
       if (this.onPlace) {
         this.onPlace(x,y,z);
       }
     },
-    onDespawn: function() {
-      this.remove();
-    },
-    // Remove, but don't necessarily destroy
     remove: function() {
-      var c = coord(this.x,this.y,this.z);
-      //eventually need to clean up listeners
-      var creatures = HTomb.World.creatures;
-      if (this.isCreature) {
-        delete creatures[c];
+      if (this.creature) {
+        this.creature.remove();
       }
-      var items = HTomb.World.items;
-      if (this.isItem) {
-        var pile = items[c];
-        // remove it from the old pile
-        if (pile) {
-          pile.splice(pile.indexOf(this),1);
-          if (pile.length===0) {
-            delete items[c];
-          }
-        }
+      if (this.item) {
+        this.item.remove();
       }
-      var features = HTomb.World.features;
-      if (this.isFeature) {
-        delete features[c];
+      if (this.feature) {
+        this.feature.remove();
       }
-      var liquids = HTomb.World.features;
-      if (this.isLiquid) {
-        delete liquids[c];
+      if (this.zone) {
+        this.zone.remove();
       }
-      var zones = HTomb.World.zones;
-      if (this.isZone) {
-        delete zones[c];
+      if (this.liquid) {
+        this.liquid.remove();
       }
       this.x = null;
       this.y = null;
       this.z = null;
+    },
+    onDespawn: function() {
+      this.remove();
     },
     describe: function() {
       // add options for capitalization?
       if (this.plural===true) {
         return this.name;
       }
-      if (this.isZone) {
+      if (this.zone) {
         return this.name;
       }
       // should I handle this with an "onDescribe" function?
-      if (this.isItem && this.stack && this.stack.n>1) {
-        return (this.stack.n + " " +this.name+"s");
+      if (this.item && this.item.stackable && this.item.n>1) {
+        return (this.item.n + " " +this.name+"s");
       } else {
         // pick the correct article
         var first = this.name[0];
@@ -156,33 +105,6 @@ HTomb = (function(HTomb) {
     }
   });
 
-  HTomb.Things.defineCreature = function(args) {
-    args = args || {};
-    args.isCreature = true;
-    HTomb.Things.defineEntity(args);
-  };
-  HTomb.Things.defineItem = function(args) {
-    args = args || {};
-    args.isItem = true;
-    HTomb.Things.defineEntity(args);
-  };
-  HTomb.Things.defineFeature = function(args) {
-    args = args || {};
-    args.isFeature = true;
-    HTomb.Things.defineEntity(args);
-  };
-  HTomb.Things.defineZone = function(args) {
-    args = args || {};
-    args.isZone = true;
-    HTomb.Things.defineEntity(args);
-  };
-  HTomb.Things.defineLiquid = function(args) {
-    args = args || {};
-    args.isLiquid = true;
-    args.plural = true;
-    HTomb.Things.defineEntity(args);
-  };
-
   // Define a generic behavior that gets attached to entities
   HTomb.Things.define({
     template: "Behavior",
@@ -206,6 +128,219 @@ HTomb = (function(HTomb) {
     },
     each: ["entity"]
   });
+
+  HTomb.Things.defineBehavior({
+    template: "CreatureBehavior",
+    name: "creature",
+    maxhp: 10,
+    hp: 10,
+    each: ["hp"],
+    place: function(x,y,z) {
+      var c = coord(x,y,z);
+      var creatures = HTomb.World.creatures;
+      if (creatures[c]) {
+        creatures[c].remove();
+      }
+      creatures[c] = this.entity;
+    },
+    remove: function() {
+      var cr = this.entity;
+      var c = coord(cr.x,cr.y,cr.z);
+      var creatures = HTomb.World.creatures;
+      delete creatures[c];
+    },
+    destroy: function() {
+      this.remove();
+    }
+  });
+
+  HTomb.Things.defineBehavior({
+    template: "ItemBehavior",
+    name: "item",
+    stackable: false,
+    n: null,
+    maxn: 10,
+    each: ["n"],
+    place: function(x,y,z) {
+      var c = coord(x,y,z);
+      var pile = HTomb.World.items[c] || [];
+      if (this.stackable) {
+        this.stackInto(pile);
+      } else {
+        pile.push(this.entity);
+      }
+      if (pile.length>0) {
+        HTomb.World.items[c] = pile;
+      }
+    },
+    remove: function() {
+      var it = this.entity;
+      var c = coord(it.x,it.y,it.z);
+      var pile = HTomb.World.items[c];
+      // remove it from the old pile
+      if (pile) {
+        pile.splice(pile.indexOf(this),1);
+        if (pile.length===0) {
+          delete HTomb.World.items[c];
+        }
+      }
+    },
+    destroy: function() {
+      this.remove();
+    },
+    stackInto: function(arr) {
+      var one;
+      var two;
+      for (var i=0; i<arr.length; i++) {
+        if ((this.n>0) && (arr[i].template===this.entity.template) && (arr[i].item.n<arr[i].item.maxn)) {
+          one = this.n;
+          two = arr[i].item.n;
+          if ((one+two)>this.maxn) {
+            arr[i].item.n = this.maxn;
+            this.n = one+two-this.maxn;
+          } else {
+            arr[i].item.n = one+two;
+            this.n = 0;
+          }
+        }
+      }
+      if (this.n>0) {
+        arr.push(this.entity);
+      }
+    },
+    listItems: function(arr) {
+      var mesg = "";
+      for (var i = 0; i<arr.length; i++) {
+        mesg = mesg + " " + arr[i].describe();
+        if (i===arr.length-2) {
+          mesg = mesg + ", and";
+        } else if (i<arr.length-1) {
+          mesg = mesg + ",";
+        }
+      }
+      return mesg;
+    },
+    onAdd: function() {
+      if (this.entity.stackSize && this.stackable && this.n===null) {
+        this.n = this.entity.stackSize();
+      }
+    }
+  });
+  HTomb.Things.defineBehavior({
+    template: "FeatureBehavior",
+    name: "feature",
+    hp: 10,
+    maxhp: 10,
+    each: ["hp"],
+    place: function(x,y,z) {
+      var c = coord(x,y,z);
+      var features = HTomb.World.features;
+      if (features[c]) {
+        features[c].remove();
+      }
+      features[c] = this.entity;
+    },
+    remove: function() {
+      var f = this.entity;
+      var c = coord(f.x,f.y,f.z);
+      var features = HTomb.World.features;
+      delete features[c];
+    },
+    destroy: function() {
+      this.remove();
+    }
+  });
+  HTomb.Things.defineBehavior({
+    template: "ZoneBehavior",
+    name: "zone",
+    place: function(x,y,z) {
+      var c = coord(x,y,z);
+      var zones = HTomb.World.zones;
+      if (zones[c]) {
+        zones[c].remove();
+      }
+      zones[c] = this.entity;
+    },
+    remove: function() {
+      var z = this.entity;
+      var c = coord(z.x,z.y,z.z);
+      var zones = HTomb.World.zones;
+      if (zones[c] && zones[c].task) {
+        zones[c].task.cancel();
+      } 
+      delete zones[c];
+    },
+    destroy: function() {
+      this.remove();
+    }
+  });
+  HTomb.Things.defineBehavior({
+    template: "LiquidBehavior",
+    name: "liquid",
+    infinite: true,
+    each: ["infinite"],
+    place: function(x,y,z) {
+      var c = coord(x,y,z);
+      var liquids = HTomb.World.liquids;
+      if (liquids[c]) {
+        liquids[c].remove();
+      }
+      liquids[c] = this.entity;
+    },
+    remove: function() {
+      var l = this.entity;
+      var c = coord(l.x,l.y,l.z);
+      var liquids = HTomb.World.liquids;
+      delete liquids[c];
+    },
+    destroy: function() {
+      this.remove();
+    }
+  });
+
+  HTomb.Things.defineCreature = function(args) {
+    args = args || {};
+    args.behaviors = args.behaviors || {};
+    args.behaviors.CreatureBehavior = args.behaviors.CreatureBehavior || {};
+    HTomb.Things.defineEntity(args);
+  };
+  HTomb.Things.defineItem = function(args) {
+    args = args || {};
+    args.behaviors = args.behaviors || {};
+    var item = {};
+    if (args.stackable) {
+      item.stackable = args.stackable;
+      if (args.n) {
+        item.n = args.n;
+      }
+      if (args.maxn) {
+        item.maxn = args.maxn;
+      }
+    }
+    args.behaviors.ItemBehavior = item;
+    HTomb.Things.defineEntity(args);
+  };
+  HTomb.Things.defineFeature = function(args) {
+    args = args || {};
+    args.behaviors = args.behaviors || {};
+    args.behaviors.FeatureBehavior = args.behaviors.FeatureBehavior || {};
+    HTomb.Things.defineEntity(args);
+  };
+  HTomb.Things.defineZone = function(args) {
+    args = args || {};
+    args.behaviors = args.behaviors || {};
+    args.behaviors.ZoneBehavior = args.behaviors.ZoneBehavior || {};
+    HTomb.Things.defineEntity(args);
+  };
+  HTomb.Things.defineLiquid = function(args) {
+    args = args || {};
+    args.behaviors = args.behaviors || {};
+    args.behaviors.LiquidBehavior = args.behaviors.LiquidBehavior || {};
+    args.plural = true;
+    HTomb.Things.defineEntity(args);
+  };
+
+
 
 return HTomb;
 })(HTomb);

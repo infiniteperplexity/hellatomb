@@ -40,7 +40,10 @@ HTomb = (function(HTomb) {
     symbol: " ",
     opaque: true,
     solid: true,
-    immutable: true
+    immutable: true,
+    details: function() {
+      return ["This is an indestructible boundary tile."];
+    }
   });
   HTomb.Things.defineTerrain({
     template: "EmptyTile",
@@ -53,14 +56,30 @@ HTomb = (function(HTomb) {
     fg: HTomb.Constants.TWOBELOW,
     //bg: HTomb.Constants.BELOWBG,
     bg: "black",
-    fallable: true
+    fallable: true,
+    details: function() {
+      return [
+        "This is an empty tile.  It has no floor and no ceiling.",
+        "A non-flying creature cannot cross it.",
+        "Build here to add a floor.",
+        "Digging here digs in the space below."
+      ];
+    }
   });
   HTomb.Things.defineTerrain({
     template: "FloorTile",
     name: "floor",
     symbol: ".",
     fg: EARTHTONE,
-    bg: HTomb.Constants.FLOORBG
+    bg: HTomb.Constants.FLOORBG,
+    details: function() {
+      return [
+        "This is a floor tile.",
+        "If there is no ceiling, a flying creature can go up here.",
+        "Building here adds an upward slope.",
+        "Digging here removes the floor, and might also dig into stone below."
+      ];
+    }
   });
   HTomb.Things.defineTerrain({
     template: "WallTile",
@@ -69,7 +88,14 @@ HTomb = (function(HTomb) {
     fg: ABOVE,
     opaque: true,
     solid: true,
-    bg: HTomb.Constants.WALLBG
+    bg: HTomb.Constants.WALLBG,
+    details: function() {
+      return [
+        "This is a solid wall tile.",
+        "Digging here usually creates a tunnel.",
+        "If there is an explored upward slope below, digging here also digs out the floor."
+      ];
+    }
   });
   HTomb.Things.defineTerrain({
     template: "UpSlopeTile",
@@ -79,7 +105,15 @@ HTomb = (function(HTomb) {
     fg: ABOVE,
     zview: +1,
     zmove: +1,
-    bg: HTomb.Constants.WALLBG
+    bg: HTomb.Constants.WALLBG,
+    details: function() {
+      return [
+        "This is an upward slope tile.",
+        "Most creatures can climb up here, if there is no ceiling above.",
+        "You can see up this slope.",
+        "Building here turns the slope into a wall tile."
+      ];
+    }
   });
   HTomb.Things.defineTerrain({
     template: "DownSlopeTile",
@@ -89,7 +123,16 @@ HTomb = (function(HTomb) {
     zmove: -1,
     fg: BELOW,
     bg: HTomb.Constants.BELOWBG,
-    allowsFeatures: false
+    allowsFeatures: false,
+    details: function() {
+      return [
+        "This is a downward slope tile.",
+        "Most creatures can climb down here.",
+        "You can see down this slope.",
+        "Building here creates a floor.",
+        "Digging here removes the slope and the upward slope below."
+      ];
+    }
   });
 
   Tiles.getSymbol = function(x,y,z) {

@@ -51,6 +51,13 @@ HTomb = (function(HTomb) {
     fontFamily: TEXTFONT,
     spacing: TEXTSPACING
   });
+  var splashDisplay = new ROT.Display({
+    width: SCREENW+MENUW,
+    height: SCREENH+MENUH,
+    fontSize: TEXTSIZE,
+    fontFamily: TEXTFONT,
+    spacing: TEXTSPACING
+  });
   GUI.domInit = function() {
     var body = document.body;
     var div = document.createElement("div");
@@ -63,15 +70,19 @@ HTomb = (function(HTomb) {
     menu.id = "menu";
     var scroll = document.createElement("div");
     scroll.id = "scroll";
+    var splash = document.createElement("div");
+    splash.id = "splash";
     body.appendChild(div);
     div.appendChild(contain);
     div.appendChild(menu);
+    //div.appendChild(splash);
     contain.appendChild(game);
     contain.appendChild(document.createElement("br"));
     contain.appendChild(scroll);
     game.appendChild(display.getContainer());
     menu.appendChild(menuDisplay.getContainer());
     scroll.appendChild(scrollDisplay.getContainer());
+    //splash.appendChild(splashDisplay.getContainer());
   };
 
   // Attach input events
@@ -162,6 +173,8 @@ HTomb = (function(HTomb) {
   window.addEventListener("keyup",keyup);
   display.getContainer().addEventListener("mousedown",mousedown);
   display.getContainer().addEventListener("mousemove",mousemove);
+  menuDisplay.getContainer().addEventListener("mousemove",function() {HTomb.Controls.context.mouseOver();});
+  scrollDisplay.getContainer().addEventListener("mousemove",function() {HTomb.Controls.context.mouseOver();});
 
   // set up message buffer
   GUI.sensoryEvent = function(strng,x,y,z) {
@@ -222,14 +235,16 @@ HTomb = (function(HTomb) {
     );
   };
   // Display a splash screen
-  GUI.splash = function(txt) {
+  GUI.splash = function(arr) {
     Controls.context = new ControlContext();
-    var splash = new Panel(0,0);
+    var splash = {};
     splash.render = function() {
       for (var i=0; i<SCREENH+SCROLLH; i++) {
-        display.drawText(this.x0,this.y0+i,"%c{black}"+(UNIBLOCK.repeat(SCREENW+MENUW+1)));
+        display.drawText(1,1+i,"%c{black}"+(UNIBLOCK.repeat(SCREENW+MENUW+1)));
       }
-      display.drawText(splash.x0+3,splash.y0+2, txt);
+      for (var j=0; j<arr.length; j++) {
+        display.drawText(4, 3+j, arr[j]);
+      }
     };
     GUI.panels.overlay = splash;
     GUI.render();
@@ -531,7 +546,11 @@ HTomb = (function(HTomb) {
     viewDetails(x,y,gameScreen.z);
   };
   function viewDetails(x,y,z) {
-    GUI.splash("Detailed viewing not yet implemented");
+    var square = HTomb.Tiles.getSquare(x,y,z);
+    var details = [];
+    details = details.concat(square.terrain.details());
+    details = details.concat()
+    GUI.splash(details);
   }
   main.mouseOver = function() {
     if (GUI.panels.overlay===null) {

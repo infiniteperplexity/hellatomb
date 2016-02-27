@@ -165,7 +165,7 @@ var HTomb = (function() {
     Events: Events,
     GUI: GUI,
     get Player () {return Player;},
-    set Player (p) {Player = p; GUI.splash("Welcome to HellaTomb!");},
+    set Player (p) {Player = p; GUI.splash(["Welcome to HellaTomb!"]);},
     Tiles: Tiles,
     Debug: Debug,
     Save: Save,

@@ -34,6 +34,9 @@ HTomb = (function(HTomb) {
     onList: function() {
       return this.describe();
     },
+    details: function() {
+      return ["This is " + this.describe() + "."];
+    },
     // list any properties that are specific to eachs, such as current hit points
     each: ["template"]
   };
