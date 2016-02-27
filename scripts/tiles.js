@@ -137,29 +137,6 @@ HTomb = (function(HTomb) {
 
   Tiles.getSymbol = function(x,y,z) {
     var fg, bg;
-    // if (x===0 || y===0 || x===LEVELW-1 || y===LEVELH-1) {
-    //   fg = HTomb.Constants.EARTHTONE;
-    //   bg = "black";
-    //   if (x===0) {
-    //     if (y===0) {
-    //       return ["\u2554",fg,bg];
-    //     } else if (y===LEVELH-1) {
-    //       return ["\u255A",fg,bg];
-    //     } else {
-    //       return ["\u2551",fg,bg];
-    //     }
-    //   } else if (x===LEVELW-1) {
-    //     if (y===0) {
-    //       return ["\u2557",fg,bg];
-    //     } else if (y===LEVELH-1) {
-    //       return ["\u255D",fg,bg];
-    //     } else {
-    //       return ["\u2551",fg,bg];
-    //     }
-    //   } else {
-    //     return ["\u2550",fg,bg];
-    //   }
-    // }
     var crd = HTomb.coord(x,y,z);
     var cabove = HTomb.coord(x,y,z+1);
     var cbelow = HTomb.coord(x,y,z-1);

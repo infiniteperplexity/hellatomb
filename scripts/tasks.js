@@ -65,7 +65,9 @@ HTomb = (function(HTomb) {
       var master = this.assigner;
       if (master) {
         var taskList = this.assigner.master.taskList;
-        taskList.splice(taskList.indexOf(this),1);
+        if (taskList.indexOf(this)!==-1) {
+          taskList.splice(taskList.indexOf(this),1);
+        }
       }
       if (this.assignee) {
         this.assignee.minion.unassign();
@@ -81,13 +83,14 @@ HTomb = (function(HTomb) {
       var master = this.assigner;
       if (master) {
         var taskList = this.assigner.master.taskList;
-        taskList.splice(taskList.indexOf(this),1);
+        if (taskList.indexOf(this)!==-1) {
+          taskList.splice(taskList.indexOf(this),1);
+        }
       }
       if (this.assignee) {
         this.assignee.minion.unassign();
       }
       if (this.zone) {
-        console.log([this.zone.x,this.zone.y,this.zone.z]);
         this.zone.remove();
         //this.zone = null;
       }
@@ -110,7 +113,7 @@ HTomb = (function(HTomb) {
         var dzone = HTomb.Things.DummyZone({name: this.zoneTemplate.name, bg: this.zoneTemplate.bg});
         dzone.place(x,y,z);
         var dt = HTomb.Things.DummyTask({fakeAs: this.template, name: this.name});
-        dzone.task = t;
+        dzone.task = dt;
         dt.zone = dzone;
         dt.assigner = master;
         dt.assigner.master.taskList.push(dt);
@@ -171,7 +174,6 @@ HTomb = (function(HTomb) {
     work: function(x,y,z) {
       var f = HTomb.World.features[coord(x,y,z)];
       if (f===this.feature) {
-        console.log("doing work");
         f.steps-=1;
         if (f.steps<=0) {
           this.finish();
@@ -313,7 +315,7 @@ HTomb = (function(HTomb) {
       // If it's a slope, make it into a wall
     } else if (t===UpSlopeTile) {
         tiles[z][x][y] = WallTile;
-        if (tiles[z+1][x][y] = DownSlopeTile) {
+        if (tiles[z+1][x][y] === DownSlopeTile) {
           tiles[z+1][x][y] = FloorTile;
         }
       // If it's empty, add a floor

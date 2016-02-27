@@ -344,30 +344,34 @@ HTomb = (function(HTomb) {
       } else if (this.hour<this.times.dusk+1 && this.hour>=this.times.dawn) {
         return this.twilight;
       } else {
-        var phase = this.day%30;
-        var tally = 0;
-        for (var i=0; i<this.times.order.length; i++) {
-          tally+=this.times[this.times.order[i]];
-          if (phase<=tally) {
-            console.log(this[this.times.order[i]]);
-          }
-        }
+        return this.getMoon();
       }
       console.log(["how did we reach this?",this.day,this.tally]);
+    },
+    getMoon: function() {
+      var phase = this.day%30;
+      var tally = 0;
+      for (var i=0; i<this.times.order.length; i++) {
+        tally+=this.times[this.times.order[i]];
+        if (phase<=tally) {
+          return this[this.times.order[i]];
+        }
+      }
     },
     lightLevel: function() {
       var dawn = 6;
       var dusk = 17;
       var darkest = 128;
+      var light, moonlight;
       if (this.hour < dawn || this.hour >= dusk+1) {
         return darkest;
       } else if (this.hour < dawn+1) {
-        var moonlight = this.getPhase().light;
-        var light = Math.min(255,(this.minute/60)*(255-darkest)+darkest+moonlight);
+        moonlight = this.getMoon().light;
+        light = Math.min(255,(this.minute/60)*(255-darkest)+darkest+moonlight);
         return light;
       } else if (this.hour >= dusk) {
-        var moonlight = this.getPhase().light;
-        var light = Math.min(255,((60-this.minute)/60)*(255-darkest)+darkest+moonlight);
+        moonlight = this.getMoon().light;
+        light = Math.min(255,((60-this.minute)/60)*(255-darkest)+darkest+moonlight);
         return light;
       } else {
         return 255;
@@ -376,6 +380,8 @@ HTomb = (function(HTomb) {
     shade: function(arr,x,y,z) {
       var c = ROT.Color.fromString(arr[1]);
       c = ROT.Color.multiply(c,[this.lightLevel(),this.lightLevel(),255]);
+      c[0] = (isNaN(c[0])) ? 0 : c[0];
+      c[1] = (isNaN(c[1])) ? 0 : c[1];
       c = ROT.Color.toHex(c);
       arr[1] = c;
       return arr;

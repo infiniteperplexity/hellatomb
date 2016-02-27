@@ -38,7 +38,6 @@ Tomb = (function(HTomb) {
     if (x0+y0+z0+x1+y1+z1===undefined) {
       alert("bad path arguments!");
     }
-    console.log("finding path...");
     //_fastgrid = HTomb.World._fastgrid;
     options = options || {};
     var useFirst = options.useFirst || false;

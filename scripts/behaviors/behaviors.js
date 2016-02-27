@@ -123,8 +123,6 @@ HTomb = (function(HTomb) {
         }
         var master = this.entity;
         var minions = this.minions;
-        // maybe should shuffle this only once per turn?
-        //minions = minions.randomize(); //this randomization function erases the original
         for (var j=0; j<minions.length; j++) {
           if (minions[j].minion.task!==null) {
             continue;
@@ -133,10 +131,8 @@ HTomb = (function(HTomb) {
             continue;
           }
           if (minions[j].worker.allowedTasks.indexOf(tsk.template)===-1 && minions[j].worker.allowedTasks.indexOf(tsk.fakeAs)===-1) {
-            console.log(tsk.template);
             continue;
           }
-          console.log("trying at least");
           var assigned = tsk.tryAssign(minions[j]);
           if (assigned) {
             break;

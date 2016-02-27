@@ -44,7 +44,6 @@ HTomb = (function(HTomb) {
     randomColor: 20
   });
 
-
   HTomb.Things.defineItem({
     template: "Bloodstone",
     name: "bloodstone",
