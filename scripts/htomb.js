@@ -9,18 +9,6 @@ var HTomb = (function() {
   var NLEVELS = Constants.NLEVELS = 50;
   // Frequently-used colors and characters...not sure this should be here
   var UNIBLOCK = Constants.UNIBLOCK = '\u2588';
-  Constants.FLOORBELOW = "\u2024";
-  Constants.FLOORABOVE = "\u2022";
-  Constants.FLOORABOVE = "#";
-  Constants.ROOFABOVE = "'";
-  var EARTHTONE = Constants.EARTHTONE = "#AAAAEE";
-  var SHADOW = Constants.SHADOW = "#444455";
-  var ABOVE = Constants.ABOVE = "#BBBBFF";
-  var BELOW = Constants.BELOW = "#8888DD";
-  Constants.WALLBG = "#333355";
-  Constants.FLOORBG = "#111133";
-  Constants.BELOWBG = "#000022";
-  Constants.TWOBELOW = "#444499";
 
   // Used throughout the project
   function coord(x,y,z) {

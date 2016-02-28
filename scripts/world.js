@@ -129,7 +129,7 @@ HTomb = (function(HTomb) {
           HTomb.Things.FlintStone().place(x,y,z);
         }
     }});
-    simplex_features("Stick",{hscale: 10, vtresh: 3, p1: 0.1, p2: 0.1});
+    //simplex_features("Stick",{hscale: 10, vtresh: 3, p1: 0.1, p2: 0.1});
     water_table(23);
     scatter("Bat",0.005);
     scatter("Spider",0.005);
@@ -165,9 +165,6 @@ HTomb = (function(HTomb) {
         var r = parseInt(Math.random()*2*cscale)-cscale;
         var g = parseInt(Math.random()*2*cscale)-cscale;
         var b = parseInt(Math.random()*2*cscale)-cscale;
-        //var r = parseInt(rnoise.get(x/hscale,y/hscale)*cscale);
-        //var g = parseInt(gnoise.get(x/hscale,y/hscale)*cscale);
-        //var b = parseInt(bnoise.get(x/hscale,y/hscale)*cscale);
         HTomb.World.colors[x].push([r,g,b]);
       }
     }

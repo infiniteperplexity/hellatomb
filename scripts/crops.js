@@ -140,7 +140,7 @@ HTomb.Things.defineCrop({
 HTomb.Things.defineCrop({
   template: "Amanita",
   name: "amanita",
-  fg: "#FF2288"
+  fg: "#DDrr88"
 });
 
 HTomb.Things.defineCrop({

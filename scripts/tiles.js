@@ -3,10 +3,14 @@ HTomb = (function(HTomb) {
   var LEVELW = HTomb.Constants.LEVELW;
   var LEVELH = HTomb.Constants.LEVELH;
   var NLEVELS = HTomb.Constants.NLEVELS;
-  var EARTHTONE = HTomb.Constants.EARTHTONE;
-  var SHADOW = HTomb.Constants.SHADOW;
-  var ABOVE = HTomb.Constants.ABOVE;
-  var BELOW = HTomb.Constants.BELOW;
+  var FLOORFG = HTomb.Constants.FLOORFG;
+  var SHADOWFG = HTomb.Constants.SHADOWFG;
+  var WALLFG = HTomb.Constants.WALLFG;
+  var BELOWFG = HTomb.Constants.BELOWFG;
+  var WALLBG = HTomb.Constants.WALLBG;
+  var FLOORBG = HTomb.Constants.FLOORBG;
+  var BELOWBG = HTomb.Constants.BELOWBG;
+  var TWOBELOWFG = HTomb.Constants.TWOBELOWFG;
   var coord = HTomb.coord;
 
   var Tiles = HTomb.Tiles;
@@ -50,10 +54,10 @@ HTomb = (function(HTomb) {
     name: "empty",
     //symbol: "\u25CB",
     //symbol: "\u25E6",
-    symbol: HTomb.Constants.FLOORBELOW,
+    symbol: "\u2024",
     zview: -1,
     //fg: BELOW,
-    fg: HTomb.Constants.TWOBELOW,
+    fg: TWOBELOWFG,
     //bg: HTomb.Constants.BELOWBG,
     bg: "black",
     fallable: true,
@@ -70,8 +74,8 @@ HTomb = (function(HTomb) {
     template: "FloorTile",
     name: "floor",
     symbol: ".",
-    fg: EARTHTONE,
-    bg: HTomb.Constants.FLOORBG,
+    fg: FLOORFG,
+    bg: FLOORBG,
     details: function() {
       return [
         "This is a floor tile.",
@@ -85,10 +89,10 @@ HTomb = (function(HTomb) {
     template: "WallTile",
     name: "wall",
     symbol: "#",
-    fg: ABOVE,
+    fg: WALLFG,
     opaque: true,
     solid: true,
-    bg: HTomb.Constants.WALLBG,
+    bg: WALLBG,
     details: function() {
       return [
         "This is a solid wall tile.",
@@ -102,10 +106,10 @@ HTomb = (function(HTomb) {
     name: "upward slope",
     symbol: "\u02C4",
     constructionSymbol: "\u25BF",
-    fg: ABOVE,
+    fg: WALLFG,
     zview: +1,
     zmove: +1,
-    bg: HTomb.Constants.WALLBG,
+    bg: WALLBG,
     details: function() {
       return [
         "This is an upward slope tile.",
@@ -121,8 +125,8 @@ HTomb = (function(HTomb) {
     symbol: "\u02C5",
     zview: -1,
     zmove: -1,
-    fg: BELOW,
-    bg: HTomb.Constants.BELOWBG,
+    fg: BELOWFG,
+    bg: BELOWBG,
     allowsFeatures: false,
     details: function() {
       return [
@@ -158,7 +162,7 @@ HTomb = (function(HTomb) {
     //if the square has not been explored, don't show it
     if (!explored[z][x][y] && HTomb.Debug.explored!==true) {
       if (tiles[z+1][x][y]===Tiles.FloorTile && explored[z+1][x][y]) {
-        return[HTomb.Constants.FLOORABOVE,HTomb.Constants.SHADOW, bg || HTomb.Constants.WALLBG];
+        return[Tiles.WallTile.symbol,SHADOWFG, bg || WALLBG];
       } else {
       //return [" ","black","black"];
         return [" ","black",bg || "black"];
@@ -174,7 +178,7 @@ HTomb = (function(HTomb) {
     }
     // square explored but not visible
     if (visible[z][x][y]===false && HTomb.Debug.visible!==true) {
-      fg = HTomb.Constants.SHADOW;
+      fg = SHADOWFG;
       if (liquids[crd]!==undefined) {
         bg = liquids[crd].darkbg;
       }
@@ -183,20 +187,19 @@ HTomb = (function(HTomb) {
         return [features[crd].symbol || "X",fg, bg || tile.bg];
       } else if (zview===+1 && features[cabove]) {
         // feature on level above
-        return [features[cabove].symbol || "X",fg, bg || HTomb.Constants.WALLBG];
-      } else if (zview===-1 && features[cbelow]) {
+        return [features[cabove].symbol || "X",fg, bg || WALLBG];
+      } else if (zview===-1 && features[cbelow] && liquids[crd]===undefined) {
         // feature on level below
-        return [features[cbelow].symbol || "X",fg, bg || HTomb.Constants.BELOWBG];
+        return [features[cbelow].symbol || "X",fg, bg || BELOWBG];
       } else if (liquids[crd] && liquids[cabove]===undefined) {
         return [liquids[crd].symbol,liquids[crd].fg,bg];
       } else if (zview===-1 && liquids[cbelow]) {
-        return [HTomb.Constants.FLOORBELOW,liquids[cbelow].fg,liquids[cbelow].darkbg];
+        return [Tiles.EmptyTile.symbol,liquids[cbelow].fg,liquids[cbelow].darkbg];
         // an empty space with floor below it
       } else if (tile===Tiles.WallTile && tiles[z+1][x][y]===Tiles.FloorTile && explored[z+1][x][y]) {
-        return[HTomb.Constants.FLOORABOVE,fg,bg || HTomb.Constants.WALLBG];
+        return["'",fg,bg || WALLBG];
       } else if (tile===Tiles.EmptyTile && tiles[z-1][x][y]===Tiles.FloorTile) {
-        //return [HTomb.Constants.FLOORBELOW,fg,bg];
-        return [HTomb.Constants.FLOORBELOW,fg, bg || HTomb.Constants.BELOWBG];
+        return [Tiles.EmptyTile.symbol,fg, bg || BELOWBG];
       } else if (tile===Tiles.FloorTile && tiles[z+1][x][y]!==Tiles.EmptyTile) {
         return [Tiles.WallTile.symbol,fg,bg || tile.bg];
       } else {
@@ -205,34 +208,33 @@ HTomb = (function(HTomb) {
       }
     } else {
       // visible square
-      var above = ABOVE;
-      var below = BELOW;
       if (creatures[crd]) {
         return [creatures[crd].symbol || "X", creatures[crd].fg || fg, bg || tile.bg];
       } else if (zview===+1 && creatures[cabove]) {
-        return [creatures[cabove].symbol || "X",above, bg || HTomb.Constants.WALLBG];
+        return [creatures[cabove].symbol || "X", WALLFG, bg || WALLBG];
       } else if (zview===-1 && creatures[cbelow]) {
-        return [creatures[cbelow].symbol || "X",below, bg || HTomb.Constants.BELOWBG];
+        return [creatures[cbelow].symbol || "X", BELOWFG, bg || BELOWBG];
       } else if (items[crd]) {
         return [items[crd][items[crd].length-1].symbol || "X",items[crd][items[crd].length-1].fg || fg, bg || tile.bg];
       } else if (features[crd]) {
         return [features[crd].symbol || "X", features[crd].fg || fg, bg || features[crd].bg || tile.bg];
       } else if (zview===+1 && items[cabove]) {
-        return [items[cabove][items[cabove].length-1].symbol || "X",above, bg || HTomb.Constants.WALLBG];
+        return [items[cabove][items[cabove].length-1].symbol || "X", WALLFG, bg || WALLBG];
       } else if (zview===-1 && items[cbelow]) {
-        return [items[cbelow][items[cbelow].length-1].symbol || "X",below, bg || HTomb.Constants.BELOWBG];
+        return [items[cbelow][items[cbelow].length-1].symbol || "X", BELOWFG, bg || BELOWBG];
       } else if (zview===+1 && features[cabove]) {
-        return [features[cabove].symbol || "X",above, bg || HTomb.Constants.WALLBG];
-      } else if (zview===-1 && features[cbelow]) {
-        return [features[cbelow].symbol || "X",below, bg || HTomb.Constants.BELOWBG];
+        return [features[cabove].symbol || "X", WALLFG, bg || WALLBG];
+        // maybe make this happen only if there is no liquid?
+      } else if (zview===-1 && features[cbelow] && liquids[crd]===undefined) {
+        return [features[cbelow].symbol || "X", BELOWFG, bg || BELOWBG];
       } else if (liquids[crd] && liquids[cabove]===undefined) {
         return [liquids[crd].symbol,liquids[crd].fg,bg];
       } else if (zview===-1 && liquids[cbelow]) {
-        return [HTomb.Constants.FLOORBELOW,liquids[cbelow].fg,liquids[cbelow].shimmer()];
+        return [Tiles.EmptyTile.symbol,liquids[cbelow].fg,liquids[cbelow].shimmer()];
       } else if (tile===Tiles.EmptyTile && tiles[z-1][x][y]===Tiles.FloorTile) {
-        return [HTomb.Constants.FLOORBELOW,below, bg || HTomb.Constants.BELOWBG];
+        return [Tiles.EmptyTile.symbol, BELOWFG, bg || BELOWBG];
       } else if (tile===Tiles.FloorTile && tiles[z+1][x][y]!==Tiles.EmptyTile) {
-        return [HTomb.Constants.ROOFABOVE,tile.fg, bg || tile.bg];
+        return ["'",tile.fg, bg || tile.bg];
       } else {
         fg = tile.fg || fg;
         return [tile.symbol || "X",fg, bg || tile.bg];
