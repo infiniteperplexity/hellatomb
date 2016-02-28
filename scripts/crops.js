@@ -122,29 +122,29 @@ HTomb.Things.defineCrop = function(args) {
 HTomb.Things.defineCrop({
   template: "Wolfsbane",
   name: "wolfsbane",
-  fg: "#BB55FF"
+  fg: "#AA55DD"
 });
 
 HTomb.Things.defineCrop({
   template: "Mandrake",
   name: "mandrake",
-  fg: "#FFAA55"
+  fg: "#DDAA66"
 });
 
 HTomb.Things.defineCrop({
   template: "Wormwood",
   name: "wormwood",
-  fg: "#55FFCC"
+  fg: "#55DDBB"
 });
 
 HTomb.Things.defineCrop({
   template: "Amanita",
   name: "amanita",
-  fg: "#DDrr88"
+  fg: "#DD8855"
 });
 
 HTomb.Things.defineCrop({
   template: "Bloodwort",
   name: "bloodwort",
-  fg: "#CCCCCC"
+  fg: "#BBAAAA"
 });

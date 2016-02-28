@@ -197,11 +197,11 @@ HTomb = (function(HTomb) {
         return [Tiles.EmptyTile.symbol,liquids[cbelow].fg,liquids[cbelow].darkbg];
         // an empty space with floor below it
       } else if (tile===Tiles.WallTile && tiles[z+1][x][y]===Tiles.FloorTile && explored[z+1][x][y]) {
-        return["'",fg,bg || WALLBG];
+        return[Tiles.WallTile.symbol,fg,bg || WALLBG];
       } else if (tile===Tiles.EmptyTile && tiles[z-1][x][y]===Tiles.FloorTile) {
         return [Tiles.EmptyTile.symbol,fg, bg || BELOWBG];
       } else if (tile===Tiles.FloorTile && tiles[z+1][x][y]!==Tiles.EmptyTile) {
-        return [Tiles.WallTile.symbol,fg,bg || tile.bg];
+        return [Tiles.FloorTile.symbol,fg,bg || tile.bg];
       } else {
         // terrain on current level
         return [tile.symbol || "X",fg,bg || tile.bg];
