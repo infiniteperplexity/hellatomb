@@ -172,6 +172,9 @@ HTomb = (function(HTomb) {
       cr.ai.acted = true;
     },
     work: function(x,y,z) {
+      if (HTomb.World.turfs[coord(x,y,z)]) {
+        (HTomb.World.turfs[coord(x,y,z)]).remove();
+      }
       var f = HTomb.World.features[coord(x,y,z)];
       if (f===this.feature) {
         f.steps-=1;

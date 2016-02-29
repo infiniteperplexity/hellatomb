@@ -88,21 +88,21 @@ HTomb = (function(HTomb) {
     opaque: true
   });
 
-  HTomb.Things.defineLiquid({
+  HTomb.Things.defineTurf({
     template: "Water",
     name: "water",
     symbol: "~",
-    //symbol: "\u2652",
-    fg: "#3388FF",
-    bg: "#1144BB",
-    darkbg: "#002288",
-    shimmer: function() {
-      var bg = ROT.Color.fromString(this.bg);
-      bg = ROT.Color.randomize(bg,[0, 0, this.randombg]);
-      bg = ROT.Color.toHex(bg);
-      return bg;
-    },
-    randombg: 25
+    fg: HTomb.Constants.WATERFG || "#3388FF",
+    bg:HTomb.Constants.WATERBG || "#1144BB",
+    behaviors: {Liquid: {}}
+  });
+
+  HTomb.Things.defineTurf({
+    template: "Grass",
+    name: "grass",
+    symbol: '"',
+    fg: HTomb.Constants.GRASSFG ||"#668844",
+    bg: HTomb.Constants.GRASSBG || "#334422"
   });
 
   return HTomb;

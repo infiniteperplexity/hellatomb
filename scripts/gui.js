@@ -406,7 +406,7 @@ HTomb = (function(HTomb) {
       }
       next = "Items: ";
       if (square.items && square.visible) {
-        next+=HTomb.Things.templates.ItemBehavior.listItems(square.items);
+        next+=HTomb.Things.templates.Item.listItems(square.items);
       }
       text.push(next);
       next = "Feature: ";
@@ -419,9 +419,9 @@ HTomb = (function(HTomb) {
         next+=square.zone.describe();
       }
       text.push(next);
-      next = "Liquid: ";
-      if (square.liquid) {
-        next+=square.liquid.describe();
+      next = "Turf/Liquid: ";
+      if (square.turf) {
+        next+=square.turf.describe();
       }
       text.push(next);
       text.push(" ");
@@ -436,7 +436,7 @@ HTomb = (function(HTomb) {
       }
       next = "Items: ";
       if (above.items && square.visibleAbove) {
-        next+=HTomb.Things.templates.ItemBehavior.listItems(above.items);
+        next+=HTomb.Things.templates.Item.listItems(above.items);
       }
       text.push(next);
       next = "Feature: ";
@@ -449,9 +449,9 @@ HTomb = (function(HTomb) {
         next+=above.zone.describe();
       }
       text.push(next);
-      next = "Liquid: ";
-      if (above.liquid) {
-        next+=above.liquid.describe();
+      next = "Turf/Liquid: ";
+      if (above.turf) {
+        next+=above.turf.describe();
       }
       text.push(next);
       text.push(" ");
@@ -466,7 +466,7 @@ HTomb = (function(HTomb) {
       }
       next = "Items: ";
       if (below.items && square.visibleBelow) {
-        next+=HTomb.Things.templates.ItemBehavior.listItems(below.items);
+        next+=HTomb.Things.templates.Item.listItems(below.items);
       }
       text.push(next);
       next = "Feature: ";
@@ -479,9 +479,9 @@ HTomb = (function(HTomb) {
         next+=below.zone.describe();
       }
       text.push(next);
-      next = "Liquid: ";
-      if (below.liquid) {
-        next+=below.liquid.describe();
+      next = "Turf/Liquid: ";
+      if (below.turf) {
+        next+=below.turf.describe();
       }
       text.push(next);
     }

@@ -57,9 +57,23 @@ HTomb = (function(HTomb) {
     BELOWBG: "#111122"
   };
 
+  var notGrassy  = {
+    WALLFG: "#AAAAAA",
+    FLOORFG: "#777799",
+    BELOWFG: "#553355",
+    SHADOWFG: "#333355",
+    TWOBELOWFG: "#221122",
+    WALLBG: "#777777",
+    FLOORBG: "#445577",
+    BELOWBG: "#111122",
+    GRASSFG: "#668844",
+    GRASSBG: "#334422",
+    WATERFG: "#3388FF",
+    WATERBG: "#1144BB"
+  };
 
   //var scheme = standardPurple;
-  var scheme = grassy2;
+  var scheme = notGrassy;
 
   for (var c in scheme) {
     HTomb.Constants[c] = scheme[c];

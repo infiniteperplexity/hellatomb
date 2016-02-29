@@ -182,8 +182,8 @@ HTomb = (function(HTomb) {
       }
       text.push(next);
       next = "Liquid: ";
-      if (square.liquid) {
-        next+=square.liquid.describe();
+      if (square.turf) {
+        next+=square.turf.describe();
       }
       text.push(next);
       text.push(" ");
@@ -212,8 +212,8 @@ HTomb = (function(HTomb) {
       }
       text.push(next);
       next = "Liquid: ";
-      if (above.liquid) {
-        next+=above.liquid.describe();
+      if (above.turf) {
+        next+=above.turf.describe();
       }
       text.push(next);
       text.push(" ");
@@ -242,8 +242,8 @@ HTomb = (function(HTomb) {
       }
       text.push(next);
       next = "Liquid: ";
-      if (below.liquid) {
-        next+=below.liquid.describe();
+      if (below.turf) {
+        next+=below.turf.describe();
       }
       text.push(next);
     }

@@ -25,8 +25,8 @@ HTomb = (function(HTomb) {
       if (this.zone) {
         this.zone.place(x,y,z);
       }
-      if (this.liquid) {
-        this.liquid.place(x,y,z);
+      if (this.turf) {
+        this.turf.place(x,y,z);
       }
       this.x = x;
       this.y = y;
@@ -48,8 +48,8 @@ HTomb = (function(HTomb) {
       if (this.zone) {
         this.zone.remove();
       }
-      if (this.liquid) {
-        this.liquid.remove();
+      if (this.turf) {
+        this.turf.remove();
       }
       this.x = null;
       this.y = null;
@@ -130,7 +130,7 @@ HTomb = (function(HTomb) {
   });
 
   HTomb.Things.defineBehavior({
-    template: "CreatureBehavior",
+    template: "Creature",
     name: "creature",
     maxhp: 10,
     hp: 10,
@@ -155,7 +155,7 @@ HTomb = (function(HTomb) {
   });
 
   HTomb.Things.defineBehavior({
-    template: "ItemBehavior",
+    template: "Item",
     name: "item",
     stackable: false,
     n: null,
@@ -229,7 +229,7 @@ HTomb = (function(HTomb) {
     }
   });
   HTomb.Things.defineBehavior({
-    template: "FeatureBehavior",
+    template: "Feature",
     name: "feature",
     hp: 10,
     maxhp: 10,
@@ -253,7 +253,7 @@ HTomb = (function(HTomb) {
     }
   });
   HTomb.Things.defineBehavior({
-    template: "ZoneBehavior",
+    template: "Zone",
     name: "zone",
     place: function(x,y,z) {
       var c = coord(x,y,z);
@@ -277,33 +277,50 @@ HTomb = (function(HTomb) {
     }
   });
   HTomb.Things.defineBehavior({
-    template: "LiquidBehavior",
-    name: "liquid",
-    infinite: true,
-    each: ["infinite"],
+    template: "Turf",
+    name: "turf",
     place: function(x,y,z) {
       var c = coord(x,y,z);
-      var liquids = HTomb.World.liquids;
-      if (liquids[c]) {
-        liquids[c].remove();
+      var turfs = HTomb.World.turfs;
+      if (turfs[c]) {
+        turfs[c].remove();
       }
-      liquids[c] = this.entity;
+      turfs[c] = this.entity;
     },
     remove: function() {
       var l = this.entity;
       var c = coord(l.x,l.y,l.z);
-      var liquids = HTomb.World.liquids;
-      delete liquids[c];
+      var turfs = HTomb.World.turfs;
+      delete turfs[c];
     },
     destroy: function() {
       this.remove();
     }
   });
 
+  HTomb.Things.defineBehavior({
+    template: "Liquid",
+    name: "liquid",
+    infinite: true,
+    each: ["infinite"],
+    shimmer: function() {
+      var bg = ROT.Color.fromString(this.entity.bg);
+      bg = ROT.Color.randomize(bg,[0, 0, 25]);
+      bg = ROT.Color.toHex(bg);
+      return bg;
+    },
+    darken: function() {
+      var bg = ROT.Color.fromString(this.entity.bg);
+      bg = ROT.Color.multiply(bg,[72,128,192]);
+      bg = ROT.Color.toHex(bg);
+      return bg;
+    }
+  });
+
   HTomb.Things.defineCreature = function(args) {
     args = args || {};
     args.behaviors = args.behaviors || {};
-    args.behaviors.CreatureBehavior = args.behaviors.CreatureBehavior || {};
+    args.behaviors.Creature = args.behaviors.Creature || {};
     HTomb.Things.defineEntity(args);
   };
   HTomb.Things.defineItem = function(args) {
@@ -319,30 +336,29 @@ HTomb = (function(HTomb) {
         item.maxn = args.maxn;
       }
     }
-    args.behaviors.ItemBehavior = item;
+    args.behaviors.Item = item;
     HTomb.Things.defineEntity(args);
   };
   HTomb.Things.defineFeature = function(args) {
     args = args || {};
     args.behaviors = args.behaviors || {};
-    args.behaviors.FeatureBehavior = args.behaviors.FeatureBehavior || {};
+    args.behaviors.Feature = args.behaviors.Feature || {};
     HTomb.Things.defineEntity(args);
   };
   HTomb.Things.defineZone = function(args) {
     args = args || {};
     args.behaviors = args.behaviors || {};
-    args.behaviors.ZoneBehavior = args.behaviors.ZoneBehavior || {};
+    args.behaviors.Zone = args.behaviors.Zone || {};
     HTomb.Things.defineEntity(args);
   };
-  HTomb.Things.defineLiquid = function(args) {
+  HTomb.Things.defineTurf = function(args) {
     args = args || {};
+    var turf = {};
     args.behaviors = args.behaviors || {};
-    args.behaviors.LiquidBehavior = args.behaviors.LiquidBehavior || {};
+    args.behaviors.Turf = args.behaviors.Turf || {};
     args.plural = true;
     HTomb.Things.defineEntity(args);
   };
-
-
 
 return HTomb;
 })(HTomb);

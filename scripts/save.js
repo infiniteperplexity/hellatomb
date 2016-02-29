@@ -14,7 +14,7 @@ HTomb = (function(HTomb) {
     saveGame.items = HTomb.World.items;
     saveGame.features = HTomb.World.features;
     saveGame.zones = HTomb.World.zones;
-    saveGame.liquids = HTomb.World.liquids;
+    saveGame.turfs = HTomb.World.turfs;
     saveGame.dailyCycle = HTomb.World.dailyCycle;
     var json = HTomb.Save.stringify(saveGame);
     localStorage.saveGame = json;
@@ -129,7 +129,7 @@ HTomb = (function(HTomb) {
     fillListFrom(saveGame.items, HTomb.World.items);
     fillListFrom(saveGame.features, HTomb.World.features);
     fillListFrom(saveGame.zones, HTomb.World.zones);
-    fillListFrom(saveGame.liquids, HTomb.World.liquids);
+    fillListFrom(saveGame.turfs, HTomb.World.turfs);
     HTomb.World.dailyCycle.turn = saveGame.dailyCycle.turn;
     HTomb.World.dailyCycle.minute = saveGame.dailyCycle.minute;
     HTomb.World.dailyCycle.hour = saveGame.dailyCycle.hour;

@@ -148,7 +148,7 @@ HTomb = (function(HTomb) {
     var creatures = HTomb.World.creatures;
     var items = HTomb.World.items;
     var features = HTomb.World.features;
-    var liquids = HTomb.World.liquids;
+    var turfs = HTomb.World.turfs;
     var zones = HTomb.World.zones;
     var visible = HTomb.World.visible;
     var explored = HTomb.World.explored;
@@ -169,9 +169,9 @@ HTomb = (function(HTomb) {
       }
     }
     // background color for explored squares is based on zoning
-      // maybe at some point, liquids
-    if (liquids[crd]!==undefined) {
-      bg = liquids[crd].shimmer();
+      // maybe at some point, turfs
+    if (turfs[crd]!==undefined && turfs[crd].liquid) {
+      bg = turfs[crd].liquid.shimmer();
     }
     if (zones[crd]!==undefined) {
       bg = zones[crd].bg;
@@ -179,8 +179,12 @@ HTomb = (function(HTomb) {
     // square explored but not visible
     if (visible[z][x][y]===false && HTomb.Debug.visible!==true) {
       fg = SHADOWFG;
-      if (liquids[crd]!==undefined) {
-        bg = liquids[crd].darkbg;
+      if (bg===null && turfs[crd]!==undefined && turfs[crd].liquid) {
+        bg = turfs[crd].liquid.darken();
+      }
+      //liquids will have already been handled
+      if (turfs[crd] && turfs[crd].liquid===undefined) {
+        bg = turfs[crd].bg;
       }
       if (features[crd]) {
         // feature in shadow
@@ -188,13 +192,14 @@ HTomb = (function(HTomb) {
       } else if (zview===+1 && features[cabove]) {
         // feature on level above
         return [features[cabove].symbol || "X",fg, bg || WALLBG];
-      } else if (zview===-1 && features[cbelow] && liquids[crd]===undefined) {
+      } else if (zview===-1 && features[cbelow] && turfs[crd]===undefined) {
         // feature on level below
         return [features[cbelow].symbol || "X",fg, bg || BELOWBG];
-      } else if (liquids[crd] && liquids[cabove]===undefined) {
-        return [liquids[crd].symbol,liquids[crd].fg,bg];
-      } else if (zview===-1 && liquids[cbelow]) {
-        return [Tiles.EmptyTile.symbol,liquids[cbelow].fg,liquids[cbelow].darkbg];
+        // still maybe show slopes?
+      } else if (turfs[crd] && turfs[crd].liquid && turfs[cabove]===undefined) {
+        return [turfs[crd].symbol,turfs[crd].fg,bg];
+      } else if (zview===-1 && turfs[cbelow] && turfs[cbelow].liquid) {
+        return [Tiles.EmptyTile.symbol,turfs[cbelow].fg,turfs[cbelow].liquid.darken()];
         // an empty space with floor below it
       } else if (tile===Tiles.WallTile && tiles[z+1][x][y]===Tiles.FloorTile && explored[z+1][x][y]) {
         return[Tiles.WallTile.symbol,fg,bg || WALLBG];
@@ -207,6 +212,10 @@ HTomb = (function(HTomb) {
         return [tile.symbol || "X",fg,bg || tile.bg];
       }
     } else {
+      //liquids will have already been handled
+      if (bg===null && turfs[crd] && turfs[crd].liquid===undefined) {
+        bg = turfs[crd].bg;
+      }
       // visible square
       if (creatures[crd]) {
         return [creatures[crd].symbol || "X", creatures[crd].fg || fg, bg || tile.bg];
@@ -224,15 +233,17 @@ HTomb = (function(HTomb) {
         return [items[cbelow][items[cbelow].length-1].symbol || "X", BELOWFG, bg || BELOWBG];
       } else if (zview===+1 && features[cabove]) {
         return [features[cabove].symbol || "X", WALLFG, bg || WALLBG];
-        // maybe make this happen only if there is no liquid?
-      } else if (zview===-1 && features[cbelow] && liquids[crd]===undefined) {
+        // maybe make this happen only if there is no turf?
+      } else if (zview===-1 && features[cbelow] && turfs[crd]===undefined) {
         return [features[cbelow].symbol || "X", BELOWFG, bg || BELOWBG];
-      } else if (liquids[crd] && liquids[cabove]===undefined) {
-        return [liquids[crd].symbol,liquids[crd].fg,bg];
-      } else if (zview===-1 && liquids[cbelow]) {
-        return [Tiles.EmptyTile.symbol,liquids[cbelow].fg,liquids[cbelow].shimmer()];
+        // this maybe should show slopes still?
+      } else if (turfs[crd] && (turfs[crd].liquid===undefined || turfs[cabove]===undefined)) {
+        return [turfs[crd].symbol,turfs[crd].fg,bg || turfs[crd].bg];
+      } else if (zview===-1 && turfs[cbelow] && turfs[cbelow].liquid) {
+        return [Tiles.EmptyTile.symbol,turfs[cbelow].fg,turfs[cbelow].liquid.shimmer()];
       } else if (tile===Tiles.EmptyTile && tiles[z-1][x][y]===Tiles.FloorTile) {
         return [Tiles.EmptyTile.symbol, BELOWFG, bg || BELOWBG];
+        // probably should do this for empty tiles in some way...
       } else if (tile===Tiles.FloorTile && tiles[z+1][x][y]!==Tiles.EmptyTile) {
         return ["'",tile.fg, bg || tile.bg];
       } else {
@@ -252,7 +263,7 @@ HTomb = (function(HTomb) {
     square.feature = HTomb.World.features[crd];
     square.portals = HTomb.World.portals[crd];
     square.zone = HTomb.World.zones[crd];
-    square.liquid = HTomb.World.liquids[crd];
+    square.turf = HTomb.World.turfs[crd];
     square.explored = HTomb.World.explored[z][x][y];
     square.visible = HTomb.World.visible[z][x][y];
     // until we get the real code in place...

@@ -29,7 +29,7 @@ HTomb = (function(HTomb) {
   HTomb.World.features = {};
   HTomb.World.zones = {};
   HTomb.World.portals = {};
-  HTomb.World.liquids = {};
+  HTomb.World.turfs = {};
 
   HTomb.World.init = function() {
     HTomb.World.fillTiles();
@@ -104,6 +104,7 @@ HTomb = (function(HTomb) {
     colorize();
     assignElevation();
     addSlopes();
+
     populateStuff();
   };
   HTomb.World.generators.newSimplex = function() {
@@ -139,6 +140,7 @@ HTomb = (function(HTomb) {
     minerals("Moonstone");
     minerals("Jade");
     addSlopes();
+    grassify();
   };
   function scatter(template,p) {
     for (var x=1; x<LEVELW-1; x++) {
@@ -298,6 +300,20 @@ HTomb = (function(HTomb) {
               tiles[z+1][x][y] = HTomb.Tiles.DownSlopeTile;
             }
           }
+        }
+      }
+    }
+  }
+  function grassify() {
+    var tiles = HTomb.World.tiles;
+    var squares;
+    var square;
+    var slope;
+    for (var x=0; x<LEVELW; x++) {
+      for (var y=0; y<LEVELH; y++) {
+        var z = HTomb.Tiles.groundLevel(x,y);
+        if (tiles[z][x][y]===HTomb.Tiles.FloorTile && HTomb.World.turfs[coord(x,y,z)]===undefined) {
+          HTomb.Things.Grass().place(x,y,z);
         }
       }
     }

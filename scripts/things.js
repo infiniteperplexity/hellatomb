@@ -175,12 +175,12 @@ HTomb = (function(HTomb) {
         }
         features[c] = this;
       }
-      var liquids = HTomb.World.liquids;
+      var turfs = HTomb.World.turfs;
       if (this.isLiquid) {
-        if (liquids[c]) {
-          liquids[c].remove();
+        if (turfs[c]) {
+          turfs[c].remove();
         }
-        liquids[c] = this;
+        turfs[c] = this;
       }
       var zones = HTomb.World.zones;
       if (this.isZone) {
@@ -227,9 +227,9 @@ HTomb = (function(HTomb) {
       if (this.isFeature) {
         delete features[c];
       }
-      var liquids = HTomb.World.features;
+      var turfs = HTomb.World.features;
       if (this.isLiquid) {
-        delete liquids[c];
+        delete turfs[c];
       }
       var zones = HTomb.World.zones;
       if (this.isZone) {
