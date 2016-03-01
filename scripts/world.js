@@ -151,6 +151,9 @@ HTomb = (function(HTomb) {
         if (e.isCreature && HTomb.World.creatures[coord(x,y,z)]===HTomb.Player) {
           continue;
         } else if (Math.random()<p) {
+          if (HTomb.World.turfs[coord(x,y,z)] && HTomb.World.turfs[coord(x,y,z)].liquid) {
+            e = HTomb.Things.Fish();
+          }
           e.place(x,y,z);
         }
       }

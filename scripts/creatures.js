@@ -10,7 +10,7 @@ HTomb = (function(HTomb) {
       symbol: "@",
       fg: "#D888FF",
       behaviors: {
-        Movement: {},
+        Movement: {swims: true},
         Inventory: {},
         Sight: {},
         AI: {},

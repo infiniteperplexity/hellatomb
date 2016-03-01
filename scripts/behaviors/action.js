@@ -12,6 +12,7 @@ HTomb = (function(HTomb) {
     // flags for different kinds of movement
     walks: true,
     climbs: true,
+    //each: ["walks","climbs","flies","swims"],
     // Walk in one of the eight random directions
     walkRandom: function() {
       //var r = Math.floor(Math.random()*8);
@@ -136,7 +137,9 @@ HTomb = (function(HTomb) {
       } else if (square.terrain.solid===true && this.phases!==true) {
         return false;
       // can't walk over a pit
-      } else if (square.terrain.fallable===true && this.flies===undefined) {
+      } else if (square.terrain.fallable===true && this.flies!==true) {
+        return false;
+      } else if (square.turf && square.turf.liquid && this.swims!==true) {
         return false;
       // non-flyers can't climb diagonally
       } else if (this.flies!==true && dz!==0 && (dx!==0 || dy!==0)) {
@@ -152,6 +155,10 @@ HTomb = (function(HTomb) {
         return false;
       // sort of a perfunctory check...
       } else if (this.walks===true) {
+        return true;
+      } else if (this.flies===true) {
+        return true;
+      } else if (this.swims===true && square.turf && square.turf.liquid) {
         return true;
       } else {
         return false;

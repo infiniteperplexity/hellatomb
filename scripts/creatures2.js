@@ -10,7 +10,7 @@ HTomb = (function(HTomb) {
       symbol: "@",
       fg: "#D888FF",
       behaviors: {
-        Movement: {},
+        Movement: {swims: true},
         Inventory: {},
         Sight: {},
         AI: {},
@@ -27,7 +27,7 @@ HTomb = (function(HTomb) {
     fg: "#99FF66",
     behaviors: {
       AI: {},
-      Movement: {},
+      Movement: {swims: true},
       Sight: {},
       Worker: {},
       Inventory: {capacity: 2}
@@ -54,6 +54,17 @@ HTomb = (function(HTomb) {
     behaviors: {
       AI: {},
       Movement: {}
+    }
+  });
+
+  HTomb.Things.defineCreature({
+    template: "Fish",
+    name: "fish",
+    symbol: "p",
+    fg: "orange",
+    behaviors: {
+      AI: {},
+      Movement: {swims: true, walks: false}
     }
   });
 
