@@ -14,8 +14,9 @@ HTomb = (function(HTomb) {
         Inventory: {},
         Sight: {},
         AI: {},
-        Master: {tasks: ["UnearthingSigil","EarthenSigil","CraftingSigil","DismantlingSigil","HoardingSigil","MurderousSigil","WardingSigil","RevokingSigil"]},
-        SpellCaster: {spells: ["SummonBat"]}
+        //Master: {tasks: ["UnearthingSigil","EarthenSigil","CraftingSigil","DismantlingSigil","HoardingSigil","MurderousSigil","WardingSigil","RevokingSigil"]},
+        Master: {tasks: ["UnearthingSigil","EarthenSigil","DismantlingSigil","CraftingSigil","WardingSigil","RevokingSigil"]},
+        SpellCaster: {spells: ["RaiseZombie","SummonBat"]}
       }
   });
 
@@ -28,7 +29,8 @@ HTomb = (function(HTomb) {
       AI: {},
       Movement: {},
       Sight: {},
-      Worker: {}
+      Worker: {},
+      Inventory: {capacity: 2}
     }
   });
 

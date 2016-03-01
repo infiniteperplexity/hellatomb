@@ -55,6 +55,24 @@ HTomb = (function(HTomb) {
       this.y = null;
       this.z = null;
     },
+    destroy: function() {
+      if (this.creature && this.creature.destroy) {
+        this.creature.destroy();
+      }
+      if (this.item && this.item.destroy) {
+        this.item.destroy();
+      }
+      if (this.feature && this.feature.destroy) {
+        this.feature.destroy();
+      }
+      if (this.zone && this.zone.destroy) {
+        this.zone.destroy();
+      }
+      if (this.turf && this.turf.destroy) {
+        this.turf.destroy();
+      }
+      this.remove();
+    },
     onDespawn: function() {
       this.remove();
     },
@@ -148,9 +166,6 @@ HTomb = (function(HTomb) {
       var c = coord(cr.x,cr.y,cr.z);
       var creatures = HTomb.World.creatures;
       delete creatures[c];
-    },
-    destroy: function() {
-      this.remove();
     }
   });
 
@@ -160,7 +175,8 @@ HTomb = (function(HTomb) {
     stackable: false,
     n: null,
     maxn: 10,
-    each: ["n"],
+    haulable: true,
+    each: ["n","haulable"],
     place: function(x,y,z) {
       var c = coord(x,y,z);
       var pile = HTomb.World.items[c] || [];
@@ -186,9 +202,6 @@ HTomb = (function(HTomb) {
           }
         }
       }
-    },
-    destroy: function() {
-      this.remove();
     },
     stackInto: function(arr) {
       var one;
@@ -247,9 +260,6 @@ HTomb = (function(HTomb) {
       var c = coord(f.x,f.y,f.z);
       var features = HTomb.World.features;
       delete features[c];
-    },
-    destroy: function() {
-      this.remove();
     }
   });
   HTomb.Things.defineBehavior({
@@ -271,9 +281,6 @@ HTomb = (function(HTomb) {
         zones[c].task.cancel();
       }
       delete zones[c];
-    },
-    destroy: function() {
-      this.remove();
     }
   });
   HTomb.Things.defineBehavior({
@@ -292,9 +299,6 @@ HTomb = (function(HTomb) {
       var c = coord(l.x,l.y,l.z);
       var turfs = HTomb.World.turfs;
       delete turfs[c];
-    },
-    destroy: function() {
-      this.remove();
     }
   });
 
@@ -338,6 +342,11 @@ HTomb = (function(HTomb) {
     }
     args.behaviors.Item = item;
     HTomb.Things.defineEntity(args);
+    //if (args.asFeature) {
+    //  var feature = {};
+    //  feature.template = args.asFeature.template || args.feature + "Feature";
+    //  feature.name = args.asFeature.name || args.name;
+    //}
   };
   HTomb.Things.defineFeature = function(args) {
     args = args || {};

@@ -13,7 +13,7 @@ HTomb = (function(HTomb) {
     assignee: null,
     zone: null,
     zoneTemplate: null,
-    feature: null,
+    incompleteFeature: null,
     featureTemplate: null,
     each: ["assigner","assignee","zone","feature"],
     onDefine: function() {
@@ -22,6 +22,7 @@ HTomb = (function(HTomb) {
       }
     },
     tryAssign: function(cr) {
+
       if (this.canReachZone(cr)) {
         this.assignTo(cr);
         return true;
@@ -135,6 +136,9 @@ HTomb = (function(HTomb) {
       var that = this;
       function createZone(x,y,z) {
         that.placeZone(x,y,z);
+        if (options.callback) {
+          options.callback(x,y,z);
+        }
       }
       HTomb.GUI.selectSquare(z,createZone);
     },
@@ -148,6 +152,9 @@ HTomb = (function(HTomb) {
         for (var i=0; i<squares.length; i++) {
           var crd = squares[i];
           that.placeZone(crd[0],crd[1],crd[2]);
+          if (options.callback) {
+            options.callback(crd[0],crd[1],crd[2]);
+          }
         }
         HTomb.GUI.reset();
       };
@@ -167,12 +174,10 @@ HTomb = (function(HTomb) {
         var dist = HTomb.Path.distance(cr.x,cr.y,x,y);
         if (HTomb.Tiles.isTouchableFrom(x,y,z,cr.x,cr.y,cr.z)) {
           this.work(x,y,z);
-        } else if (dist>1 || cr.z!==z) {
+        } else if (dist>0 || cr.z!==z) {
           cr.movement.walkToward(x,y,z);
         } else if (dist===0) {
           cr.movement.walkRandom();
-        } else if (dist<=1) {
-
         }
       }
       cr.ai.acted = true;
@@ -182,20 +187,20 @@ HTomb = (function(HTomb) {
         (HTomb.World.turfs[coord(x,y,z)]).remove();
       }
       var f = HTomb.World.features[coord(x,y,z)];
-      if (f===this.feature) {
+      if (f===this.incompleteFeature) {
         f.steps-=1;
         if (f.steps<=0) {
           this.finish();
           this.complete();
         }
       } else {
-        this.feature = HTomb.Things.Construction(this.featureTemplate);
-        this.feature.task = this;
+        this.incompleteFeature = HTomb.Things.Construction(this.featureTemplate);
+        this.incompleteFeature.task = this;
         if (f) {
-          console.log("removed a feature to make room for " + this.feature.describe());
+          console.log("removed a feature to make room for " + this.incompleteFeature.describe());
           f.remove();
         }
-        this.feature.place(x,y,z);
+        this.incompleteFeature.place(x,y,z);
       }
     },
     finish: function() {
@@ -203,9 +208,6 @@ HTomb = (function(HTomb) {
       alert("don't use this!");
     }
   });
-
-
-
 
   HTomb.Things.defineTask({
     template: "UnearthingSigil",
@@ -223,6 +225,9 @@ HTomb = (function(HTomb) {
       fg: HTomb.Constants.BELOW
     },
     canDesignateTile: function(x,y,z) {
+      if (HTomb.World.features[coord(x,y,z)] && HTomb.World.features[coord(x,y,z)].template!=="Tombstone") {
+        return false;
+      }
       var t = HTomb.World.tiles[z][x][y];
       var tb = HTomb.World.tiles[z-1][x][y];
       if (t===HTomb.Tiles.VoidTile) {
@@ -234,6 +239,69 @@ HTomb = (function(HTomb) {
       }
       return true;
     },
+    placeZone: function(x,y,z, master) {
+      master = master || HTomb.Player;
+      // raise a zombie if we can
+      if (this.canDesignateTile(x,y,z) && HTomb.World.explored[z][x][y]) {
+        var items = HTomb.World.items[coord(x,y,z-1)] || [];
+        for (var i=0; i<items.length; i++) {
+          if (items[i].template==="Corpse") {
+            items[i].remove();
+            if (HTomb.World.tiles[z-1][x][y]===HTomb.Tiles.WallTile) {
+              HTomb.World.tiles[z-1][x][y]=HTomb.Tiles.UpSlopeTile;
+            }
+            HTomb.GUI.sensoryEvent("You hear an ominous stirring below the earth...",x,y,z);
+            var zombie = HTomb.Things.Zombie();
+            zombie.place(x,y,z-1);
+            HTomb.Things.Minion().addToEntity(zombie);
+            zombie.minion.setMaster(master);
+            master.master.addMinion(zombie);
+            zombie.ai.acted = true;
+            var zn = HTomb.Things.templates.Task.placeZone.call(this,x,y,z,master);
+            zn.task.tryAssign(zombie);
+            zn.clearsFeature = false;
+            return;
+          }
+        }
+      }
+      // otherwise just place a zone
+      HTomb.Things.templates.Task.placeZone.call(this,x,y,z,master);
+    },
+    work: function(x,y,z) {
+      if (this.zone.clearsFeature===false) {
+        var f = HTomb.World.features[coord(x,y,z)];
+        if (f && f.template==="Tombstone") {
+          // to scatter the timing a bit...
+          if (Math.random()<0.8) {
+            f.feature.hp-=1;
+          }
+          if (f.feature.hp===0) {
+            // explode the tombstone
+            f.destroy();
+            HTomb.GUI.sensoryEvent("A zombie bursts forth from the ground!",x,y,z);
+            for (var i=0; i<ROT.DIRS[8].length; i++) {
+              var x1 = ROT.DIRS[8][i][0]+x;
+              var y1 = ROT.DIRS[8][i][1]+y;
+              if (HTomb.World.tiles[z][x1][y1].solid!==true) {
+                if (Math.random()<0.4) {
+                  var rock = HTomb.Things.Rock();
+                  rock.item.n = 1;
+                  rock.place(x1,y1,z);
+                }
+              }
+              HTomb.World.tiles[z][x][y] = HTomb.Tiles.DownSlopeTile;
+              if(HTomb.World.turfs[coord(x,y,z)]) {
+                HTomb.World.turfs[coord(x,y,z)].destroy();
+              }
+              this.complete();
+              HTomb.World.validate();
+            }
+          }
+        }
+      } else {
+        HTomb.Things.templates.Task.work.call(this,x,y,z);
+      }
+    },
     finish: function() {
       var tiles = HTomb.World.tiles;
       var EmptyTile = HTomb.Tiles.EmptyTile;
@@ -241,7 +309,7 @@ HTomb = (function(HTomb) {
       var WallTile = HTomb.Tiles.WallTile;
       var UpSlopeTile = HTomb.Tiles.UpSlopeTile;
       var DownSlopeTile = HTomb.Tiles.DownSlopeTile;
-      var c = this.feature;
+      var c = this.incompleteFeature;
       var x = c.x;
       var y = c.y;
       var z = c.z;
@@ -274,34 +342,11 @@ HTomb = (function(HTomb) {
       } else if (t===EmptyTile) {
         tiles[z-1][x][y] = FloorTile;
       }
+      if(HTomb.World.turfs[coord(x,y,z)]) {
+        HTomb.World.turfs[coord(x,y,z)].destroy();
+      }
       c.remove();
       HTomb.World.validate();
-    },
-    placeZone: function(x,y,z, master) {
-      master = master || HTomb.Player;
-      // raise a zombie if we can
-      if (this.canDesignateTile(x,y,z) && HTomb.World.explored[z][x][y]) {
-        var items = HTomb.World.items[coord(x,y,z-1)] || [];
-        for (var i=0; i<items.length; i++) {
-          if (items[i].template==="Corpse") {
-            items[i].remove();
-            if (HTomb.World.tiles[z-1][x][y]===HTomb.Tiles.WallTile) {
-              HTomb.World.tiles[z-1][x][y]=HTomb.Tiles.UpSlopeTile;
-            }
-            var zombie = HTomb.Things.Zombie();
-            zombie.place(x,y,z-1);
-            HTomb.Things.Minion().addToEntity(zombie);
-            zombie.minion.setMaster(master);
-            master.master.addMinion(zombie);
-            zombie.ai.acted = true;
-            var zn = HTomb.Things.templates.Task.placeZone.call(this,x,y,z,master);
-            zn.task.tryAssign(zombie);
-            return;
-          }
-        }
-      }
-      // otherwise just place a zone
-      HTomb.Things.templates.Task.placeZone.call(this,x,y,z,master);
     }
   });
 
@@ -321,6 +366,9 @@ HTomb = (function(HTomb) {
       steps: 5
     },
     canDesignateTile: function(x,y,z) {
+      if (HTomb.World.features[coord(x,y,z)]) {
+        return false;
+      }
       //shouldn't be able to build surrounded by emptiness
       var t = HTomb.World.tiles[z][x][y];
       if (t===HTomb.Tiles.VoidTile || t===HTomb.Tiles.WallTile) {
@@ -336,7 +384,7 @@ HTomb = (function(HTomb) {
       var WallTile = HTomb.Tiles.WallTile;
       var UpSlopeTile = HTomb.Tiles.UpSlopeTile;
       var DownSlopeTile = HTomb.Tiles.DownSlopeTile;
-      var c = this.feature;
+      var c = this.incompleteFeature;
       var x = c.x;
       var y = c.y;
       var z = c.z;
@@ -424,8 +472,50 @@ HTomb = (function(HTomb) {
       this.designateSquares({master: master});
     },
     ai: function() {
-      //var cr = this.assignee;
-      //cr.ai.patrol(this.zone.x,this.zone.y,this.zone.z);
+      var cr = this.assignee;
+      if (cr.movement) {
+        var zone = this.zone;
+        var x = zone.x;
+        var y = zone.y;
+        var z = zone.z;
+        var path = HTomb.Path.aStar(cr.x,cr.y,cr.z,x,y,z);
+        if (path===false) {
+          cr.movement.walkRandom();
+        } else {
+          if (cr.inventory.items.length>0) {
+            if (cr.x===x && cr.y===y && cr.z===z) {
+              cr.inventory.drop(cr.inventory.items[0]);
+            } else {
+              cr.movement.walkToward(x,y,z);
+            }
+          } else {
+              //search for items...
+              outerLoop:
+              for (var it in HTomb.World.items) {
+                var items = HTomb.World.items[it];
+                // this will get messed up by items in someone's inventory
+                for (var i=0; i<items.length; i++) {
+                  var item = items[i];
+                  if (item.haulable!==false) {
+                    cr.ai.target = item;
+                    break outerLoop;
+                  }
+                }
+              }
+              if (cr.ai.target===null) {
+                cr.movement.walkRandom();
+              } else if (cr.x===item.x && cr.y===item.y && cr.z===item.z) {
+                cr.inventory.pickup(item);
+              } else {
+                cr.movement.walkToward(item.x,item.y,item.z);
+              }
+          }
+        }
+      }
+      cr.ai.acted = true;
+      // Check to see if I can reach the zone.
+      // Check to see if I am carrying an item
+      // Check to see if I can find an item.
     }
   });
   HTomb.Things.defineTask({
@@ -493,19 +583,48 @@ HTomb = (function(HTomb) {
       name: "dismantle",
       bg: "#880000"
     },
+    finish: function() {
+      var x = this.zone.x;
+      var y = this.zone.y;
+      var z = this.zone.z;
+      var thing = HTomb.World.features[coord(x,y,z)]
+      if (thing) {
+        HTomb.GUI.sensoryEvent("Removed " + thing.describe(),x,y,z);
+        thing.destroy();
+        return;
+      }
+      var thing = HTomb.World.turfs[coord(x,y,z)]
+      if (thing) {
+        HTomb.GUI.sensoryEvent("Removed " + thing.describe(),x,y,z);
+        thing.destroy();
+        return;
+      }
+    },
     canDesignateTile: function(x,y,z) {
-      if (HTomb.World.features[coord(x,y,z)]) {
+      if (HTomb.World.features[coord(x,y,z)] || (HTomb.World.turfs[coord(x,y,z)] && HTomb.World.turfs[coord(x,y,z)].liquid===undefined)) {
         return true;
       } else {
         return false;
       }
     },
     designate: function(master) {
-      this.designateSquare({master: master});
+      this.designateSquares({master: master});
     },
-    ai: function() {
-      //var cr = this.assignee;
-      //cr.ai.patrol(this.zone.x,this.zone.y,this.zone.z);
+    work: function(x,y,z) {
+      var thing = HTomb.World.features[coord(x,y,z)];
+      if (thing) {
+        thing.feature.hp-=1;
+        if (thing.feature.hp<=0) {
+          this.finish();
+          this.complete();
+        }
+      } else {
+        thing = HTomb.World.turfs[coord(x,y,z)];
+        if (thing) {
+          this.finish();
+          this.complete();
+        }
+      }
     }
   });
 
@@ -513,7 +632,7 @@ HTomb = (function(HTomb) {
     template: "CraftingSigil",
     name: "crafting sigil",
     zoneTemplate: {
-      template: "BuildDoorZone",
+      template: "BuildFeatureZone",
       name: "build",
       bg: "#553300"
     },
@@ -525,20 +644,12 @@ HTomb = (function(HTomb) {
     },
     features: ["Door"],
     finish: function() {
-      var c = this.feature;
-      var x = c.x;
-      var y = c.y;
-      var z = c.z;
-      c.remove();
-      this.zone.feature.place(x,y,z);
-    },
-    tryAssign: function(cr) {
-      if (this.canReachZone(cr)) {
-        this.assignTo(cr);
-        return true;
-      } else {
-        return false;
-      }
+      var c = this.incompleteFeature;
+      var x = this.zone.x;
+      var y = this.zone.y;
+      var z = this.zone.z;
+      //c.remove();
+      this.zone.completeFeature.place(x,y,z);
     },
     canDesignateTile: function(x,y,z) {
       var square = HTomb.Tiles.getSquare(x,y,z);
@@ -548,23 +659,29 @@ HTomb = (function(HTomb) {
         return false;
       }
     },
-    // note that this passes the behavior, not the entity
     designate: function(master) {
-      HTomb.GUI.choosingMenu("Choose a feature:", this.features,
+      var arr = [];
+      for (var i=0; i<this.features.length; i++) {
+        arr.push(HTomb.Things.templates[this.features[i]]);
+      }
+      var that = this;
+      HTomb.GUI.choosingMenu("Choose a feature:", arr,
       function(feature) {
-          return function() {
-            this.designateSquare({master: master, feature: feature});
+        return function() {
+          var master = master || HTomb.Player;
+          var z = master.z;
+          function createZone(x,y,z) {
+            var zone = that.placeZone(x,y,z);
+            if (zone) {
+              //console.log(zone.task);
+              zone.completeFeature = HTomb.Things[feature.template]();
+            }
           }
-        }
-      );
-    },
-    designateSquare: function(options) {
-      HTomb.Things.templates.Task.designateSquare.call(this,options);
-      this.zone.feature = HTomb.Things[options.feature]();
-      this.feature.name = this.feature.name + options.feature.name;
+          HTomb.GUI.selectSquare(z,createZone);
+        };
+      });
     }
   });
-
 
   HTomb.Things.defineTask({
     template: "DummyTask",

@@ -23,8 +23,8 @@ HTomb = (function(HTomb) {
     name: "tree",
     //symbol: "\u2663",
     symbol: ["\u2663","\u2660"],
-    fg: "#559900",
-    randomColor: 20
+    fg: "#77BB00",
+    randomColor: 15
   });
 
   HTomb.Things.defineFeature({

@@ -141,6 +141,7 @@ HTomb = (function(HTomb) {
     minerals("Jade");
     addSlopes();
     grassify();
+    noHauling();
   };
   function scatter(template,p) {
     for (var x=1; x<LEVELW-1; x++) {
@@ -315,6 +316,14 @@ HTomb = (function(HTomb) {
         if (tiles[z][x][y]===HTomb.Tiles.FloorTile && HTomb.World.turfs[coord(x,y,z)]===undefined) {
           HTomb.Things.Grass().place(x,y,z);
         }
+      }
+    }
+  }
+  function noHauling() {
+    for (var it in HTomb.World.items) {
+      var items = HTomb.World.items[it];
+      for (var i=0; i<items.length; i++) {
+        items[i].item.haulable=false;
       }
     }
   }
