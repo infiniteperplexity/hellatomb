@@ -169,7 +169,7 @@ HTomb = (function(HTomb) {
   HTomb.Things.defineBehavior({
     template: "Worker",
     name: "worker",
-    allowedTasks: ["DigTask","BuildTask","PatrolTask","BuildDoor","UnearthingSigil","EarthenSigil","WardingSigil","CraftingSigil","RevokingSigil","DismantlingSigil","MurderousSigil","HoardingSigil","HarvestingSigil"]
+    allowedTasks: ["DigTask","BuildTask","PatrolTask","CraftTask","HoardTask","FarmTask","DismantleTask"]
   });
 
   return HTomb;

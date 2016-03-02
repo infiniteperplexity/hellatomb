@@ -14,7 +14,7 @@ HTomb = (function(HTomb) {
         Inventory: {},
         Sight: {},
         AI: {},
-        Master: {tasks: ["DigTask","BuildTask","BuildDoor","PatrolTask","Undesignate"]},
+        Master: {tasks: ["DigTask","BuildTask","DismantleTask","CraftTask","PatrolTask","HoardTask","FarmTask","ForbidTask","Undesignate"]},
         SpellCaster: {spells: ["RaiseZombie","SummonBat"]}
       }
   });
@@ -26,9 +26,10 @@ HTomb = (function(HTomb) {
     fg: "#99FF66",
     behaviors: {
       AI: {},
-      Movement: {},
+      Movement: {swims: true},
       Sight: {},
-      Worker: {}
+      Worker: {},
+      Inventory: {capacity: 2}
     }
   });
 
@@ -52,6 +53,17 @@ HTomb = (function(HTomb) {
     behaviors: {
       AI: {},
       Movement: {}
+    }
+  });
+
+  HTomb.Things.defineCreature({
+    template: "Fish",
+    name: "fish",
+    symbol: "p",
+    fg: "orange",
+    behaviors: {
+      AI: {},
+      Movement: {swims: true, walks: false}
     }
   });
 
