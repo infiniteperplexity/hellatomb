@@ -15,7 +15,7 @@ HTomb = (function(HTomb) {
         Sight: {},
         AI: {},
         //Master: {tasks: ["UnearthingSigil","EarthenSigil","CraftingSigil","DismantlingSigil","HoardingSigil","MurderousSigil","WardingSigil","RevokingSigil"]},
-        Master: {tasks: ["UnearthingSigil","EarthenSigil","DismantlingSigil","CraftingSigil","WardingSigil","RevokingSigil"]},
+        Master: {tasks: ["UnearthingSigil","EarthenSigil","DismantlingSigil","CraftingSigil","WardingSigil","HoardingSigil","HarvestingSigil","ForbiddenSigil","RevokingSigil"]},
         SpellCaster: {spells: ["RaiseZombie","SummonBat"]}
       }
   });

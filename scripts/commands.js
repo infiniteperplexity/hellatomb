@@ -169,16 +169,8 @@ HTomb = (function(HTomb) {
   Commands.glance = function(square) {
     if (square.items) {
       // This should use the listItems method
-      var mesg = "This square contains";
-      for (var i = 0; i<square.items.length; i++) {
-        mesg = mesg + " " + square.items[i].describe();
-        if (i===square.items.length-2) {
-          mesg = mesg + ", and";
-        } else if (i<square.items.length-1) {
-          mesg = mesg + ",";
-        }
-      }
-      HTomb.GUI.pushMessage(mesg+".");
+      var mesg = square.items.list();
+      HTomb.GUI.pushMessage("You see " + mesg + " here.");
     }
     if (square.feature) {
       HTomb.GUI.pushMessage("There is " + square.feature.describe() + " here.");

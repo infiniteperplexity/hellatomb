@@ -130,8 +130,10 @@ HTomb = (function(HTomb) {
       var t = HTomb.World.tiles[z-dz][x-dx][y-dy];
       var tu = HTomb.World.tiles[z+1-dz][x-dx][y-dy];
       var td = HTomb.World.tiles[z-1-dz][x-dx][y-dy];
+      if (square.zone && square.zone.template==="ForbiddenZone" && this.entity.minion && square.zone.task.assigner===this.entity.minion.master) {
+        return false;
       // can't go through solid feature
-      if (square.feature && square.feature.solid===true && this.phases!==true) {
+      } else if (square.feature && square.feature.solid===true && this.phases!==true) {
         return false;
       // can't go through solid terrain
       } else if (square.terrain.solid===true && this.phases!==true) {

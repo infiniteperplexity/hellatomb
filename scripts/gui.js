@@ -406,7 +406,7 @@ HTomb = (function(HTomb) {
       }
       next = "Items: ";
       if (square.items && square.visible) {
-        next+=HTomb.Things.templates.Item.listItems(square.items);
+        next+=square.items.list();
       }
       text.push(next);
       next = "Feature: ";
@@ -436,7 +436,7 @@ HTomb = (function(HTomb) {
       }
       next = "Items: ";
       if (above.items && square.visibleAbove) {
-        next+=HTomb.Things.templates.Item.listItems(above.items);
+        next+=above.items.list();
       }
       text.push(next);
       next = "Feature: ";
@@ -466,7 +466,7 @@ HTomb = (function(HTomb) {
       }
       next = "Items: ";
       if (below.items && square.visibleBelow) {
-        next+=HTomb.Things.templates.Item.listItems(below.items);
+        next+=below.items.list();
       }
       text.push(next);
       next = "Feature: ";
@@ -551,7 +551,6 @@ HTomb = (function(HTomb) {
     var details = [];
     details = details.concat(square.terrain.details());
     details = details.concat()
-    console.log(square);
     //GUI.splash(details);
   }
   main.mouseOver = function() {
@@ -597,11 +596,11 @@ HTomb = (function(HTomb) {
     var choices = [s];
     // there is probably a huge danger of memory leaks here
     for (var i=0; i<arr.length; i++) {
-      var desc = arr[i].describe();
+      var desc = (arr[i].describe!==undefined) ? arr[i].describe() : arr[i];
       var choice = arr[i];
       // Bind a callback function and its closure to each keystroke
       contrls["VK_" + alpha[i].toUpperCase()] = func(choice);
-      choices.push(alpha[i]+") " + arr[i].describe());
+      choices.push(alpha[i]+") " + desc);
     }
     contrls.VK_ESCAPE = GUI.reset;
     choices.push("Esc to cancel");

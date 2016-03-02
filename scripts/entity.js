@@ -175,18 +175,16 @@ HTomb = (function(HTomb) {
     stackable: false,
     n: null,
     maxn: 10,
+    container: null,
     haulable: true,
     each: ["n","haulable"],
     place: function(x,y,z) {
       var c = coord(x,y,z);
-      var pile = HTomb.World.items[c] || [];
-      if (this.stackable) {
-        this.stackInto(pile);
-      } else {
-        pile.push(this.entity);
-      }
+      var pile = HTomb.World.items[c] || ItemContainer();
+      pile.push(this.entity);
       if (pile.length>0) {
         HTomb.World.items[c] = pile;
+        pile.parent = HTomb.World.items;
       }
     },
     remove: function() {
@@ -195,45 +193,13 @@ HTomb = (function(HTomb) {
       var pile = HTomb.World.items[c];
       // remove it from the old pile
       if (pile) {
-        if (pile.indexOf(this.entity)!==-1) {
-          pile.splice(pile.indexOf(this.entity),1);
+        if (pile.contains(this.entity)) {
+          pile.remove(this.entity);
           if (pile.length===0) {
             delete HTomb.World.items[c];
           }
         }
       }
-    },
-    stackInto: function(arr) {
-      var one;
-      var two;
-      for (var i=0; i<arr.length; i++) {
-        if ((this.n>0) && (arr[i].template===this.entity.template) && (arr[i].item.n<arr[i].item.maxn)) {
-          one = this.n;
-          two = arr[i].item.n;
-          if ((one+two)>this.maxn) {
-            arr[i].item.n = this.maxn;
-            this.n = one+two-this.maxn;
-          } else {
-            arr[i].item.n = one+two;
-            this.n = 0;
-          }
-        }
-      }
-      if (this.n>0) {
-        arr.push(this.entity);
-      }
-    },
-    listItems: function(arr) {
-      var mesg = "";
-      for (var i = 0; i<arr.length; i++) {
-        mesg = mesg + " " + arr[i].describe();
-        if (i===arr.length-2) {
-          mesg = mesg + ", and";
-        } else if (i<arr.length-1) {
-          mesg = mesg + ",";
-        }
-      }
-      return mesg;
     },
     onAdd: function() {
       if (this.entity.stackSize && this.stackable && this.n===null) {
@@ -368,6 +334,125 @@ HTomb = (function(HTomb) {
     args.plural = true;
     HTomb.Things.defineEntity(args);
   };
+
+
+
+  function ItemContainer(args) {
+    var container = Object.create(Array.prototype);
+    for (var method in ItemContainer.prototype) {
+      if (ItemContainer.prototype.hasOwnProperty(method)) {
+        container[method] = ItemContainer.prototype[method];
+      }
+    }
+    if (Array.isArray(args)) {
+      for (var i=0; i<args.length; i++) {
+        container.push(args[i]);
+      }
+    }
+    return container;
+  }
+  HTomb.ItemContainer = ItemContainer;
+  ItemContainer.prototype = {
+    parent: null,
+    getParent: function() {
+      if (parent===HTomb.World.items) {
+        for (key in HTomb.World.items) {
+          if (HTomb.World.items[key]===this) {
+            return c = HTomb.decoord(key);
+          }
+        }
+      } else {
+        return parent;
+      }
+    },
+    absorbStack: function(item) {
+      var one;
+      var two;
+      for (var i=0; i<this.length; i++) {
+        if ((this[i].template===item.template) && (this[i].item.n<this[i].item.maxn)) {
+          one = item.item.n;
+          two = this[i].item.n;
+          if ((one+two)>item.item.maxn) {
+            this[i].item.n = item.item.maxn;
+            item.item.n = one+two-item.item.maxn;
+          } else {
+            this[i].item.n = one+two;
+            item.item.n = 0;
+          }
+        }
+      }
+      if (item.item.n>0) {
+        Array.prototype.push.call(this,item)
+        item.item.container = this;
+      } else {
+        item.despawn();
+      }
+    },
+    push: function(item) {
+      if (item.item.stackable) {
+        this.absorbStack(item);
+      } else {
+        Array.prototype.push.call(this,item);
+        item.item.container = this;
+      }
+    },
+    unshift: function(item) {
+      if (item.item.stackable) {
+        this.absorbStack(item);
+      } else {
+        Array.prototype.unshift.call(this,arg);
+        item.item.container = this;
+      }
+    },
+    contains: function(item) {
+      var indx = this.indexOf(item);
+      if (indx>-1) {
+        return true;
+      } else {
+        return false;
+      }
+    },
+    containsAny: function(template) {
+      for (var i=0; i<this.length; i++) {
+        if (this[i].template===template) {
+          return true;
+        }
+      }
+      return false;
+    },
+    shift: function() {
+      var item = Array.prototype.shift.call(this);
+      item.item.container = null;
+      return item;
+    },
+    pop: function() {
+      var item = Array.prototype.pop.call(this);
+      item.item.container = null;
+      return item;
+    },
+    remove: function(item) {
+      var indx = this.indexOf(item);
+      if (indx>-1) {
+        item.item.container = null;
+        return this.splice(indx,1);
+      }
+    },
+    list: function() {
+      var mesg = "";
+      for (var i = 0; i<this.length; i++) {
+        if (i>0) {
+          mesg+=" ";
+        }
+        mesg+=this[i].describe();
+        if (i===this.length-2) {
+          mesg = mesg + ", and";
+        } else if (i<this.length-1) {
+          mesg = mesg + ",";
+        }
+      }
+      return mesg;
+    }
+  }
 
 return HTomb;
 })(HTomb);

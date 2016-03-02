@@ -62,6 +62,21 @@ HTomb = (function(HTomb) {
   });
 
   HTomb.Things.defineFeature({
+    template: "Throne",
+    name: "throne",
+    //symbol: "\u2655",
+    symbol: "\u265B",
+    fg: "#CCAA00"
+  });
+
+  HTomb.Things.defineFeature({
+    template: "ScryingGlass",
+    name: "scrying glass",
+    symbol: "\u25CB",
+    fg: "cyan"
+  });
+
+  HTomb.Things.defineFeature({
     template: "Door",
     name: "door",
     locked: false,
@@ -103,6 +118,14 @@ HTomb = (function(HTomb) {
     symbol: '"',
     fg: HTomb.Constants.GRASSFG ||"#668844",
     bg: HTomb.Constants.GRASSBG || "#334422"
+  });
+
+  HTomb.Things.defineTurf({
+    template: "Soil",
+    name: "soil",
+    symbol: '"',
+    fg: HTomb.Constants.GRASSFG ||"#886644",
+    bg: HTomb.Constants.GRASSBG || "#443322"
   });
 
   return HTomb;

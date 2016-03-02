@@ -183,7 +183,7 @@ HTomb = (function(HTomb) {
         bg = turfs[crd].liquid.darken();
       }
       //liquids will have already been handled
-      if (turfs[crd] && turfs[crd].liquid===undefined) {
+      if (bg===null && turfs[crd] && turfs[crd].liquid===undefined) {
         bg = turfs[crd].bg;
       }
       if (features[crd]) {

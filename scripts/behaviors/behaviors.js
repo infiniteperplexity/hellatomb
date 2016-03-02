@@ -30,17 +30,20 @@ HTomb = (function(HTomb) {
     template: "Inventory",
     name: "inventory",
     capacity: 10,
-    onAdd: function() {this.items = [];},
+    onAdd: function() {this.items = HTomb.ItemContainer(); this.items.parent = this;},
     pickup: function(item) {
       var e = this.entity;
+      if (item.item.haulable===false) {
+        delete item.item.haulable;
+      }
       item.remove();
-      this.add(item);
       HTomb.GUI.sensoryEvent(this.entity.describe() + " picks up " + item.describe(),e.x,e.y,e.z);
+      this.add(item);
       this.entity.ai.acted = true;
     },
     drop: function(item) {
       var e = this.entity;
-      this.remove(item);
+      this.items.remove(item);
       item.place(e.x,e.y,e.z);
       HTomb.GUI.sensoryEvent(this.entity.describe() + " drops " + item.describe(),e.x,e.y,e.z);
       this.entity.ai.acted = true;
@@ -48,19 +51,9 @@ HTomb = (function(HTomb) {
     add: function(item) {
       if (this.items.length>=this.capacity) {
         HTomb.GUI.pushMessage("Can't pick that up.");
-      } else if (item.item.stackable) {
-        item.item.stackInto(this.items);
       } else {
         this.items.push(item);
       }
-    },
-    remove: function(item) {
-        var indx = this.items.indexOf(item);
-        if (indx===-1) {
-          HTomb.GUI.pushMessage("Can't remove that");
-        } else {
-          this.items.splice(indx,1);
-        }
     }
   });
 
