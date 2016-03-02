@@ -391,11 +391,14 @@ HTomb = (function(HTomb) {
     return touchable;
   };
   HTomb.Tiles.isTouchableFrom = function(x1,y1,z1,x0,y0,z0) {
+    if(x1===x0 && y1===y0 && z1===z0) {
+      return true;
+    }
     if (HTomb.coordInArray([x1,y1,z1],HTomb.Tiles.touchableFrom(x0,y0,z0))>-1) {
       return true;
     } else {
       return false;
     }
-  }
+  };
   return HTomb;
 })(HTomb);
