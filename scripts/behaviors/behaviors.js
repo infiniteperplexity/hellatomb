@@ -41,6 +41,14 @@ HTomb = (function(HTomb) {
       this.add(item);
       this.entity.ai.acted = true;
     },
+    pickupOne: function(i_or_t) {
+      var e = this.entity;
+      var items = HTomb.World.items[coord(e.x,e.y,e.z)];
+      var item = items.takeOne(i_or_t);
+      if (item) {
+        this.pickup(item);
+      }
+    },
     drop: function(item) {
       var e = this.entity;
       this.items.remove(item);

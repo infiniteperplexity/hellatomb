@@ -16,7 +16,15 @@ HTomb = (function(HTomb) {
     zoneTemplate: null,
     incompleteFeature: null,
     featureTemplate: null,
+    clearsFeature: false,
     each: ["assigner","assignee","zone","feature"],
+    dismantle: function(x,y,z) {
+      var f = HTomb.World.features[coord(x,y,z)];
+      f.feature.hp-=1;
+      if (f.feature.hp===0) {
+        f.destroy();
+      }
+    },
     onDefine: function() {
       if (this.zoneTemplate) {
         HTomb.Things.defineZone(this.zoneTemplate);
@@ -152,9 +160,9 @@ HTomb = (function(HTomb) {
         for (var i=0; i<squares.length; i++) {
           var crd = squares[i];
           that.placeZone(crd[0],crd[1],crd[2]);
-          if (options.callback) {
-            options.callback(crd[0],crd[1],crd[2]);
-          }
+          //if (options.callback) {
+          //  options.callback(crd[0],crd[1],crd[2]);
+          //}
         }
         HTomb.GUI.reset();
       };
@@ -178,14 +186,62 @@ HTomb = (function(HTomb) {
           cr.movement.walkToward(x,y,z);
         } else if (dist===0) {
           cr.movement.walkRandom();
+        } else {
+          this.unassign();
+          cr.movement.walkRandom();
         }
       }
       cr.ai.acted = true;
     },
-    work: function(x,y,z) {
-      if (HTomb.World.turfs[coord(x,y,z)]) {
-        (HTomb.World.turfs[coord(x,y,z)]).remove();
+    fetch: function(template) {
+      var cr = this.assignee;
+      var t = cr.ai.target;
+      // if I already have one, return false
+      if (cr && cr.inventory && cr.inventory.items.containsAny(template)) {
+        return false;
       }
+      var items = HTomb.World.items[coord(cr.x,cr.y,cr.z)];
+      // if we're standing on one
+      if (items && items.containsAny(template)) {
+        cr.inventory.pickupOne(template);
+        cr.ai.target = null;
+        return true;
+      }
+      // if you've already found one walk toward it
+      if (cr.ai.target && cr.ai.target.template===template) {
+        cr.movement.walkToward(t.x,t.y,t.z);
+        return true;
+      }
+      // look for one, first in hoards
+      for (var zn in HTomb.World.zones) {
+        if (HTomb.World.zones[zn].template==="HoardZone") {
+          items = HTomb.World.items[zn];
+          if (items.containsAny(template)) {
+            cr.ai.target = items.getFirst(template);
+            t = cr.ai.target;
+            cr.movement.walkToward(t.x,t.y,t.z);
+            return true;
+          }
+        }
+      }
+      for (var it in HTomb.World.items) {
+        items = HTomb.World.items[it];
+        if (items.containsAny(template)) {
+          for (var i=0; i<items.length; i++) {
+            var item = items[i];
+            if (item.item.haulable!==false && item.template===template) {
+              cr.ai.target = item;
+              t = cr.ai.target;
+              cr.movement.walkToward(t.x,t.y,t.z);
+              return true;
+            }
+          }
+        }
+      }
+      console.log("couldn't find anything...");
+      this.unassign();
+    },
+    work: function(x,y,z) {
       var f = HTomb.World.features[coord(x,y,z)];
       if (f===this.incompleteFeature) {
         f.steps-=1;
@@ -193,12 +249,13 @@ HTomb = (function(HTomb) {
           this.finish();
           this.complete();
         }
+      } else if (f && this.clearsFeature===true) {
+        this.dismantle(x,y,z);
       } else {
         this.incompleteFeature = HTomb.Things.Construction(this.featureTemplate);
         this.incompleteFeature.task = this;
-        if (f) {
-          console.log("removed a feature to make room for " + this.incompleteFeature.describe());
-          f.remove();
+        if (HTomb.World.turfs[coord(x,y,z)]) {
+          (HTomb.World.turfs[coord(x,y,z)]).remove();
         }
         this.incompleteFeature.place(x,y,z);
       }
@@ -215,7 +272,7 @@ HTomb = (function(HTomb) {
     zoneTemplate: {
       template: "DigZone",
       name: "dig",
-      bg: "#553300"
+      bg: "#884400"
     },
     featureTemplate: {
       name: "incomplete excavation",
@@ -224,10 +281,8 @@ HTomb = (function(HTomb) {
       steps: 5,
       fg: HTomb.Constants.BELOW
     },
+    clearsFeature: true,
     canDesignateTile: function(x,y,z) {
-      if (HTomb.World.features[coord(x,y,z)] && HTomb.World.features[coord(x,y,z)].template!=="Tombstone") {
-        return false;
-      }
       var t = HTomb.World.tiles[z][x][y];
       var tb = HTomb.World.tiles[z-1][x][y];
       if (t===HTomb.Tiles.VoidTile) {
@@ -238,69 +293,6 @@ HTomb = (function(HTomb) {
         return false;
       }
       return true;
-    },
-    placeZone: function(x,y,z, master) {
-      master = master || HTomb.Player;
-      // raise a zombie if we can
-      if (this.canDesignateTile(x,y,z) && HTomb.World.explored[z][x][y]) {
-        var items = HTomb.World.items[coord(x,y,z-1)] || [];
-        for (var i=0; i<items.length; i++) {
-          if (items[i].template==="Corpse") {
-            items[i].remove();
-            if (HTomb.World.tiles[z-1][x][y]===HTomb.Tiles.WallTile) {
-              HTomb.World.tiles[z-1][x][y]=HTomb.Tiles.UpSlopeTile;
-            }
-            HTomb.GUI.sensoryEvent("You hear an ominous stirring below the earth...",x,y,z);
-            var zombie = HTomb.Things.Zombie();
-            zombie.place(x,y,z-1);
-            HTomb.Things.Minion().addToEntity(zombie);
-            zombie.minion.setMaster(master);
-            master.master.addMinion(zombie);
-            zombie.ai.acted = true;
-            var zn = HTomb.Things.templates.Task.placeZone.call(this,x,y,z,master);
-            zn.task.tryAssign(zombie);
-            zn.clearsFeature = false;
-            return;
-          }
-        }
-      }
-      // otherwise just place a zone
-      HTomb.Things.templates.Task.placeZone.call(this,x,y,z,master);
-    },
-    work: function(x,y,z) {
-      if (this.zone.clearsFeature===false) {
-        var f = HTomb.World.features[coord(x,y,z)];
-        if (f && f.template==="Tombstone") {
-          // to scatter the timing a bit...
-          if (Math.random()<0.8) {
-            f.feature.hp-=1;
-          }
-          if (f.feature.hp===0) {
-            // explode the tombstone
-            f.destroy();
-            HTomb.GUI.sensoryEvent("A zombie bursts forth from the ground!",x,y,z);
-            for (var i=0; i<ROT.DIRS[8].length; i++) {
-              var x1 = ROT.DIRS[8][i][0]+x;
-              var y1 = ROT.DIRS[8][i][1]+y;
-              if (HTomb.World.tiles[z][x1][y1].solid!==true) {
-                if (Math.random()<0.4) {
-                  var rock = HTomb.Things.Rock();
-                  rock.item.n = 1;
-                  rock.place(x1,y1,z);
-                }
-              }
-              HTomb.World.tiles[z][x][y] = HTomb.Tiles.DownSlopeTile;
-              if(HTomb.World.turfs[coord(x,y,z)]) {
-                HTomb.World.turfs[coord(x,y,z)].destroy();
-              }
-              this.complete();
-              HTomb.World.validate();
-            }
-          }
-        }
-      } else {
-        HTomb.Things.templates.Task.work.call(this,x,y,z);
-      }
     },
     finish: function() {
       var tiles = HTomb.World.tiles;
@@ -356,7 +348,8 @@ HTomb = (function(HTomb) {
     zoneTemplate: {
       template: "BuildZone",
       name: "build",
-      bg: "#444444"
+      //magenta
+      bg: "#440088"
     },
     featureTemplate: {
       name: "incomplete construction",
@@ -365,10 +358,8 @@ HTomb = (function(HTomb) {
       fg: HTomb.Constants.ABOVE,
       steps: 5
     },
+    clearsFeature: true,
     canDesignateTile: function(x,y,z) {
-      if (HTomb.World.features[coord(x,y,z)]) {
-        return false;
-      }
       //shouldn't be able to build surrounded by emptiness
       var t = HTomb.World.tiles[z][x][y];
       if (t===HTomb.Tiles.VoidTile || t===HTomb.Tiles.WallTile) {
@@ -439,7 +430,7 @@ HTomb = (function(HTomb) {
     zoneTemplate: {
       template: "PatrolZone",
       name: "patrol",
-      bg: "#880000"
+      bg: "#880088"
     },
     canDesignateTile: function() {
       return true;
@@ -459,7 +450,7 @@ HTomb = (function(HTomb) {
     zoneTemplate: {
       template: "HoardZone",
       name: "hoard",
-      bg: "#880000"
+      bg: "#666600"
     },
     canDesignateTile: function(x,y,z) {
       if (HTomb.World.tiles[z][x][y]===HTomb.Tiles.FloorTile) {
@@ -480,6 +471,7 @@ HTomb = (function(HTomb) {
         var z = zone.z;
         var path = HTomb.Path.aStar(cr.x,cr.y,cr.z,x,y,z);
         if (path===false) {
+          this.unassign();
           cr.movement.walkRandom();
         } else {
           if (cr.inventory.items.length>0) {
@@ -507,7 +499,9 @@ HTomb = (function(HTomb) {
                   }
                 }
               }
+              // should maybe use fetch with an option to avoid things in hoards?
               if (cr.ai.target===null) {
+                this.unassign();
                 cr.movement.walkRandom();
               } else if (cr.x===cr.ai.target.x && cr.y===cr.ai.target.y && cr.z===cr.ai.target.z) {
                 cr.inventory.pickup(item);
@@ -572,10 +566,23 @@ HTomb = (function(HTomb) {
     zoneTemplate: {
       template: "FarmZone",
       name: "farm",
-      bg: "#880000"
+      bg: "#008800"
     },
-    crops: ["Amanita","Bloodwort","Mandrake","Wolfsbane","Wormwood"],
+    //crops: ["Amanita","Bloodwort","Mandrake","Wolfsbane","Wormwood"],
     assignedCrop: null,
+    findSeeds: function() {
+      var crops = [];
+      for (var it in HTomb.World.items) {
+        var items = HTomb.World.items[it];
+        for (var i=0; i<items.length; i++) {
+          var item = items[i];
+          if (item.crop && item.template===item.baseTemplate+"Seed" && crops.indexOf(item.baseTemplate)===-1) {
+            crops.push(item.baseTemplate);
+          }
+        }
+      }
+      return crops;
+    },
     tryAssign: function(cr) {
       var x = this.zone.x;
       var y = this.zone.y;
@@ -594,7 +601,6 @@ HTomb = (function(HTomb) {
     },
     canDesignateTile: function(x,y,z) {
       var f = HTomb.World.features[coord(x,y,z)];
-      //FAIL!!! this should be allowed if the current crop is there...
       if (f && f.template!==this.assignedCrop+"Plant") {
         return false;
       }
@@ -609,25 +615,49 @@ HTomb = (function(HTomb) {
       }
     },
     designate: function(master) {
+      master = master || HTomb.Player;
       var that = this;
-      HTomb.GUI.choosingMenu("Choose a crop:", this.crops,
-        function(crop) {
+      var crops = this.findSeeds();
+      var taskSquares = function(squares) {
+        for (var i=0; i<squares.length; i++) {
+          var crd = squares[i];
+          var f = HTomb.World.features[coord(crd[0],crd[1],crd[2])];
+          if (f && f.crop && crops.indexOf(f.baseTemplate)===-1) {
+            crops.push(f.baseTemplate);
+          }
+        }
+        if (crops.length===0) {
+          HTomb.GUI.pushMessage("No seeds or crops available.");
+          HTomb.GUI.reset();
+          return;
+        } else if (crops.length===1) {
+          that.assignedCrop = crops[0];
+          HTomb.GUI.pushMessage("Assigning " + that.assignedCrop);
+          for (var k=0; k<squares.length; k++) {
+            var crd = squares[k];
+            var zn = that.placeZone(crd[0],crd[1],crd[2]);
+            if (zn) {
+              zn.task.assignedCrop = that.assignedCrop;
+            }
+          }
+          HTomb.GUI.reset();
+          return;
+        }
+        HTomb.GUI.choosingMenu("Choose a crop:", crops, function(crop) {
           return function() {
             that.assignedCrop = crop;
-            var master = master || HTomb.Player;
-            var z = master.z;
-            var taskSquares = function(squares) {
-              for (var i=0; i<squares.length; i++) {
-                var crd = squares[i];
-                var zn = that.placeZone(crd[0],crd[1],crd[2]);
-                zn.task.assignedCrop = crop;
+            for (var j=0; j<squares.length; j++) {
+              var crd = squares[j];
+              var zn = that.placeZone(crd[0],crd[1],crd[2]);
+              if (zn) {
+                zn.task.assignedCrop = that.assignedCrop;
               }
-              HTomb.GUI.reset();
-            };
-            HTomb.GUI.selectSquareZone(z,taskSquares);
+            }
+            HTomb.GUI.reset();
           };
-        }
-      );
+        });
+      };
+      HTomb.GUI.selectSquareZone(master.z,taskSquares,{reset: false});
     },
     ai: function() {
       var cr = this.assignee;
@@ -636,66 +666,16 @@ HTomb = (function(HTomb) {
         var x = zone.x;
         var y = zone.y;
         var z = zone.z;
-        var path = HTomb.Path.aStar(cr.x,cr.y,cr.z,x,y,z);
-        if (path===false) {
-          cr.movement.walkRandom();
+        var f = HTomb.World.features[coord(x,y,z)];
+        if (f && f.template===this.assignedCrop+"Plant") {
+          // if the plant is ready to harvest
+          if (f.crop.growTurns===0) {
+            this.seekZoneAI();
+          }
         } else {
-          var f = HTomb.World.features[coord(x,y,z)];
-          // if the right kind of plant is there
-          if (f && f.template===this.assignedCrop+"Plant") {
-            // if the plant is ready to harvest
-            if (f.crop.growTurns===0) {
-              if (HTomb.Tiles.isTouchableFrom(x,y,z,cr.x,cr.y,cr.z)) {
-                this.work(x,y,z);
-              } else {
-                // should check for path viability?
-                cr.movement.walkToward(x,y,z);
-              }
-            } else {
-              // for now, wander until the plant is ready to harvest
-              this.walkRandom();
-            }
-          // look for seeds
-          } else {
-            // should check to see if we are holding seeds
-              // need a method to check for a kind of item...
-            if (cr.inventory.items.containsAny(this.assignedCrop+"Seed")) {
-              if (HTomb.Tiles.isTouchableFrom(x,y,z,cr.x,cr.y,cr.z)) {
-                this.work(x,y,z);
-              } else {
-                // should check for path viability?
-                cr.movement.walkToward(x,y,z);
-              }
-            // if we haven't found seeds yet, look for them
-            } else if (cr.ai.target===null || cr.ai.target.template!==this.assignedCrop+"Seed") {
-              outerLoop:
-              for (var zn in HTomb.World.zones) {
-                if (HTomb.World.zones[zn].template==="HoardZone") {
-                  var items = HTomb.World.items[zn];
-                  if (items) {
-                    for (var i=0; i<items.length; i++) {
-                      if (items[i].template===this.assignedCrop+"Seed") {
-                        cr.ai.target = items[i];
-                        break outerLoop;
-                      }
-                    }
-                  }
-                }
-              }
-            }
-            if (cr.ai.acted !== true) {
-              if (cr.ai.target===null) {
-                //couldn't find any seeds
-                cr.movement.walkRandom();
-              } else if (cr.x===cr.ai.target.x && cr.y===cr.ai.target.y && cr.z===cr.ai.target.z) {
-                // for now we pick up the entire stack of seeds?
-                cr.inventory.pickup(cr.ai.target);
-                cr.ai.target = null;
-              } else {
-                //walk toward the seeds
-                cr.movement.walkToward(cr.ai.target.x,cr.ai.target.y,cr.ai.target.z);
-              }
-            }
+          var needsSeed = this.fetch(this.assignedCrop+"Seed");
+          if (needsSeed===false) {
+            this.seekZoneAI();
           }
         }
       }
@@ -732,7 +712,7 @@ HTomb = (function(HTomb) {
     zoneTemplate: {
       template: "DismantleZone",
       name: "dismantle",
-      bg: "#880000"
+      bg: "#446600"
     },
     finish: function() {
       var x = this.zone.x;
@@ -794,6 +774,7 @@ HTomb = (function(HTomb) {
       fg: "#BB9922"
     },
     features: ["Door","Throne","ScryingGlass"],
+    clearsFeature: true,
     finish: function() {
       var c = this.incompleteFeature;
       var x = this.zone.x;

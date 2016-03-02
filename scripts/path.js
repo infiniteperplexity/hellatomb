@@ -35,7 +35,7 @@ Tomb = (function(HTomb) {
   var _fastgrid;
   //function aStar(x0,y0,z0,x1,y1,z1,canPass) {
   HTomb.Path.aStar = function(x0,y0,z0,x1,y1,z1,options) {
-    if (x0+y0+z0+x1+y1+z1===undefined) {
+    if (x0+y0+z0+x1+y1+z1===undefined || x1===null || y1===null || z1===null) {
       alert("bad path arguments!");
     }
     //_fastgrid = HTomb.World._fastgrid;
@@ -159,7 +159,6 @@ Tomb = (function(HTomb) {
         scores[crd] = this_score;
       }
     }
-
     console.log("path failed");
     return false;
   };
@@ -211,144 +210,3 @@ Tomb = (function(HTomb) {
   };
 return HTomb;
 })(HTomb);
-
-/*
-def a_star(start, goal):
-	start_square = start.square
-	goal_square = goal.square
-	#already checked
-	checked = set()
-	#need to check
-	check = []
-	check.append(start_square)
-	#exact distance from start
-	g_scores = {}
-	#estimated distance to goal
-	f_scores = {}
-	g_scores[start_square] = 0
-	f_scores[start_square] = start.distance(goal)
-	#best path
-	came_from = {}
-	while check:
-		check = sorted(check, coord=lambda square: -f_scores[square])
-		current = check.pop()
-		if current == goal_square:
-			path = [goal_square]
-			while current in came_from:
-				current = came_from[current]
-				path.insert(0,current)
-			return path
-		#if the goal square is blocked, accept an adjacent square
-		elif not goal_square.passable and goal_square in current.edges():
-			path = [current]
-			while current in came_from:
-				current = came_from[current]
-				path.insert(0,current)
-			return path
-
-		checked.add(current)
-		for neighbor in current.neighbors():
-			if neighbor in checked:
-				continue
-
-			#I don't think this ever gets hit
-			#this is totally wonky...you only want this added if the neighbor is literally impassable
-			if not start.can_pass(current, neighbor) and neighbor != goal_square:
-				checked.add(neighbor)
-				continue
-
-			try_g = g_scores[current] + 1
-			if neighbor not in check or (g_scores[neighbor] and try_g < g_scores[neighbor]):
-				came_from[neighbor] = current
-				g_scores[neighbor] = try_g
-				f_scores[neighbor] = g_scores[neighbor] + neighbor.distance(goal)
-				if neighbor not in check:
-					check.append(neighbor)
-
-	print("path failed")
-	return False
-
-
-def djikstra_find(start, thing, min=0, max=12):
-	start_square = start.square
-	from .items import Item
-	from .creatures import Creature
-	checked = set()
-	#need to check
-	check = []
-	check.append(start_square)
-	while check:
-		current = check.pop(0)
-		if current.distance(start_square) > max:
-			return False
-
-		if current in checked:
-			continue
-
-		if issubclass(thing,Item):
-			for item in current.items:
-				if isinstance(item,thing) and current.distance(start_square) >= min:
-					return current
-		elif issubclass(thing,Creature):
-			if isinstance(current.creature,thing) and current.distance(start_square) >= min:
-				return current
-
-		checked.add(current)
-		for neighbor in current.neighbors():
-			if neighbor in checked:
-				continue
-			elif start.can_pass(current,neighbor):
-				check.append(neighbor)
-
-	return False
-
-
-
-
-  /*
-  ROT.Path = function(toX, toY, passableCallback, options) {
-  	this._toX = toX;
-  	this._toY = toY;
-  	this._fromX = null;
-  	this._fromY = null;
-  	this._passableCallback = passableC
-    var err = dx-dy;
-    allback;
-  	this._options = {
-  		topology: 8
-  	}
-  	for (var p in options) { this._options[p] = options[p]; }
-
-  	this._dirs = ROT.DIRS[this._options.topology];
-  	if (this._options.topology == 8) {
-  		this._dirs = [
-  			this._dirs[0],
-  			this._dirs[2],
-  			this._dirs[4],
-  			this._dirs[6],
-  			this._dirs[1],
-  			this._dirs[3],
-  			this._dirs[5],
-  			this._dirs[7]
-  		]
-  	}
-  }
-
-
-  ROT.Path.prototype.compute = function(fromX, fromY, callback) {
-  }
-
-  ROT.Path.prototype._getNeighbors = function(cx, cy) {
-  	var result = [];
-  	for (var i=0;i<this._dirs.length;i++) {
-  		var dir = this._dirs[i];
-  		var x = cx + dir[0];
-  		var y = cy + dir[1];
-
-  		if (!this._passableCallback(x, y)) { continue; }
-  		result.push([x, y]);
-  	}
-
-  	return result;
-  }
-*/

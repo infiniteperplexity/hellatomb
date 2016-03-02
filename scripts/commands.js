@@ -274,8 +274,6 @@ HTomb = (function(HTomb) {
       function(sp) {
         return function() {
           HTomb.Player.caster.cast(sp);
-          HTomb.turn();
-          HTomb.GUI.reset();
         };
       }
     );

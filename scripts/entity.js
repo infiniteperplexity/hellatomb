@@ -178,6 +178,7 @@ HTomb = (function(HTomb) {
     maxn: 10,
     container: null,
     haulable: true,
+    bulk: 10,
     each: ["n","haulable"],
     place: function(x,y,z) {
       var c = coord(x,y,z);
@@ -202,6 +203,7 @@ HTomb = (function(HTomb) {
         }
       }
     },
+    // generate a random number in a stack...not really a good place to put this code
     onAdd: function() {
       if (this.entity.stackSize && this.stackable && this.n===null) {
         this.n = this.entity.stackSize();
@@ -421,6 +423,40 @@ HTomb = (function(HTomb) {
       }
       return false;
     },
+    getFirst: function(template) {
+      for (var i=0; i<this.length; i++) {
+        if (this[i].template===template) {
+          return this[i];
+        }
+      }
+      return null;
+    },
+    getLast: function(template) {
+      for (var i=this.length-1; i>=0; i--) {
+        if (this[i].template===template) {
+          return this[i];
+        }
+      }
+      return null;
+    },
+    takeOne: function(i_or_t) {
+      if (typeof(i_or_t)!=="string" && i_or_t.template) {
+        i_or_t = i_or_t.template;
+      }
+      if (HTomb.Things.templates[i_or_t].stackable!==true) {
+        return this.getFirst(i_or_t)
+      } else {
+        var last = this.getLast(i_or_t);
+        if (last.item.n===1) {
+          return last;
+        } else {
+          last.item.n-=1;
+          var single = HTomb.Things[last.template]();
+          single.item.n = 1;
+          return single;
+        }
+      }
+    },
     shift: function() {
       var item = Array.prototype.shift.call(this);
       item.item.container = null;
@@ -452,8 +488,15 @@ HTomb = (function(HTomb) {
         }
       }
       return mesg;
+    },
+    lineList: function(spacer) {
+      var buffer = [];
+      for (var i = 0; i<this.length; i++) {
+        buffer.push([spacer,this[i].describe()]);
+      }
+      return buffer;
     }
-  }
+  };
 
 return HTomb;
 })(HTomb);

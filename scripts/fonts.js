@@ -43,13 +43,14 @@ HTomb = (function(HTomb) {
   var YSKEW = Constants.YSKEW = font.yskew;
 
   // Dimensions of the display panels
-  var GAMEW = 600;
-  var GAMEH = 450;
+  var GAMEW = 500;
+  var GAMEH = 500;
   var SCREENW = Constants.SCREENW = Math.floor(GAMEW/CHARWIDTH);
   var SCREENH = Constants.SCREENH = Math.floor(GAMEH/CHARHEIGHT);
   console.log("Playing area will be " + SCREENW + "x" + SCREENH + ".");
 
-  font = fontFallback([["Caudex",15,0.9],["Lucida Console",15]]);
+  //font = fontFallback([["Caudex",15,0.9],["Lucida Console",15]]);
+  font = fontFallback([["Lucida Console",15]]);
   var TEXTFONT = Constants.TEXTFONT = font.font;
   var TEXTSIZE = Constants.TEXTSIZE = font.size;
   var TEXTWIDTH = Constants.TEXTWIDTH = font.width;

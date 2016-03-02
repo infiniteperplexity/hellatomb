@@ -15,7 +15,7 @@ HTomb = (function(HTomb) {
         Sight: {},
         AI: {},
         Master: {tasks: ["DigTask","BuildTask","DismantleTask","CraftTask","PatrolTask","HoardTask","FarmTask","ForbidTask","Undesignate"]},
-        SpellCaster: {spells: ["RaiseZombie","SummonBat"]}
+        SpellCaster: {spells: ["RaiseZombie"]}
       }
   });
 

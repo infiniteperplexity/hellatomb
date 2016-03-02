@@ -75,7 +75,7 @@ HTomb = (function(HTomb) {
     body.appendChild(div);
     div.appendChild(contain);
     div.appendChild(menu);
-    //div.appendChild(splash);
+    div.appendChild(splash);
     contain.appendChild(game);
     contain.appendChild(document.createElement("br"));
     contain.appendChild(scroll);
@@ -303,11 +303,11 @@ HTomb = (function(HTomb) {
     scrollDisplay.drawText(this.x0+cursor,this.y0+1,"HP:" + 5 + "/" + 5);
     cursor+=9;
     scrollDisplay.drawText(this.x0+cursor,this.y0+1,"X:" + HTomb.Player.x);
-    cursor+=6;
+    cursor+=5;
     scrollDisplay.drawText(this.x0+cursor,this.y0+1,"Y:" + HTomb.Player.y);
-    cursor+=6;
+    cursor+=5;
     scrollDisplay.drawText(this.x0+cursor,this.y0+1,"Z:" + gameScreen.z);
-    cursor+=6;
+    cursor+=7;
     scrollDisplay.drawText(this.x0+cursor,this.y0+1,
       HTomb.World.dailyCycle.getPhase().symbol + " "
       + HTomb.World.dailyCycle.day + ":"
@@ -328,14 +328,22 @@ HTomb = (function(HTomb) {
   var menu = new Panel(0,1);
   var defaultText = [
     "Use numpad or arrows to move, shift+arrows to move diagonally, J to assign a job, A to act or apply, "+
-    "S to cast a spell, space to wait, G to pick up, D to drop, I to take inventory, or tab to enter survey mode.",
+    "Z to cast a spell, space to wait, G to pick up, D to drop, I to take inventory, or tab to enter survey mode.",
     "Hover mouse to examine a square."
   ];
   menu.render = function() {
     for (var i=0; i<SCREENH+SCROLLH; i++) {
       menuDisplay.drawText(this.x0, this.y0+i, "%c{black}"+(UNIBLOCK.repeat(MENUW-2)));
       if (menu.text[i]) {
-        menuDisplay.drawText(this.x0, this.y0+i, menu.text[i]);
+        var j = 0;
+        if (menu.text[i].charAt(0)===" ") {
+          for (j=0; j<menu.text[i].length; j++) {
+            if (menu.text[i].charAt(j)!==" ") {
+              break;
+            }
+          }
+        }
+        menuDisplay.drawText(this.x0+j, this.y0+i, menu.text[i]);
       }
     }
   };
@@ -396,6 +404,7 @@ HTomb = (function(HTomb) {
     var above = HTomb.Tiles.getSquare(x,y,z+1);
     var text = ["Coord: " + square.x +"," + square.y + "," + square.z];
     var next;
+    var listLines, i;
     if(square.explored) {
       next = "Terrain: "+square.terrain.name;
       text.push(next);
@@ -406,9 +415,12 @@ HTomb = (function(HTomb) {
       }
       next = "Items: ";
       if (square.items && square.visible) {
-        next+=square.items.list();
+        for (i=0; i<square.items.length; i++) {
+          next+=square.items[i].describe();
+          text.push(next);
+          next = "       ";
+        }
       }
-      text.push(next);
       next = "Feature: ";
       if (square.feature) {
         next+=square.feature.describe();
@@ -436,9 +448,12 @@ HTomb = (function(HTomb) {
       }
       next = "Items: ";
       if (above.items && square.visibleAbove) {
-        next+=above.items.list();
+        for (i=0; i<above.items.length; i++) {
+          next+=above.items[i].describe();
+          text.push(next);
+          next = "       ";
+        }
       }
-      text.push(next);
       next = "Feature: ";
       if (above.feature) {
         next+=above.feature.describe();
@@ -466,9 +481,12 @@ HTomb = (function(HTomb) {
       }
       next = "Items: ";
       if (below.items && square.visibleBelow) {
-        next+=below.items.list();
+        for (i=0; i<below.items.length; i++) {
+          next+=below.items[i].describe();
+          text.push(next);
+          next = "       ";
+        }
       }
-      text.push(next);
       next = "Feature: ";
       if (below.feature) {
         next+=below.feature.describe();
@@ -522,7 +540,7 @@ HTomb = (function(HTomb) {
     VK_D: Commands.drop,
     VK_I: Commands.inventory,
     VK_J: Commands.showJobs,
-    VK_S: Commands.showSpells,
+    VK_Z: Commands.showSpells,
     VK_TAB: GUI.surveyMode,
 //    VK_SHIFT: //this now handles diagonal movement
     VK_SPACE: Commands.wait,
@@ -678,6 +696,10 @@ HTomb = (function(HTomb) {
     HTomb.GUI.pushMessage("Select the first corner.");
     var context = Object.create(survey);
     context.menuText = ["Use movement keys to navigate.","Comma go down.","Period to go up.","Escape to exit."];
+    if (options.message) {
+      context.menuText.unshift("");
+      context.menuText.unshift(options.message);
+    }
     HTomb.Controls.context = context;
     GUI.updateMenu();
     survey.saveX = gameScreen.xoffset;
@@ -750,7 +772,9 @@ HTomb = (function(HTomb) {
         }
         // Invoke the callback function on the squares selected
         callb(squares);
-        GUI.reset();
+        if (options.reset!==false) {
+          GUI.reset();
+        }
       };
     };
   };

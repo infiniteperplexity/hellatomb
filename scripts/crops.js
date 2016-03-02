@@ -7,7 +7,7 @@ HTomb.Things.defineBehavior({
   name: "crop",
   maxHerbs: 2,
   maxSeeds: 4,
-  growTurns: 1440,
+  growTurns: 50,
   each: ["growTurns"],
   onTurnBegin: function() {
     if (this.growTurns>0) {
@@ -86,8 +86,15 @@ HTomb.Things.defineCrop = function(args) {
   plant.template = args.template + "Plant";
   plant.baseTemplate = args.template;
   plant.name = plant.name || args.name + " plant";
-  plant.symbol = plant.symbol || '"';
+  //plant.symbol = plant.symbol || '"';
+  //plant.symbol = plant.symbol || '\u03B3';
+  //plant.symbol = plant.symbol || '\u0662';
+  //plant.symbol = plant.symbol || '\u0667';
+  plant.symbol = plant.symbol || '\u26B6';
+  plant.symbol = plant.symbol || '^';
+  plant.symbol = plant.symbol || '\u26BA';
   plant.matureSymbol = plant.matureSymbol || "\u2698";
+  plant.symbol = plant.symbol || '\u26B5';
   plant.fg = plant.fg || args.fg || "white";
   plant.behaviors = {CropBehavior: behavior};
   plant.behaviors.CropBehavior.stage = "plant";
@@ -128,23 +135,45 @@ HTomb.Things.defineCrop({
 HTomb.Things.defineCrop({
   template: "Mandrake",
   name: "mandrake",
-  fg: "#DDAA66"
+  fg: "#DDAA66",
+  herb: {
+    name: "mandrake root",
+    symbol: "\u2767"
+  }
 });
 
 HTomb.Things.defineCrop({
   template: "Wormwood",
   name: "wormwood",
-  fg: "#55DDBB"
+  fg: "#55DDBB",
+  herb: {
+    name: "wormwood leaf",
+    symbol: "\u2766"
+  }
 });
 
 HTomb.Things.defineCrop({
   template: "Amanita",
   name: "amanita",
-  fg: "#DD8855"
+  fg: "#DD5566",
+  plant: {
+    matureSymbol: "\u2763"
+  },
+  herb: {
+    symbol: "\u25C9",
+    name: "amanita cap"
+  },
+  seed: {
+    name: "amanita spore"
+  }
 });
 
 HTomb.Things.defineCrop({
   template: "Bloodwort",
   name: "bloodwort",
-  fg: "#BBAAAA"
+  fg: "#BBAAAA",
+  herb: {
+    name: "bloodwort root",
+    symbol: "\u2767"
+  }
 });

@@ -64,7 +64,7 @@ HTomb = (function(HTomb) {
     SHADOWFG: "#333355",
     TWOBELOWFG: "#221122",
     WALLBG: "#777777",
-    FLOORBG: "#556677",
+    FLOORBG: "#445566",
     BELOWBG: "#111122",
     GRASSFG: "#668844",
     GRASSBG: "#334422",
