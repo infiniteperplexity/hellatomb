@@ -34,6 +34,7 @@ HTomb = (function(HTomb) {
       if (this.onPlace) {
         this.onPlace(x,y,z);
       }
+      return this;
     },
     remove: function() {
       if (this.creature) {

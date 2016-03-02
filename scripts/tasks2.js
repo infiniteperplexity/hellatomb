@@ -23,7 +23,6 @@ HTomb = (function(HTomb) {
       }
     },
     tryAssign: function(cr) {
-
       if (this.canReachZone(cr)) {
         this.assignTo(cr);
         return true;
@@ -123,7 +122,7 @@ HTomb = (function(HTomb) {
         dt.assigner = master;
         dt.assigner.master.taskList.push(dt);
       }
-      return zone || dzone;
+      return (zone || dzone);
     },
     // note that this passes the behavior, not the entity
     designate: function(master) {
@@ -577,6 +576,22 @@ HTomb = (function(HTomb) {
     },
     crops: ["Amanita","Bloodwort","Mandrake","Wolfsbane","Wormwood"],
     assignedCrop: null,
+    tryAssign: function(cr) {
+      var x = this.zone.x;
+      var y = this.zone.y;
+      var z = this.zone.z;
+      var f = HTomb.World.features[coord(x,y,z)];
+      // if the right kind of plant is there
+      if (f && f.template===this.assignedCrop+"Plant" && f.crop.growTurns===0 && this.canReachZone(cr)) {
+        this.assignTo(cr);
+        return true;
+      }
+      if (f===undefined && this.canReachZone(cr)) {
+        this.assignTo(cr);
+        return true;
+      }
+      return false;
+    },
     canDesignateTile: function(x,y,z) {
       var f = HTomb.World.features[coord(x,y,z)];
       //FAIL!!! this should be allowed if the current crop is there...
@@ -684,19 +699,21 @@ HTomb = (function(HTomb) {
                 }
               }
             }
-            if (cr.ai.target===null) {
-              console.log("found no seeds");
-              //couldn't find any seeds
-              cr.movement.walkRandom();
-            } else if (cr.x===cr.ai.target.x && cr.y===cr.ai.target.y && cr.z===cr.ai.target.z) {
-              console.log("pickup the seed");
-              // for now we pick up the entire stack of seeds?
-              cr.inventory.pickup(cr.ai.target);
-              cr.ai.target = null;
-            } else {
-              console.log("walking toward the seed");
-              //walk toward the seeds
-              cr.movement.walkToward(cr.ai.target.x,cr.ai.target.y,cr.ai.target.z);
+            if (cr.ai.acted !== true) {
+              if (cr.ai.target===null) {
+                console.log("found no seeds");
+                //couldn't find any seeds
+                cr.movement.walkRandom();
+              } else if (cr.x===cr.ai.target.x && cr.y===cr.ai.target.y && cr.z===cr.ai.target.z) {
+                console.log("pickup the seed");
+                // for now we pick up the entire stack of seeds?
+                cr.inventory.pickup(cr.ai.target);
+                cr.ai.target = null;
+              } else {
+                console.log("walking toward the seed");
+                //walk toward the seeds
+                cr.movement.walkToward(cr.ai.target.x,cr.ai.target.y,cr.ai.target.z);
+              }
             }
           }
         }
@@ -711,6 +728,8 @@ HTomb = (function(HTomb) {
       var f = HTomb.World.features[coord(x,y,z)];
       if (f && f.template===this.assignedCrop+"Plant" && f.crop.growTurns===0) {
         f.crop.harvestBy(this.assignee);
+        this.finish();
+        this.complete();
       } else {
         var seed = null;
         for (var i=0; i<this.assignee.inventory.items.length; i++) {
@@ -719,6 +738,8 @@ HTomb = (function(HTomb) {
             //plant the whole stack at once for now
             item.crop.plantAt(x,y,z);
             this.assignee.inventory.items.remove(item);
+            this.unassign();
+            return;
           }
         }
       }
@@ -736,13 +757,13 @@ HTomb = (function(HTomb) {
       var x = this.zone.x;
       var y = this.zone.y;
       var z = this.zone.z;
-      var thing = HTomb.World.features[coord(x,y,z)]
+      var thing = HTomb.World.features[coord(x,y,z)];
       if (thing) {
         HTomb.GUI.sensoryEvent("Removed " + thing.describe(),x,y,z);
         thing.destroy();
         return;
       }
-      var thing = HTomb.World.turfs[coord(x,y,z)]
+      thing = HTomb.World.turfs[coord(x,y,z)];
       if (thing) {
         HTomb.GUI.sensoryEvent("Removed " + thing.describe(),x,y,z);
         thing.destroy();
