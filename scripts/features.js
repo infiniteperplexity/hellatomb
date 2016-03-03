@@ -107,6 +107,7 @@ HTomb = (function(HTomb) {
     template: "Water",
     name: "water",
     symbol: "~",
+    flowSymbol: "\u2248",
     fg: HTomb.Constants.WATERFG || "#3388FF",
     bg:HTomb.Constants.WATERBG || "#1144BB",
     behaviors: {Liquid: {}}

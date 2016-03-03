@@ -190,15 +190,23 @@ HTomb = (function(HTomb) {
   }
   function assignElevation() {
     var ground = 25;
-    var hscale = 100;
-    var vscale = 4;
+    var hscale1 = 100;
+    var vscale1 = 4;
+    var hscale2 = 50;
+    var vscale2 = 2;
+    var hscale3 = 25;
+    var vscale3 = 1;
     var noise = new ROT.Noise.Simplex();
     var grid = [];
     var mx = 0, mn = NLEVELS;
     for (var x=0; x<LEVELW; x++) {
       grid.push([]);
       for (var y=0; y<LEVELH; y++) {
-        grid[x][y] = parseInt(noise.get(x/hscale,y/hscale)*vscale+ground);
+        grid[x][y] = ground;
+        grid[x][y]+= noise.get(x/hscale1,y/hscale1)*vscale1;
+        grid[x][y]+= noise.get(x/hscale2,y/hscale2)*vscale2;
+        grid[x][y]+= noise.get(x/hscale3,y/hscale3)*vscale3;
+        grid[x][y] = parseInt(grid[x][y]);
         //grid[x][y] = parseInt(noise.get(x/hscale,y/hscale)*vscale+ground);
         mx = Math.max(mx,grid[x][y]);
         mn = Math.min(mn,grid[x][y]);
@@ -275,9 +283,9 @@ HTomb = (function(HTomb) {
           // if (z===HTomb.Tiles.groundLevel(x,y) && Math.random()<0.1) {
           //   HTomb.Things.create("Seaweed").place(x,y,z);
           // }
-          if (z===elev) {
-            HTomb.Things.create("Water").place(x,y,z+1);
-          }
+          //if (z===elev) {
+          //  HTomb.Things.create("Water").place(x,y,z+1);
+          //}
         }
       }
     }
@@ -356,6 +364,11 @@ HTomb = (function(HTomb) {
       if (this.minute>=60) {
         this.minute = 0;
         this.hour+=1;
+        if (this.hour===this.times.dawn) {
+          HTomb.GUI.pushMessage("The sun is coming up.");
+        } else if (this.hour===this.times.dusk) {
+          HTomb.GUI.pushMessage("Night is falling.");
+        }
         if (this.hour>=24) {
           this.hour = 0;
           this.day+=1;

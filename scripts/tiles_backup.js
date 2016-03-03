@@ -139,14 +139,6 @@ HTomb = (function(HTomb) {
     }
   });
 
-  // try tunnel below "\u2213"
-  // deep water U223B?
-  // sideways tilda 2240
-  // not tilde 2241
-  // minus tilde 2242
-  // sinewave 223F
-  // star equals 225B for growing plants?  or 225A, 22A5 up tack, xor 22BB
-
   Tiles.getSymbol = function(x,y,z) {
     var fg, bg;
     var crd = HTomb.coord(x,y,z);
@@ -162,134 +154,104 @@ HTomb = (function(HTomb) {
     var explored = HTomb.World.explored;
     var tile = tiles[z][x][y];
     var zview = tiles[z][x][y].zview;
-    var vis = (visible[z][x][y]===true || HTomb.Debug.visible===true);
-    var visa = (visible[z+1][x][y]===true);
-    var visb = (visible[z-1][x][y]===true);
-    var sym, fg, bg;
-    // ***** Designated zones show up even in unexplored areas *******
+    fg = "white";
+    bg = null;
     if (zones[crd]!==undefined) {
       bg = zones[crd].bg;
     }
-    // ****** If the square has not been explored... ****************
+    //if the square has not been explored, don't show it
     if (!explored[z][x][y] && HTomb.Debug.explored!==true) {
-      // unexplored tiles with an explored floor tile above are rendered as non-visible wall tiles
       if (tiles[z+1][x][y]===Tiles.FloorTile && explored[z+1][x][y]) {
         return[Tiles.WallTile.symbol,SHADOWFG, bg || WALLBG];
       } else {
-        // otherwise paint the tile black
-        return [" ","black", bg || "black"];
+      //return [" ","black","black"];
+        return [" ","black",bg || "black"];
       }
     }
-    // *********** Choose the background color *******************************
-    if (turfs[crd] && turfs[crd].liquid) {
-      if (vis) {
-        bg = bg || turfs[crd].liquid.shimmer();
-      } else {
-        bg = bg || turfs[crd].liquid.darken();
-      }
-    } else if (zview===-1 && turfs[cbelow] && turfs[cbelow].liquid) {
-      if (vis) {
-        bg = bg || turfs[cbelow].liquid.shimmer();
-      } else {
-        bg = bg || turfs[cbelow].liquid.darken();
-      }
-    } else if (zview===-1 && tiles[z-1][x][y].zview===-1 && turfs[coord(x,y,z-2)] && turfs[coord(x,y,z-2)].liquid) {
-      bg = bg || turfs[coord(x,y,z-2)].liquid.darken();
-    } else if (turfs[crd]) {
-      bg = bg || turfs[crd].bg;
+    // background color for explored squares is based on zoning
+      // maybe at some point, turfs
+    if (turfs[crd]!==undefined && turfs[crd].liquid) {
+      bg = turfs[crd].liquid.shimmer();
     }
-    // ** An empty tile with an explored floor below...
-    if (zview===-1 && HTomb.World.tiles[z-1][x][y]===Tiles.FloorTile && explored[z-1][x][y]) {
-      bg = bg || BELOWBG;
+    if (zones[crd]!==undefined) {
+      bg = zones[crd].bg;
     }
-    // ** Otherwise, use the tile background
-    bg = bg || tile.bg;
-    // **** All non-visible tiles have the same foreground
-    if (vis===false) {
+    // square explored but not visible
+    if (visible[z][x][y]===false && HTomb.Debug.visible!==true) {
       fg = SHADOWFG;
-    }
-    //*** Symbol and foreground color
-    if (creatures[crd] && vis) {
-      sym = creatures[crd].symbol;
-      fg = fg || creatures[crd].fg;
-    } else if (creatures[cabove] && (vis || visa)) {
-      sym = creatures[cabove].symbol;
-      fg = fg || WALLFG;
-    } else if (creatures[cbelow && (vis || visb)]) {
-      sym = creatures[cbelow].symbol;
-      if (turfs[cbelow] && turfs[cbelow].liquid) {
-        fg = fg || turfs[cbelow].fg;
-      } else {
-        fg = fg || BELOWFG;
+      if (bg===null && turfs[crd]!==undefined && turfs[crd].liquid) {
+        bg = turfs[crd].liquid.darken();
       }
-    } else if (items[crd]) {
-      sym = items[crd].tail().symbol;
-      fg = fg || items[crd].tail().fg;
-    } else if (features[crd]) {
-      sym = features[crd].symbol;
-      fg = fg || features[crd].fg;
-    } else if (zview===+1 && items[cabove]) {
-      sym = items[cabove].tail().symbol;
-      fg = fg || WALLFG;
-    } else if (zview===+1 && items[cbelow]) {
-      sym = items[cbelow].tail().symbol;
-      if (turfs[cbelow] && turfs[cbelow].liquid) {
-        fg = fg || turfs[cbelow].fg;
-      } else {
-        fg = fg || BELOWFG;
+      //liquids will have already been handled
+      if (bg===null && turfs[crd] && turfs[crd].liquid===undefined) {
+        bg = turfs[crd].bg;
       }
-    } else if (zview===+1 && features[cabove]) {
-      sym = features[cabove].symbol;
-      fg = fg || WALLFG;
-    // ** Can't see features down through liquids? or maybe we should color it with the liquid instead?
-    } else if (zview===-1 && features[cbelow]) {
-      sym = features[cbelow].symbol;
-      if (turfs[cbelow] && turfs[cbelow].liquid) {
-        fg = fg || turfs[cbelow].fg;
+      if (features[crd]) {
+        // feature in shadow
+        return [features[crd].symbol || "X",fg, bg || tile.bg];
+      } else if (zview===+1 && features[cabove]) {
+        // feature on level above
+        return [features[cabove].symbol || "X",fg, bg || WALLBG];
+      } else if (zview===-1 && features[cbelow] && turfs[crd]===undefined) {
+        // feature on level below
+        return [features[cbelow].symbol || "X",fg, bg || BELOWBG];
+        // still maybe show slopes?
+      } else if (turfs[crd] && turfs[crd].liquid && turfs[cabove]===undefined) {
+        return [turfs[crd].symbol,turfs[crd].fg,bg];
+      } else if (zview===-1 && turfs[cbelow] && turfs[cbelow].liquid) {
+        return [Tiles.EmptyTile.symbol,turfs[cbelow].fg,turfs[cbelow].liquid.darken()];
+        // an empty space with floor below it
+      } else if (tile===Tiles.WallTile && tiles[z+1][x][y]===Tiles.FloorTile && explored[z+1][x][y]) {
+        return[Tiles.WallTile.symbol,fg,bg || WALLBG];
+      } else if (tile===Tiles.EmptyTile && tiles[z-1][x][y]===Tiles.FloorTile) {
+        return [Tiles.EmptyTile.symbol,fg, bg || BELOWBG];
+      } else if (tile===Tiles.FloorTile && tiles[z+1][x][y]!==Tiles.EmptyTile) {
+        return [Tiles.FloorTile.symbol,fg,bg || tile.bg];
       } else {
-        fg = fg || BELOWFG;
+        // terrain on current level
+        return [tile.symbol || "X",fg,bg || tile.bg];
       }
     } else {
-      // *** if the square is empty except for turf, handle the symbol and color separately. ***
-      if (turfs[crd]) {
-        fg = fg || turfs[crd].fg;
-      } else if (turfs[cbelow] && turfs[cbelow].liquid) {
-        fg = fg || turfs[cbelow].fg;
-      } else {
-        fg = tile.fg;
+      //liquids will have already been handled
+      if (bg===null && turfs[crd] && turfs[crd].liquid===undefined) {
+        bg = turfs[crd].bg;
       }
-      // *** symbol ****
-      if (tile===Tiles.FloorTile && explored[z-1][x][y] && tiles[z-1][x][y]!==Tiles.WallTile) {
-        // tunnel below
-        sym = "\u25E6";
-      } else if ((tile===Tiles.FloorTile || tile===Tiles.EmptyTile) && tiles[z+1][x][y]!==Tiles.EmptyTile) {
-        // roof above
-        sym = "'";
-      } else if (turfs[crd]) {
-        if (turfs[crd].liquid) {
-          if (turfs[cbelow] && turfs[cbelow].liquid) {
-          // deeper liquid
-            sym = "\u2193";
-          } else {
-          // submerged liquid
-            sym = tiles.symbol;
-          }
-        } else {
-          // non-liquid turf
-          sym = turfs[crd].symbol;
-        }
-      } else if (turfs[cbelow] && turfs[cbelow].liquid) {
-        // liquid surface
-        sym = turfs[cbelow].symbol;
+      // visible square
+      if (creatures[crd]) {
+        return [creatures[crd].symbol || "X", creatures[crd].fg || fg, bg || tile.bg];
+      } else if (zview===+1 && creatures[cabove]) {
+        return [creatures[cabove].symbol || "X", WALLFG, bg || WALLBG];
+      } else if (zview===-1 && creatures[cbelow]) {
+        return [creatures[cbelow].symbol || "X", BELOWFG, bg || BELOWBG];
+      } else if (items[crd]) {
+        return [items[crd][items[crd].length-1].symbol || "X",items[crd][items[crd].length-1].fg || fg, bg || tile.bg];
+      } else if (features[crd]) {
+        return [features[crd].symbol || "X", features[crd].fg || fg, bg || features[crd].bg || tile.bg];
+      } else if (zview===+1 && items[cabove]) {
+        return [items[cabove][items[cabove].length-1].symbol || "X", WALLFG, bg || WALLBG];
+      } else if (zview===-1 && items[cbelow]) {
+        return [items[cbelow][items[cbelow].length-1].symbol || "X", BELOWFG, bg || BELOWBG];
+      } else if (zview===+1 && features[cabove]) {
+        return [features[cabove].symbol || "X", WALLFG, bg || WALLBG];
+        // maybe make this happen only if there is no turf?
+      } else if (zview===-1 && features[cbelow] && turfs[crd]===undefined) {
+        return [features[cbelow].symbol || "X", BELOWFG, bg || BELOWBG];
+        // this maybe should show slopes still?
+      } else if (turfs[crd] && (turfs[crd].liquid===undefined || turfs[cabove]===undefined)) {
+        return [turfs[crd].symbol,turfs[crd].fg,bg || turfs[crd].bg];
+      } else if (zview===-1 && turfs[cbelow] && turfs[cbelow].liquid) {
+        return [Tiles.EmptyTile.symbol,turfs[cbelow].fg,turfs[cbelow].liquid.shimmer()];
+      } else if (tile===Tiles.EmptyTile && tiles[z-1][x][y]===Tiles.FloorTile) {
+        return [Tiles.EmptyTile.symbol, BELOWFG, bg || BELOWBG];
+        // probably should do this for empty tiles in some way...
+      } else if (tile===Tiles.FloorTile && tiles[z+1][x][y]!==Tiles.EmptyTile) {
+        return ["'",tile.fg, bg || tile.bg];
       } else {
-        // ordinary tile
-        sym = tile.symbol;
+        fg = tile.fg || fg;
+        return [tile.symbol || "X",fg, bg || tile.bg];
       }
     }
-    sym = sym || "X";
-    fg = fg || "white";
-    bg = bg || "black";
-    return [sym,fg,bg];
+    return ["X","black","red"];
   };
 
   HTomb.Tiles.getSquare = function(x,y,z) {

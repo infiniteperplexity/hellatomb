@@ -515,6 +515,12 @@ HTomb = (function(HTomb) {
         buffer.push([spacer,this[i].describe()]);
       }
       return buffer;
+    },
+    head: function() {
+      return this[0];
+    },
+    tail: function() {
+      return this[this.length-1];
     }
   };
 
