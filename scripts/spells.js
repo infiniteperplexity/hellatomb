@@ -31,7 +31,9 @@ HTomb = (function(HTomb) {
         }
         HTomb.GUI.reset();
       };
-      HTomb.GUI.selectSquareZone(master.entity.z,taskSquares,{message: "Cast this spell on a tombstone.", bg: task.zoneTemplate.bg});
+      HTomb.GUI.selectSquareZone(master.entity.z,taskSquares,
+        {message: "Use the mouse to select two corners of the zone you want to cast this in.  Make sure to include at least one corpse or tombstone.  If the tombstone is highlighted in orange, you cast the spell successfully.  A zombie will take several turns to dig its way out of its grave.",
+          bg: task.zoneTemplate.bg});
     }
   });
 

@@ -199,7 +199,6 @@ HTomb = (function(HTomb) {
       grid.push([]);
       for (var y=0; y<LEVELH; y++) {
         grid[x][y] = parseInt(noise.get(x/hscale,y/hscale)*vscale+ground);
-        //grid[x][y] = parseInt(noise.get(x/hscale,y/hscale)*vscale+ground);
         mx = Math.max(mx,grid[x][y]);
         mn = Math.min(mn,grid[x][y]);
         if (x>0 && x<LEVELW-1 && y>0 && y<LEVELH-1) {
