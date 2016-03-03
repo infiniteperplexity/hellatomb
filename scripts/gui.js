@@ -411,16 +411,16 @@ HTomb = (function(HTomb) {
     var text = ["Coord: " + square.x +"," + square.y + "," + square.z];
     var next;
     var listLines, i;
-    if(square.explored) {
+    if(square.explored || HTomb.Debug.explored) {
       next = "Terrain: "+square.terrain.name;
       text.push(next);
       next = "Creature: ";
-      if (square.creature && square.visible) {
+      if (square.creature && (square.visible || HTomb.Debug.visible)) {
         next+=square.creature.describe();
         text.push(next);
       }
       next = "Items: ";
-      if (square.items && square.visible) {
+      if (square.items && (square.visible || HTomb.Debug.visible)) {
         for (i=0; i<square.items.length; i++) {
           next+=square.items[i].describe();
           text.push(next);

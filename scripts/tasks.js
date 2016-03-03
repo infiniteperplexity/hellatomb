@@ -341,6 +341,11 @@ HTomb = (function(HTomb) {
       if(HTomb.World.turfs[coord(x,y,z)]) {
         HTomb.World.turfs[coord(x,y,z)].destroy();
       }
+      if (Math.random()<0.25) {
+        var rock = HTomb.Things.Rock();
+        rock.item.n = 1;
+        rock.place(x,y,z);
+      }
       c.remove();
       HTomb.World.validate();
     }

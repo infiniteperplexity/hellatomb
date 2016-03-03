@@ -64,6 +64,7 @@ HTomb = (function(HTomb) {
     fg: "gray",
     stackable: true,
     maxn: 10,
+    plural: true,
     stackSize: function() {
       return parseInt(Math.random()*5)+1;
     },
@@ -77,6 +78,7 @@ HTomb = (function(HTomb) {
     fg: "yellow",
     stackable: true,
     maxn: 10,
+    plural: true,
     stackSize: function() {
       return parseInt(Math.random()*5)+1;
     },
@@ -103,6 +105,7 @@ HTomb = (function(HTomb) {
     fg: "green",
     stackable: true,
     maxn: 10,
+    plural: true,
     stackSize: function() {
       return parseInt(Math.random()*5)+1;
     },

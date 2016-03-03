@@ -79,16 +79,20 @@ HTomb = (function(HTomb) {
     },
     describe: function() {
       // add options for capitalization?
-      if (this.plural===true) {
-        return this.name;
-      }
       if (this.zone) {
         return this.name;
       }
       // should I handle this with an "onDescribe" function?
       if (this.item && this.item.stackable && this.item.n>1) {
-        return (this.item.n + " " +this.name+"s");
+        if (this.plural!==true) {
+          return (this.item.n + " " +this.name+"s");
+        } else {
+          return (this.item.n + " " +this.name);
+        }
       } else {
+        if (this.plural===true) {
+          return this.name;
+        }
         // pick the correct article
         var first = this.name[0];
         if (first==="a" || first==="e" || first==="i" || first==="o" || first==="u") {
