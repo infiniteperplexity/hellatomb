@@ -53,6 +53,7 @@ HTomb = (function(HTomb) {
   };
   // Run this to make sure the basic rules of adjacent terrain are followed
   HTomb.World.validate = function() {
+    console.log("validating");
     for (var x=1; x<LEVELW-1; x++) {
       for (var y=1; y<LEVELH-1; y++) {
         for (var z=1; z<NLEVELS-1; z++) {
@@ -87,6 +88,18 @@ HTomb = (function(HTomb) {
             HTomb.World.portals[coord(x,y,z)] = [x,y,z-1];
           } else if (HTomb.World.portals[coord(x,y,z)]!==undefined) {
             delete HTomb.World.portals[coord(x,y,z)];
+          }
+          //check if anything needs to fall
+          t = HTomb.World.tiles[z][x][y];
+          if (t.fallable===true) {
+            var items = HTomb.World.items[coord(x,y,z)] || [];
+            while (items && items.length>0) {
+              items[0].fall();
+            }
+            var creature = HTomb.World.creatures[coord(x,y,z)];
+            if (creature && creature.movement.flies!==true) {
+              creature.fall();
+            }
           }
         }
       }

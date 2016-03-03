@@ -70,7 +70,12 @@ HTomb = (function(HTomb) {
           continue;
         } else if (cr) {
           if (cr.ai && cr.ai.isFriendly && cr.player===undefined && cr.movement) {
-            this.displaceCreature(cr);
+            // try displacing only half the time?
+            if (Math.random()<=0.5) {
+              this.displaceCreature(cr);
+            } else {
+              continue;
+            }
           } else {
             continue;
           }

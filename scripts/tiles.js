@@ -340,8 +340,9 @@ HTomb = (function(HTomb) {
     }
     return squares;
   };
-  Tiles.groundLevel = function(x,y) {
-    for (var z=NLEVELS-2; z>0; z--) {
+  Tiles.groundLevel = function(x,y,zoption) {
+    zoption = NLEVELS-2 || zoption;
+    for (var z=zoption; z>0; z--) {
       if (HTomb.World.tiles[z][x][y].solid===true) {
         return z+1;
       }

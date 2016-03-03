@@ -5,26 +5,26 @@ HTomb = (function(HTomb) {
     template: "Rock",
     name: "rock",
     symbol: "\u2022",
-    fg: "#CCCCCC",
+    fg: "#999999",
     stackable: true,
     maxn: 10,
     stackSize: function() {
       return parseInt(Math.random()*5)+1;
     },
-    randomColor: 10
+    randomColor: 15
   });
 
   HTomb.Things.defineItem({
     template: "FlintStone",
     name: "flint stone",
     symbol: "\u2022",
-    fg: "#CCCCCC",
+    fg: "#AAAAAA",
     stackable: true,
     maxn: 10,
     stackSize: function() {
       return parseInt(Math.random()*5)+1;
     },
-    randomColor: 10
+    randomColor: 15
   });
 
   HTomb.Things.defineItem({

@@ -8,7 +8,7 @@ HTomb = (function(HTomb) {
       template: "Necromancer",
       name: "necromancer",
       symbol: "@",
-      fg: "#D888FF",
+      fg: "#DD66FF",
       behaviors: {
         Movement: {swims: true},
         Inventory: {},
@@ -60,7 +60,7 @@ HTomb = (function(HTomb) {
     template: "Fish",
     name: "fish",
     symbol: "p",
-    fg: "orange",
+    fg: "#FF8888",
     behaviors: {
       AI: {},
       Movement: {swims: true, walks: false}

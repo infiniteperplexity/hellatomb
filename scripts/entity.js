@@ -98,6 +98,21 @@ HTomb = (function(HTomb) {
         }
       }
     },
+    fall: function() {
+      var g = HTomb.Tiles.groundLevel(this.x,this.y,this.z);
+      if (this.creature) {
+        if (HTomb.World.creatures[coord(this.x,this.y,g)]) {
+          alert("haven't decided how to handle falling creature collisions");
+        } else {
+          HTomb.GUI.sensoryEvent(this.describe() + " falls " + (this.z-g) + " stories!",this.x,this.y,this.z);
+          this.place(this.x,this.y,g);
+        }
+      }
+      if (this.item) {
+        HTomb.GUI.sensoryEvent(this.describe() + " falls " + (this.z-g) + " stories!",this.x,this.y,this.z);
+        this.place(this.x,this.y,g);
+      }
+    },
     onCreate: function() {
       // Add behaviors to entity
       for (var b in this.behaviors) {

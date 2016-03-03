@@ -7,7 +7,7 @@ HTomb.Things.defineBehavior({
   name: "crop",
   maxHerbs: 2,
   maxSeeds: 4,
-  growTurns: 50,
+  growTurns: 512,
   each: ["growTurns"],
   onTurnBegin: function() {
     if (this.growTurns>0) {
@@ -121,6 +121,11 @@ HTomb.Things.defineCrop = function(args) {
   seed.behaviors = {CropBehavior: behavior};
   seed.behaviors.CropBehavior.stage = "seed";
   seed.stackable = true;
+  if (args.randomColor) {
+    plant.randomColor = plant.randomColor || args.randomColor;
+    herb.randomColor = herb.randomColor || args.randomColor;
+    seed.randomColor = seed.randomColor || args.randomColor;
+  }
   HTomb.Things.defineFeature(plant);
   HTomb.Things.defineItem(herb);
   HTomb.Things.defineItem(seed);
@@ -129,7 +134,8 @@ HTomb.Things.defineCrop = function(args) {
 HTomb.Things.defineCrop({
   template: "Wolfsbane",
   name: "wolfsbane",
-  fg: "#AA55DD"
+  fg: "#AA55DD",
+  randomColor: 10
 });
 
 HTomb.Things.defineCrop({
@@ -139,7 +145,8 @@ HTomb.Things.defineCrop({
   herb: {
     name: "mandrake root",
     symbol: "\u2767"
-  }
+  },
+  randomColor: 10
 });
 
 HTomb.Things.defineCrop({
@@ -149,7 +156,8 @@ HTomb.Things.defineCrop({
   herb: {
     name: "wormwood leaf",
     symbol: "\u2766"
-  }
+  },
+  randomColor: 10
 });
 
 HTomb.Things.defineCrop({
@@ -165,7 +173,8 @@ HTomb.Things.defineCrop({
   },
   seed: {
     name: "amanita spore"
-  }
+  },
+  randomColor: 10
 });
 
 HTomb.Things.defineCrop({
@@ -175,5 +184,6 @@ HTomb.Things.defineCrop({
   herb: {
     name: "bloodwort root",
     symbol: "\u2767"
-  }
+  },
+  randomColor: 10
 });

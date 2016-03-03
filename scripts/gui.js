@@ -289,7 +289,13 @@ HTomb = (function(HTomb) {
         }
         // Draw every symbol in the right place
         var sym = HTomb.Tiles.getSymbol(x,y,z);
-        sym = HTomb.World.dailyCycle.shade(sym,x,y,z);
+        var p = HTomb.Player;
+        if (x===p.x && y===p.y && z===p.z) {
+          // don't dim the player's foreground at night
+          sym[2] = HTomb.World.dailyCycle.shade(sym,x,y,z)[2];
+        } else {
+          sym = HTomb.World.dailyCycle.shade(sym,x,y,z);
+        }
         display.draw(this.x0+x-xoffset,this.y0+y-yoffset, sym[0], sym[1], sym[2]);
       }
     }

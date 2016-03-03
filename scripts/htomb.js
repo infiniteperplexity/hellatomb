@@ -95,9 +95,14 @@ var HTomb = (function() {
       Player.master.assignTasks();
     }
     // Run the AI for each creature...should I deal with action points here?
+    var creatureDeck = [];
     for (var creature in World.creatures) {
-      if (World.creatures[creature].ai) {
-          World.creatures[creature].ai.act();
+      creatureDeck.push(World.creatures[creature]);
+    }
+    HTomb.shuffle(creatureDeck);
+    for (var c=0; c<creatureDeck.length; c++) {
+      if (creatureDeck[c].ai) {
+        creatureDeck[c].ai.act();
       }
     }
     // Calculate visibility

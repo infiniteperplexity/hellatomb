@@ -196,6 +196,10 @@ HTomb = (function(HTomb) {
     fetch: function(template) {
       var cr = this.assignee;
       var t = cr.ai.target;
+      // sometimes someone moves the seeds at an inopportune time
+      if (t && (t.x===null || t.y===null || t.z===null)) {
+        cr.ai.target = null;
+      }
       // if I already have one, return false
       if (cr && cr.inventory && cr.inventory.items.containsAny(template)) {
         return false;
@@ -216,7 +220,7 @@ HTomb = (function(HTomb) {
       for (var zn in HTomb.World.zones) {
         if (HTomb.World.zones[zn].template==="HoardZone") {
           items = HTomb.World.items[zn];
-          if (items.containsAny(template)) {
+          if (items && items.containsAny(template)) {
             cr.ai.target = items.getFirst(template);
             t = cr.ai.target;
             cr.movement.walkToward(t.x,t.y,t.z);
@@ -417,6 +421,10 @@ HTomb = (function(HTomb) {
             if (z && z.task) {
               z.task.cancel();
             }
+            var c = HTomb.World.creatures[coord(crd[0], crd[1], crd[2])];
+            if (c && c.minion && c.minion.task) {
+              c.minion.task.unassign();
+            }
           }
         };
         HTomb.GUI.selectSquareZone(HTomb.Player.z,deleteZones,{outline: false});
@@ -464,6 +472,10 @@ HTomb = (function(HTomb) {
     },
     ai: function() {
       var cr = this.assignee;
+      var t = cr.ai.target;
+      if (t && (t.x===null || t.y===null || t.z===null)) {
+        cr.ai.target = null;
+      }
       if (cr.movement) {
         var zone = this.zone;
         var x = zone.x;
