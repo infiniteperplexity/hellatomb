@@ -116,6 +116,7 @@ HTomb = (function(HTomb) {
         HTomb.GUI.sensoryEvent(this.describe() + " falls " + (this.z-g) + " stories!",this.x,this.y,this.z);
         this.place(this.x,this.y,g);
       }
+      HTomb.GUI.render();
     },
     onCreate: function() {
       // Add behaviors to entity

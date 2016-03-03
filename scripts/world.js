@@ -53,7 +53,6 @@ HTomb = (function(HTomb) {
   };
   // Run this to make sure the basic rules of adjacent terrain are followed
   HTomb.World.validate = function() {
-    console.log("validating");
     for (var x=1; x<LEVELW-1; x++) {
       for (var y=1; y<LEVELH-1; y++) {
         for (var z=1; z<NLEVELS-1; z++) {
@@ -104,6 +103,7 @@ HTomb = (function(HTomb) {
         }
       }
     }
+    //HTomb.GUI.reset();
   };
 
   //************Concrete methods for populating a world****************

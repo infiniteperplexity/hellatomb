@@ -333,8 +333,11 @@ HTomb = (function(HTomb) {
   // Provide the player with instructions
   var menu = new Panel(0,1);
   var defaultText = [
-    "Use numpad or arrows to move, shift+arrows to move diagonally, J to assign a job, A to act or apply, "+
-    "Z to cast a spell, space to wait, G to pick up, D to drop, I to take inventory, or tab to enter survey mode.",
+    "Movement: NumPad / Arrows.",
+    "(Shift+Arrows for diagonal.)",
+    "J: Assign Job, Z: Cast Spell.",
+    "G: Pick Up, D: Drop, I: Inventory.",
+    "Space: Wait, Tab: Survey Mode.",
     "Hover mouse to examine a square."
   ];
   menu.render = function() {
