@@ -118,26 +118,31 @@ HTomb = (function(HTomb) {
   }
 
   HTomb.World.generators = {};
-  HTomb.World.generators.currentRandom = function() {
-    colorize();
-    assignElevation();
-    addSlopes();
-
-    populateStuff();
-  };
   HTomb.World.generators.newSimplex = function() {
+    console.log("assigning elevation");
     assignElevation();
+    console.log("placing tombstones");
     simplex_features("Tombstone",{p1: 0.25, p2: 0.1, filter: function(x,y,z) {
       return (HTomb.Tiles.getNeighbors(x,y,z).fallables.length===0);
     }});
+    console.log("placing slopes");
     addSlopes();
     //placeMinerals();
-    waterTable(23);
+    console.log("placing water table");
+    //waterTable(23);
+    console.log("adding grass");
     grassify();
-    //growPlants();
+    console.log("growing plants");
+    growPlants({template: "Shrub", p: 0.05});
+    growPlants({template: "WolfsbanePlant", p: 0.001});
+    growPlants({template: "AmanitaPlant", p: 0.001});
+    growPlants({template: "MandrakePlant", p: 0.001});
+    growPlants({template: "WormwoodPlant", p: 0.001});
+    growPlants({template: "BloodwortPlant", p: 0.001});
     //placeCreatures();
-
+    console.log("placing player");
     placePlayer();
+    console.log("disabling item hauling");
     noHauling();
   };
 
@@ -214,6 +219,31 @@ HTomb = (function(HTomb) {
       }
     }
   }
+
+  function growPlants(options) {
+    options = options || {};
+    var template = options.template || "Shrub";
+    var p = options.p || 0.01;
+    var n = options.n || 3;
+    var born = options.born || [0,0.1,0.2,0.3,0.5,0.5,0.8,0.8];
+    var survive = options.survive || [0.9,0.8,0.8,0.7,0.7,0.2,0.2,0.2];
+    var cells = new HTomb.Cells({
+      born: born,
+      survive: survive
+    });
+    cells.randomize(p);
+    cells.iterate(n);
+    cells.apply(function(x,y,val) {
+      if (val) {
+        var z = HTomb.Tiles.groundLevel(x,y);
+        var plant = HTomb.Things[template]().place(x,y,z);
+        if (plant.crop) {
+          plant.crop.mature();
+        }
+      }
+    });
+  }
+
   function grassify() {
     var tiles = HTomb.World.tiles;
     var squares;

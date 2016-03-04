@@ -1,6 +1,5 @@
-// make it so wandering monsters cross slopes
-// The Movement behavior allows the creature to move
-
+HTomb = (function(HTomb) {
+  "use strict";
 
 HTomb.Things.defineBehavior({
   template: "CropBehavior",
@@ -181,3 +180,6 @@ HTomb.Things.defineCrop({
   },
   randomColor: 10
 });
+
+return HTomb;
+})(HTomb);
