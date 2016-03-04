@@ -309,9 +309,9 @@ HTomb = (function(HTomb) {
     scrollDisplay.drawText(this.x0+cursor,this.y0+1,"HP:" + 5 + "/" + 5);
     cursor+=9;
     scrollDisplay.drawText(this.x0+cursor,this.y0+1,"X:" + HTomb.Player.x);
-    cursor+=5;
+    cursor+=6;
     scrollDisplay.drawText(this.x0+cursor,this.y0+1,"Y:" + HTomb.Player.y);
-    cursor+=5;
+    cursor+=6;
     scrollDisplay.drawText(this.x0+cursor,this.y0+1,"Z:" + gameScreen.z);
     cursor+=7;
     scrollDisplay.drawText(this.x0+cursor,this.y0+1,

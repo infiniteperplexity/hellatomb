@@ -4,9 +4,9 @@ var HTomb = (function() {
   // Set a number of useful constants
   var Constants = {};
   // Dimensions of the playing area
-  var LEVELW = Constants.LEVELW = 100;
-  var LEVELH = Constants.LEVELH = 100;
-  var NLEVELS = Constants.NLEVELS = 50;
+  var LEVELW = Constants.LEVELW = 256;
+  var LEVELH = Constants.LEVELH = 256;
+  var NLEVELS = Constants.NLEVELS = 64;
   // Frequently-used colors and characters...not sure this should be here
   var UNIBLOCK = Constants.UNIBLOCK = '\u2588';
 
@@ -56,13 +56,7 @@ var HTomb = (function() {
     // Initialize the world...could be generate()?
     GUI.domInit();
     World.init();
-    var p = Things.Necromancer();
-    HTomb.Things.Player().addToEntity(p);
-    p.place(1,1,Tiles.groundLevel(1,1));
-    // Begin visibility
-    if (p.sight) {
-      FOV.findVisible(p.x, p.y, p.z, p.sight.range);
-    }
+    HTomb.GUI.recenter();
     //Events.subscribe(World.dailyCycle,"TurnBegin");
   };
 

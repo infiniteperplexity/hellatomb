@@ -298,7 +298,7 @@ HTomb = (function(HTomb) {
     each: ["infinite"],
     shimmer: function() {
       var bg = ROT.Color.fromString(this.entity.bg);
-      bg = ROT.Color.randomize(bg,[0, 0, 25]);
+      bg = ROT.Color.randomize(bg,[bg[0]/16, bg[1]/16, bg[2]/16]);
       bg = ROT.Color.toHex(bg);
       return bg;
     },
@@ -307,6 +307,28 @@ HTomb = (function(HTomb) {
       bg = ROT.Color.multiply(bg,[72,128,192]);
       bg = ROT.Color.toHex(bg);
       return bg;
+    },
+    flood: function() {
+      var x = this.entity.x;
+      var y = this.entity.y;
+      var z = this.entity.z;
+      var t = HTomb.World.turfs[coord(x,y,z-1)];
+      var water;
+      if (HTomb.World.tiles[z-1][x][y].solid!==true && t.liquid===undefined) {
+        water = HTomb.Things.Water().place(x,y,z);
+        water.liquid.flood();
+      }
+      var neighbors = HTomb.Tiles.neighbors(this.entity.x,this.entity.y,4);
+      for (var i=0; i<neighbors.length; i++) {
+        x = neighbors[i][0];
+        y = neighbors[i][1];
+        t = HTomb.World.turfs[coord(x,y,z)];
+        if (HTomb.World.tiles[z][x][y].solid===true || (t && t.liquid)) {
+          continue;
+        }
+        water = HTomb.Things.Water().place(x,y,z);
+        water.liquid.flood();
+      }
     }
   });
 

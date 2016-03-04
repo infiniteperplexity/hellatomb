@@ -181,19 +181,20 @@ HTomb = (function(HTomb) {
       }
     }
     // *********** Choose the background color *******************************
-    if (turfs[crd] && turfs[crd].liquid) {
+    if (turfs[crd] && turfs[crd].liquid && tile.solid!==true) {
       if (vis) {
         bg = bg || turfs[crd].liquid.shimmer();
       } else {
         bg = bg || turfs[crd].liquid.darken();
       }
-    } else if (zview===-1 && turfs[cbelow] && turfs[cbelow].liquid) {
+    } else if (zview===-1 && turfs[cbelow] && turfs[cbelow].liquid && tiles[z-1][x][y].solid!==true) {
       if (vis) {
         bg = bg || turfs[cbelow].liquid.shimmer();
       } else {
         bg = bg || turfs[cbelow].liquid.darken();
       }
-    } else if (zview===-1 && tiles[z-1][x][y].zview===-1 && turfs[coord(x,y,z-2)] && turfs[coord(x,y,z-2)].liquid) {
+    } else if (zview===-1 && tiles[z-1][x][y].zview===-1 && tiles[z-2][x][y].solid!==true
+        &&turfs[coord(x,y,z-2)] && turfs[coord(x,y,z-2)].liquid) {
       bg = bg || turfs[coord(x,y,z-2)].liquid.darken();
     } else if (turfs[crd]) {
       bg = bg || turfs[crd].bg;
@@ -212,10 +213,10 @@ HTomb = (function(HTomb) {
     if (creatures[crd] && vis) {
       sym = creatures[crd].symbol;
       fg = fg || creatures[crd].fg;
-    } else if (creatures[cabove] && (vis || visa)) {
+    } else if (zview===+1 && creatures[cabove] && (vis || visa)) {
       sym = creatures[cabove].symbol;
       fg = fg || WALLFG;
-    } else if (creatures[cbelow && (vis || visb)]) {
+    } else if (zview===-1 && creatures[cbelow && (vis || visb)]) {
       sym = creatures[cbelow].symbol;
       if (turfs[cbelow] && turfs[cbelow].liquid) {
         fg = fg || turfs[cbelow].fg;
@@ -233,7 +234,7 @@ HTomb = (function(HTomb) {
       fg = fg || WALLFG;
     } else if (zview===+1 && items[cbelow]) {
       sym = items[cbelow].tail().symbol;
-      if (turfs[cbelow] && turfs[cbelow].liquid) {
+      if (zview===-1 && turfs[cbelow] && turfs[cbelow].liquid) {
         fg = fg || turfs[cbelow].fg;
       } else {
         fg = fg || BELOWFG;
@@ -253,32 +254,33 @@ HTomb = (function(HTomb) {
       // *** if the square is empty except for turf, handle the symbol and color separately. ***
       if (turfs[crd]) {
         fg = fg || turfs[crd].fg;
-      } else if (turfs[cbelow] && turfs[cbelow].liquid) {
+      // maybe do show the waterlogged ground?
+      } else if (turfs[cbelow] && turfs[cbelow].liquid && (tile.solid!==true && tile.zview!==+1)) {
         fg = fg || turfs[cbelow].fg;
       } else {
         fg = tile.fg;
       }
       // *** symbol ****
-      if (tile===Tiles.FloorTile && explored[z-1][x][y] && tiles[z-1][x][y]!==Tiles.WallTile) {
+      if (tile===Tiles.FloorTile && explored[z-1][x][y] && tiles[z-1][x][y].solid!==true) {
         // tunnel below
         sym = "\u25E6";
       } else if ((tile===Tiles.FloorTile || tile===Tiles.EmptyTile) && tiles[z+1][x][y]!==Tiles.EmptyTile) {
         // roof above
         sym = "'";
-      } else if (turfs[crd]) {
+      } else if (turfs[crd] && tile.solid!==true) {
         if (turfs[crd].liquid) {
-          if (turfs[cbelow] && turfs[cbelow].liquid) {
+          if (zview===-1 && turfs[cbelow] && turfs[cbelow].liquid && tiles[z-1][x][y].zmove!==+1) {
           // deeper liquid
-            sym = "\u2193";
+            sym = "\u2235";
           } else {
           // submerged liquid
-            sym = tiles.symbol;
+            sym = tile.symbol;
           }
         } else {
           // non-liquid turf
           sym = turfs[crd].symbol;
         }
-      } else if (turfs[cbelow] && turfs[cbelow].liquid) {
+      } else if (zview===-1 && turfs[cbelow] && turfs[cbelow].liquid) {
         // liquid surface
         sym = turfs[cbelow].symbol;
       } else {
@@ -365,11 +367,12 @@ HTomb = (function(HTomb) {
     }
     HTomb.World.validate();
   };
-  Tiles.neighbors = function(x,y) {
+  Tiles.neighbors = function(x,y,n) {
+    n = n||8;
     var squares = [];
-    var dirs = ROT.DIRS[8];
+    var dirs = ROT.DIRS[n];
     var x1, y1;
-    for (var i=0; i<8; i++) {
+    for (var i=0; i<n; i++) {
       x1 = x+dirs[i][0];
       y1 = y+dirs[i][1];
       if (x1>=0 && x1<LEVELW && y1>=0 && y1<LEVELH) {
