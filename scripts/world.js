@@ -13,7 +13,11 @@ HTomb = (function(HTomb) {
       for (var i=0; i<LEVELW; i++) {
         grid[k].push([]);
         for (var j=0; j<LEVELH; j++) {
-          grid[k][i].push(fill);
+          if (typeof(fill)==="object" && fill!==null) {
+            grid[k][i].push(Object.create(fill));
+          } else {
+            grid[k][i].push(fill);
+          }
         }
       }
     }
@@ -117,6 +121,11 @@ HTomb = (function(HTomb) {
     HTomb.World.generators.newSimplex();
   }
 
+  var creatureStack = grid3d([]);
+  var itemStack = grid3d([]);
+  var featureStack = grid3d([]);
+  //var turfStack = grid3d([]);
+
   HTomb.World.generators = {};
   HTomb.World.generators.newSimplex = function() {
     console.log("assigning elevation");
@@ -125,6 +134,8 @@ HTomb = (function(HTomb) {
     simplex_features("Tombstone",{p1: 0.25, p2: 0.1, filter: function(x,y,z) {
       return (HTomb.Tiles.getNeighbors(x,y,z).fallables.length===0);
     }});
+    console.log("placing graveyards");
+    graveyards();
     console.log("placing slopes");
     addSlopes();
     //placeMinerals();
@@ -133,13 +144,15 @@ HTomb = (function(HTomb) {
     console.log("adding grass");
     grassify();
     console.log("growing plants");
+    growPlants({template: "Tree", p: 0.05});
     growPlants({template: "Shrub", p: 0.05});
     growPlants({template: "WolfsbanePlant", p: 0.001});
     growPlants({template: "AmanitaPlant", p: 0.001});
     growPlants({template: "MandrakePlant", p: 0.001});
     growPlants({template: "WormwoodPlant", p: 0.001});
     growPlants({template: "BloodwortPlant", p: 0.001});
-    //placeCreatures();
+    console.log("resolve stack");
+    unstack();
     console.log("placing player");
     placePlayer();
     console.log("disabling item hauling");
@@ -220,6 +233,29 @@ HTomb = (function(HTomb) {
     }
   }
 
+  function graveyards(options) {
+    options = options || {};
+    var template = options.template || "Shrub";
+    var p = options.p || 0.01;
+    var n = options.n || 3;
+    var born = options.born || [0,0.1,0.2,0.3,0.5,0.3,0.2,0];
+    var survive = options.survive || [1,1,1,1,0.7,0.6,0.2,0.2];
+    var cells = new HTomb.Cells({
+      born: born,
+      survive: survive
+    });
+    cells.randomize(p);
+    cells.iterate(n);
+    cells.apply(function(x,y,val) {
+      if (val) {
+        var z = HTomb.Tiles.groundLevel(x,y);
+        if (HTomb.Tiles.getNeighbors(x,y,z).fallables.length===0) {
+          var grave = HTomb.Things["Tombstone"]();
+          featureStack[z][x][y].push(grave);
+        }
+      }
+    });
+  }
   function growPlants(options) {
     options = options || {};
     var template = options.template || "Shrub";
@@ -236,7 +272,8 @@ HTomb = (function(HTomb) {
     cells.apply(function(x,y,val) {
       if (val) {
         var z = HTomb.Tiles.groundLevel(x,y);
-        var plant = HTomb.Things[template]().place(x,y,z);
+        var plant = HTomb.Things[template]();
+        featureStack[z][x][y].push(plant);
         if (plant.crop) {
           plant.crop.mature();
         }
@@ -292,6 +329,27 @@ HTomb = (function(HTomb) {
     }
   }
 
+  function unstack() {
+    for (var x=0; x<LEVELW; x++) {
+      for (var y=0; y<LEVELH; y++) {
+        for (var z=0; z<NLEVELS; z++) {
+          if (creatureStack[z][x][y][0]) {
+            HTomb.shuffle(creatureStack[z][x][y]);
+            creatureStack[z][x][y][0].place(x,y,z);
+          }
+          if (itemStack[z][x][y][0]) {
+            HTomb.shuffle(itemStack[z][x][y]);
+            itemStack[z][x][y][0].place(x,y,z);
+          }
+          if (featureStack[z][x][y][0]) {
+            HTomb.shuffle(featureStack[z][x][y]);
+            featureStack[z][x][y][0].place(x,y,z);
+          }
+        }
+      }
+    }
+  }
+
   function simplex_features(template,options) {
     options = options || {};
     var callb = options.callback;
@@ -309,7 +367,13 @@ HTomb = (function(HTomb) {
         if ((val>vthresh && r<p1) || (val===vthresh && r<p2)) {
           if (options.filter===undefined || options.filter(x,y,z)===true) {
             var thing = HTomb.Things.create(template);
-            thing.place(x,y,z);
+            if (thing.creature) {
+              creatureStack[z][x][y].push(thing);
+            } else if (thing.feature) {
+              featureStack[z][x][y].push(thing);
+            } else {
+              thing.place(x,y,z);
+            }
             if (options.callback) {
               options.callback(thing);
             }
