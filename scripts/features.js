@@ -8,8 +8,7 @@ HTomb = (function(HTomb) {
   HTomb.Things.defineFeature({
     template: "Tombstone",
     name: "tombstone",
-    symbol: "\u271F",
-    //symbol: "\u2A4D",
+    symbol: ["\u271D", "\u271E","\u271F","\u2670","\u2671"],
     fg: "#AAAAAA",
     randomColor: 5,
     onPlace: function(x,y,z) {

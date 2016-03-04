@@ -39,8 +39,8 @@ HTomb = (function(HTomb) {
     }
   };
   HTomb.Cells.prototype.setMask = function(callb) {
-    for (var x=0; x<this.width; x++) {
-      for (var y=0; y<this.height; y++) {
+    for (var x=1; x<this.width-1; x++) {
+      for (var y=1; y<this.height-1; y++) {
         this.mask[x][y] = callb(x,y);
       }
     }

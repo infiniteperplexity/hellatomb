@@ -33,7 +33,7 @@ HTomb = (function(HTomb) {
   var show = function(x,y,r,v) {
     var visible = HTomb.World.visible;
     var explored = HTomb.World.explored;
-    visible[z0][x][y] = true;
+    visible[coord(x,y,z0)] = true;
     explored[z0][x][y] = true;
     if (grid[x][y].zview===+1) {
       explored[z0+1][x][y] = true;
@@ -46,12 +46,8 @@ HTomb = (function(HTomb) {
 
   HTomb.FOV.resetVisible = function() {
     var visible = HTomb.World.visible;
-    for (var x=0; x<LEVELW; x++) {
-      for (var y=0; y<LEVELH; y++) {
-        for (var z=0; z<NLEVELS; z++) {
-          visible[z][x][y] = false;
-        }
-      }
+    for (var crd in visible) {
+      delete visible[crd];
     }
   };
   HTomb.FOV.findVisible = function(x,y,z,r) {

@@ -5,40 +5,34 @@ HTomb = (function(HTomb) {
   var NLEVELS = HTomb.Constants.NLEVELS;
   var coord = HTomb.coord;
 
-  function grid3d(fill) {
-    fill = fill || null;
+  function grid3d() {
     var grid = [];
     for (var k=0; k<NLEVELS; k++) {
       grid.push([]);
       for (var i=0; i<LEVELW; i++) {
         grid[k].push([]);
-        for (var j=0; j<LEVELH; j++) {
-          if (typeof(fill)==="object" && fill!==null) {
-            grid[k][i].push(Object.create(fill));
-          } else {
-            grid[k][i].push(fill);
-          }
-        }
       }
     }
     return grid;
   }
 
+
+  console.time("lists");
   HTomb.World.things = [];
-  HTomb.World.tiles = grid3d(null);
-  HTomb.World.explored = grid3d(false);
-  HTomb.World.visible = grid3d(false);
+  HTomb.World.tiles = grid3d();
+  HTomb.World.explored = grid3d();
+  HTomb.World.visible = {};
   HTomb.World.creatures = {};
   HTomb.World.items = {};
   HTomb.World.features = {};
   HTomb.World.zones = {};
   HTomb.World.portals = {};
   HTomb.World.turfs = {};
+  console.timeEnd("lists");
 
   HTomb.World.init = function() {
     HTomb.World.fillTiles();
-    HTomb.World.generators.newSimplex();
-    HTomb.World.validate();
+    HTomb.World.generators.bestSoFar();
   };
 
   // Add void tiles to the boundaries of the level
@@ -56,94 +50,200 @@ HTomb = (function(HTomb) {
     }
   };
   // Run this to make sure the basic rules of adjacent terrain are followed
-  HTomb.World.validate = function() {
+
+  HTomb.World.validate = {
+    dirty: {},
+    cleaned: {}
+  };
+  HTomb.World.validate.clean = function() {
+    for (var crd in this.dirty) {
+      if (this.cleaned[crd]) {
+        continue;
+      }
+      var d = HTomb.decoord(crd);
+      var x = d[0];
+      var y = d[1];
+      var z = d[2];
+      this.square(x,y,z);
+    }
+    this.dirty = {};
+    this.cleaned = {};
+  };
+  HTomb.World.validate.square = function(x,y,z) {
+    this.slopes(x,y,z);
+    this.floors(x,y,z);
+    this.falling(x,y,z);
+    this.liquids(x,y,z);
+    this.cleaned[coord(x,y,z)] = true;
+  }
+  HTomb.World.validate.all = function() {
+    this.dirty = {};
     for (var x=1; x<LEVELW-1; x++) {
       for (var y=1; y<LEVELH-1; y++) {
         for (var z=1; z<NLEVELS-1; z++) {
-          var t = HTomb.World.tiles[z][x][y];
-          var below = HTomb.World.tiles[z-1][x][y];
-          var above = HTomb.World.tiles[z+1][x][y];
-          // validate slopes
-          if (t===HTomb.Tiles.UpSlopeTile) {
-            if (above.fallable===true) {
-              HTomb.World.tiles[z+1][x][y] = HTomb.Tiles.DownSlopeTile;
-            }
-          }
-          t = HTomb.World.tiles[z][x][y];
-          if (t===HTomb.Tiles.DownSlopeTile) {
-            if (below!==HTomb.Tiles.UpSlopeTile) {
-              if (below.solid) {
-                HTomb.World.tiles[z][x][y] = HTomb.Tiles.FloorTile;
-              } else {
-                HTomb.World.tiles[z][x][y] = HTomb.Tiles.EmptyTile;
-              }
-            }
-          }
-          // validate floors
-          if (t===HTomb.Tiles.EmptyTile && below!==undefined && below.solid===true) {
-            HTomb.World.tiles[z][x][y] = HTomb.Tiles.FloorTile;
-          }
-          t = HTomb.World.tiles[z][x][y];
-          // validate portals
-          if (t.zmove===+1) {
-            HTomb.World.portals[coord(x,y,z)] = [x,y,z+1];
-          } else if (t.zmove===-1) {
-            HTomb.World.portals[coord(x,y,z)] = [x,y,z-1];
-          } else if (HTomb.World.portals[coord(x,y,z)]!==undefined) {
-            delete HTomb.World.portals[coord(x,y,z)];
-          }
-          //check if anything needs to fall
-          t = HTomb.World.tiles[z][x][y];
-          if (t.fallable===true) {
-            var items = HTomb.World.items[coord(x,y,z)] || [];
-            while (items && items.length>0) {
-              items[0].fall();
-            }
-            var creature = HTomb.World.creatures[coord(x,y,z)];
-            if (creature && creature.movement.flies!==true) {
-              creature.fall();
-            }
-          }
-          // check if liquids need to flowSymbol
-          t = HTomb.World.turfs[coord(x,y,z)];
-          if (t && t.liquid) {
-            t.liquid.flood();
-          }
+          this.square(x,y,z);
         }
       }
     }
-    //HTomb.GUI.reset();
+  };
+  HTomb.World.validate.dirtify = function(x,y,z) {
+    this.dirty[coord(x,y,z)]===true;
+  };
+  HTomb.World.validate.dirtyNeighbors = function(x,y,z) {
+    this.dirtify(x,y,z);
+    var dx;
+    var dy;
+    var dz;
+    var dirs = HTomb.dirs[26];
+    for (var i=0; i<dirs.length; i++) {
+      dx = x+dirs[i][0];
+      dy = y+dirs[i][1];
+      dz = z+dirs[i][2];
+      this.dirtify(dx,dy,dz);
+    }
+  }
+  HTomb.World.validate.cleanNeighbors = function(x,y,z) {
+    this.dirtyNeighbors(x,y,z);
+    this.clean();
+  }
+  HTomb.World.validate.slopes = function(x,y,z) {
+    // validate.all slopes
+    var t = HTomb.World.tiles[z][x][y];
+    if (t===HTomb.Tiles.UpSlopeTile) {
+      if (HTomb.World.tiles[z+1][x][y].fallable===true) {
+        HTomb.World.tiles[z+1][x][y] = HTomb.Tiles.DownSlopeTile;
+      }
+    } else if (t===HTomb.Tiles.DownSlopeTile) {
+      t = HTomb.World.tiles[z-1][x][y];
+      if (t!==HTomb.Tiles.UpSlopeTile) {
+        if (t.solid) {
+          HTomb.World.tiles[z][x][y] = HTomb.Tiles.FloorTile;
+        } else {
+          HTomb.World.tiles[z][x][y] = HTomb.Tiles.EmptyTile;
+        }
+      }
+    }
+  };
+  HTomb.World.validate.floors = function(x,y,z) {
+    if (HTomb.World.tiles[z][x][y]===HTomb.Tiles.EmptyTile && HTomb.World.tiles[z-1][x][y].solid) {
+      HTomb.World.tiles[z][x][y] = HTomb.Tiles.FloorTile;
+    }
+  };
+  HTomb.World.validate.falling = function(x,y,z) {
+    if (HTomb.World.tiles[z][x][y].fallable) {
+      var creature = HTomb.World.creatures[coord(x,y,z)];
+      if (creature && creature.movement.flies!==true) {
+        creature.fall();
+      }
+      var items = HTomb.World.items[coord(x,y,z)] || [];
+      while (items && items.length>0) {
+        items[0].fall();
+      }
+    }
+  };
+  HTomb.World.validate.liquids = function(x,y,z) {
+    var t = HTomb.World.turfs[coord(x,y,z)];
+    if (t && t.liquid) {
+      t.liquid.flood();
+    }
   };
 
-  //************Concrete methods for populating a world****************
-  function populate() {
-    //HTomb.World.generators.currentRandom();
-    HTomb.World.generators.newSimplex();
+  // //************Concrete methods for populating a world****************
+  var placement = {
+    creatures: {},
+    items: {},
+    features: {}
+  };
+  placement.stack = function(thing,x,y,z) {
+    var crd = coord(x,y,z);
+    var stack;
+    if (thing.feature) {
+      stack = this.features[crd] || [];
+      stack.push(thing);
+      this.features[crd] = stack;
+    } else if (thing.item) {
+      stack = this.items[crd] || [];
+      stack.push(thing);
+      this.items[crd] = stack;
+    } else if (thing.creature) {
+      stack = this.creatures[crd] || [];
+      stack.push(thing);
+      this.creatures[crd] = stack;
+    } else {
+      thing.place(x,y,z);
+    }
+  }
+  placement.resolve = function() {
+    var crd, stack, d;
+    for (crd in this.creatures) {
+      if (HTomb.World.creatures[crd]) {
+        continue;
+      }
+      stack = this.creatures[crd];
+      if (stack.length>1) {
+        HTomb.shuffle(stack);
+      }
+      d = HTomb.decoord(crd);
+      stack[0].place(d[0],d[1],d[2]);
+    }
+    for (crd in this.features) {
+      if (HTomb.World.features[crd]) {
+        continue;
+      }
+      stack = this.features[crd];
+      if (stack.length>1) {
+        HTomb.shuffle(stack);
+      }
+      d = HTomb.decoord(crd);
+      stack[0].place(d[0],d[1],d[2]);
+    }
+    for (crd in this.items) {
+      if (HTomb.World.items[crd]) {
+        continue;
+      }
+      stack = this.items[crd];
+      if (stack.length>1) {
+        HTomb.shuffle(stack);
+      }
+      d = HTomb.decoord(crd);
+      stack[0].place(d[0],d[1],d[2]);
+    }
+  };
+
+  function timeIt(name,callb) {
+    console.time(name);
+    callb();
+    console.timeEnd(name);
   }
 
-  var creatureStack = grid3d([]);
-  var itemStack = grid3d([]);
-  var featureStack = grid3d([]);
-  //var turfStack = grid3d([]);
+
+
 
   HTomb.World.generators = {};
-  HTomb.World.generators.newSimplex = function() {
-    console.log("assigning elevation");
-    assignElevation();
-    console.log("placing tombstones");
-    simplex_features("Tombstone",{p1: 0.25, p2: 0.1, filter: function(x,y,z) {
-      return (HTomb.Tiles.getNeighbors(x,y,z).fallables.length===0);
-    }});
-    console.log("placing graveyards");
+  HTomb.World.generators.bestSoFar = function() {
+timeIt("elevation", function() {
+    assignElevation(50);
+}); timeIt("lava", function() {
+    placeLava(10);
+}); timeIt("graveyards", function() {
     graveyards();
-    console.log("placing slopes");
+}); timeIt("slopes", function() {
     addSlopes();
-    //placeMinerals();
-    console.log("placing water table");
-    //waterTable(23);
-    console.log("adding grass");
+}); timeIt("water", function() {
+    waterTable(48,4);
+}); timeIt("minerals", function() {
+    placeMinerals({template: "IronOre", p: 0.001});
+    placeMinerals({template: "Bloodstone", p: 0.001});
+    placeMinerals({template: "GoldOre", p: 0.001});
+    placeMinerals({template: "Moonstone", p: 0.001});
+    placeMinerals({template: "Jade", p: 0.001});
+}); timeIt("caverns", function() {
+    cavernLevels(3);
+}); timeIt("labyrinths", function() {
+    labyrinths();
+}); timeIt("grass", function() {
     grassify();
-    console.log("growing plants");
+}); timeIt("plants", function() {
     growPlants({template: "Tree", p: 0.05});
     growPlants({template: "Shrub", p: 0.05});
     growPlants({template: "WolfsbanePlant", p: 0.001});
@@ -151,16 +251,21 @@ HTomb = (function(HTomb) {
     growPlants({template: "MandrakePlant", p: 0.001});
     growPlants({template: "WormwoodPlant", p: 0.001});
     growPlants({template: "BloodwortPlant", p: 0.001});
-    console.log("resolve stack");
-    unstack();
-    console.log("placing player");
+}); timeIt("player", function() {
     placePlayer();
-    console.log("disabling item hauling");
+}); timeIt("critters", function() {
+    placeCritters();
+}); timeIt("resolving", function() {
+    placement.resolve();
+}); timeIt("no hauling", function() {
     noHauling();
+});
   };
 
-  function assignElevation() {
-    var ground = 25;
+  var lowest;
+  var highest;
+  function assignElevation(ground) {
+    ground = ground || 50;
     var hscale1 = 128;
     var vscale1 = 3;
     var hscale2 = 64;
@@ -179,7 +284,7 @@ HTomb = (function(HTomb) {
         grid[x][y]+= noise.get(x/hscale3,y/hscale3)*vscale3;
         grid[x][y] = parseInt(grid[x][y]);
         mx = Math.max(mx,grid[x][y]);
-        mx = Math.min(mn,grid[x][y]);
+        mn = Math.min(mn,grid[x][y]);
         if (x>0 && x<LEVELW-1 && y>0 && y<LEVELH-1) {
           for (var z=grid[x][y]; z>=0; z--) {
             HTomb.World.tiles[z][x][y] = HTomb.Tiles.WallTile;
@@ -189,6 +294,8 @@ HTomb = (function(HTomb) {
         }
       }
     }
+    lowest = mn;
+    highest = mx;
     console.log("Highest at " + mx + ", lowest at " + mn);
   }
 
@@ -205,7 +312,8 @@ HTomb = (function(HTomb) {
             slope = false;
             for (var i=0; i<squares.length; i++) {
               square = squares[i];
-              if (tiles[z][square[0]][square[1]]===HTomb.Tiles.WallTile && tiles[z+1][square[0]][square[1]]===HTomb.Tiles.FloorTile) {
+              if (tiles[z][square[0]][square[1]]===HTomb.Tiles.WallTile
+                  && tiles[z+1][square[0]][square[1]]===HTomb.Tiles.FloorTile) {
                 slope = true;
               }
             }
@@ -220,41 +328,173 @@ HTomb = (function(HTomb) {
     }
   }
 
-  function waterTable(elev) {
-    var depth = 5;
+  function waterTable(elev, depth) {
+    elev = elev || lowest+3;
+    depth = depth || 4;
+    var rock = new ROT.Map.Cellular(LEVELW,LEVELH);
+    rock.randomize(0.45);
+    for (var i=0; i<10; i++) {
+      rock.create();
+    }
+    function nonsolids(x,y,z) {return HTomb.World.tiles[z][x][y].solid!==true;}
     for (var x=1; x<LEVELW-1; x++) {
       for (var y=1; y<LEVELH-1; y++) {
-        for (var z=elev; z>0; z--) {
-          if (z > elev-depth || HTomb.World.tiles[z][x][y]!==HTomb.Tiles.WallTile) {
+        for (var z=elev; z>=lowest; z--) {
+          if (z<elev-depth && HTomb.World.tiles[z][x][y]===HTomb.Tiles.WallTile) {
+            break;
+          } else if (rock._map[x][y]===0 || HTomb.World.tiles[z][x][y]!==HTomb.Tiles.WallTile
+              || HTomb.Tiles.countNeighborsWhere(x,y,z,nonsolids)>0) {
             HTomb.Things.create("Water").place(x,y,z);
           }
         }
       }
     }
   }
-
+  function placeLava(elev) {
+    elev = elev || 10;
+    for (var x=1; x<LEVELW-1; x++) {
+      for (var y=1; y<LEVELH-1; y++) {
+        for (var z=elev; z>0; z--) {
+          if (z<elev) {
+            HTomb.World.tiles[z][x][y] = HTomb.Tiles.EmptyTile;
+          }
+          HTomb.Things.create("Lava").place(x,y,z);
+        }
+      }
+    }
+  }
   function graveyards(options) {
     options = options || {};
     var template = options.template || "Shrub";
     var p = options.p || 0.01;
     var n = options.n || 3;
     var born = options.born || [0,0.1,0.2,0.3,0.5,0.3,0.2,0];
-    var survive = options.survive || [1,1,1,1,0.7,0.6,0.2,0.2];
+    var survive = options.survive || [1,1,1,1,0.6,0.4,0.2,0.1];
     var cells = new HTomb.Cells({
       born: born,
       survive: survive
     });
     cells.randomize(p);
     cells.iterate(n);
+    function fallables(x,y,z) {return HTomb.World.tiles[z][x][y].fallable;}
     cells.apply(function(x,y,val) {
       if (val) {
         var z = HTomb.Tiles.groundLevel(x,y);
-        if (HTomb.Tiles.getNeighbors(x,y,z).fallables.length===0) {
+        if (HTomb.Tiles.countNeighborsWhere(x,y,z,fallables)===0) {
           var grave = HTomb.Things["Tombstone"]();
-          featureStack[z][x][y].push(grave);
+          placement.stack(grave,x,y,z);
         }
       }
     });
+  }
+
+  function cavernLevels(n) {
+    n = n || 4;
+    n = parseInt(ROT.RNG.getNormal(n,1));
+    var used = [];
+    for (var k=0; k<n; k++) {
+      var placed = false;
+      var tries = 0;
+      var max = 50;
+      while (placed===false && tries<max) {
+        var z = parseInt(Math.random()*40)+11;
+        if (used.indexOf(z)!==-1) {
+          tries+=1;
+          continue;
+        }
+        placed = true;
+        var z = parseInt(Math.random()*30)+11;
+        used.push(z);
+        used.push(z+1);
+        used.push(z-1);
+        var caves = new ROT.Map.Cellular(LEVELW-2,LEVELH-2,{connected: true});
+        caves.randomize(0.5);
+        for (var i=0; i<6; i++) {
+          caves.create();
+        }
+        console.log("cavern level at " + z);
+        caves.create(function(x,y,val) {
+          if (val) {
+            HTomb.World.tiles[z][x+1][y+1] = HTomb.Tiles.FloorTile;
+            HTomb.World.validate.dirtify(x+1,y+1,z);
+          }
+        });
+      }
+    }
+    HTomb.World.validate.clean();
+  }
+  function labyrinths(n) {
+    n = n || 12;
+    n = parseInt(ROT.RNG.getNormal(n,n/4));
+    for (var k=0; k<n; k++) {
+      var width = parseInt(Math.random()*8)+8;
+      var height = parseInt(Math.random()*8)+8;
+      var placed = false;
+      var tries = 0;
+      var max = 50;
+      while (placed===false && tries<max) {
+        var x = parseInt(Math.random()*(LEVELW-20))+10;
+        var y = parseInt(Math.random()*(LEVELH-20))+10;
+        var z = parseInt(Math.random()*(lowest-8))+11;
+        placed = true;
+        outerLoop:
+        for (var i=x; i<x+width; i++) {
+          for (var j=y; j<y+height; j++) {
+            if (HTomb.World.tiles[z][i][j]!==HTomb.Tiles.WallTile) {
+              placed = false;
+              break outerLoop;
+            }
+          }
+        }
+        if (placed===true) {
+          var maze = new ROT.Map.EllerMaze(width,height);
+          maze.create(function(x0,y0,val) {
+            if (val===0) {
+              HTomb.World.tiles[z][x+x0][y+y0] = HTomb.Tiles.FloorTile;
+              HTomb.World.validate.dirtify(x+x0,y+y0,z);
+            }
+          });
+        }
+        tries = tries+1;
+      }
+    }
+    HTomb.World.validate.clean();
+  }
+  function placeMinerals(options) {
+    options = options || {};
+    var template = options.template || "IronOre";
+    var p = options.p || 0.01;
+    var n = options.n || 3;
+    var depth = options.depth || 2;
+    var born = options.born || [0,0.1,0.2,0.3,0.5,0.5,0.8,0.8];
+    var survive = options.survive || [0.5,0.5,0.5,0.7,0.7,0.5,0.5,0.5];
+    var cells;
+    function nonsolids(x,y,z) {return HTomb.World.tiles[z][x][y].solid!==true;}
+    // save some time for now by skipping lower levels
+    for (var z=15; z<=highest; z++) {
+      cells = new HTomb.Cells({
+        born: born,
+        survive: survive
+      });
+      // If we're above some ground level, mask non-wall squares
+      if (z>=lowest) {
+        cells.setMask(function(x,y) {
+          if (HTomb.World.tiles[z][x][y]===HTomb.Tiles.WallTile) {
+            return null;
+          } else {
+            return 0;
+          }
+        });
+      }
+      cells.randomize(p);
+      cells.iterate(n);
+      cells.apply(function(x,y,val) {
+        if (val && HTomb.Tiles.countNeighborsWhere(x,y,z,nonsolids)===0) {
+          var mineral = HTomb.Things[template]();
+          placement.stack(mineral,x,y,z);
+        }
+      });
+    }
   }
   function growPlants(options) {
     options = options || {};
@@ -272,10 +512,19 @@ HTomb = (function(HTomb) {
     cells.apply(function(x,y,val) {
       if (val) {
         var z = HTomb.Tiles.groundLevel(x,y);
-        var plant = HTomb.Things[template]();
-        featureStack[z][x][y].push(plant);
-        if (plant.crop) {
-          plant.crop.mature();
+        var t = HTomb.World.turfs[coord(x,y,z)];
+        var plant;
+        if (t && t.liquid) {
+          if (Math.random()<0.5) {
+            plant = HTomb.Things.Seaweed();
+            placement.stack(plant,x,y,z);
+          }
+        } else {
+          plant = HTomb.Things[template]();
+          if (plant.crop) {
+            plant.crop.mature();
+          }
+          placement.stack(plant,x,y,z);
         }
       }
     });
@@ -329,59 +578,28 @@ HTomb = (function(HTomb) {
     }
   }
 
-  function unstack() {
-    for (var x=0; x<LEVELW; x++) {
-      for (var y=0; y<LEVELH; y++) {
-        for (var z=0; z<NLEVELS; z++) {
-          if (creatureStack[z][x][y][0]) {
-            HTomb.shuffle(creatureStack[z][x][y]);
-            creatureStack[z][x][y][0].place(x,y,z);
+  function placeCritters(p) {
+    p = p || 0.01;
+    var landCritters = ["Bat","Spider"];
+    var waterCritters = ["Fish"];
+    var template;
+    for (var x=1; x<LEVELW-1; x++) {
+      for (var y=1; y<LEVELH-1; y++) {
+        if (Math.random()<p) {
+          var z = HTomb.Tiles.groundLevel(x,y);
+          var t = HTomb.World.turfs[coord(x,y,z)]
+          if (t && t.liquid) {
+            template = HTomb.shuffle(waterCritters)[0];
+          } else {
+            template = HTomb.shuffle(landCritters)[0];
           }
-          if (itemStack[z][x][y][0]) {
-            HTomb.shuffle(itemStack[z][x][y]);
-            itemStack[z][x][y][0].place(x,y,z);
-          }
-          if (featureStack[z][x][y][0]) {
-            HTomb.shuffle(featureStack[z][x][y]);
-            featureStack[z][x][y][0].place(x,y,z);
-          }
+          var critter = HTomb.Things[template]();
+          placement.stack(critter,x,y,z);
         }
       }
     }
   }
 
-  function simplex_features(template,options) {
-    options = options || {};
-    var callb = options.callback;
-    var hscale = options.hscale || 20;
-    var vscale = options.vscale || 4;
-    var vthresh = options.vthresh || 2;
-    var p1 = options.p1 || 0.5;
-    var p2 = options.p2 || 0.25;
-    var noise = new ROT.Noise.Simplex();
-    for (var x=1; x<LEVELW-1; x++) {
-      for (var y=1; y<LEVELH-1; y++) {
-        var z = HTomb.Tiles.groundLevel(x,y);
-        var val = parseInt(noise.get(x/hscale,y/hscale)*vscale);
-        var r = Math.random();
-        if ((val>vthresh && r<p1) || (val===vthresh && r<p2)) {
-          if (options.filter===undefined || options.filter(x,y,z)===true) {
-            var thing = HTomb.Things.create(template);
-            if (thing.creature) {
-              creatureStack[z][x][y].push(thing);
-            } else if (thing.feature) {
-              featureStack[z][x][y].push(thing);
-            } else {
-              thing.place(x,y,z);
-            }
-            if (options.callback) {
-              options.callback(thing);
-            }
-          }
-        }
-      }
-    }
-  }
 
   HTomb.World.dailyCycle = {
     hour: 8,

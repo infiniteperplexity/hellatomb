@@ -317,6 +317,8 @@ HTomb = (function(HTomb) {
       if (HTomb.World.tiles[z-1][x][y].solid!==true && t.liquid===undefined) {
         water = HTomb.Things.Water().place(x,y,z);
         water.liquid.flood();
+        // if we flood below, don't flood to the sides...should this happen each turn?
+        return;
       }
       var neighbors = HTomb.Tiles.neighbors(this.entity.x,this.entity.y,4);
       for (var i=0; i<neighbors.length; i++) {

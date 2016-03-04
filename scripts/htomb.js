@@ -1,4 +1,3 @@
-
 var HTomb = (function() {
 "use strict";
   // Set a number of useful constants
@@ -34,6 +33,7 @@ var HTomb = (function() {
     for(var i=0; i<a.length;i++) {
       arr.push(a[i]);
     }
+    return arr;
   }
   function coordInArray(c, a) {
     var match;
@@ -55,6 +55,8 @@ var HTomb = (function() {
   var init = function() {
     // Initialize the world...could be generate()?
     GUI.domInit();
+    GUI.splash(["Welcome to HellaTomb!"]);
+    HTomb.GUI.render();
     World.init();
     HTomb.GUI.recenter();
     //Events.subscribe(World.dailyCycle,"TurnBegin");
@@ -152,7 +154,7 @@ var HTomb = (function() {
     Events: Events,
     GUI: GUI,
     get Player () {return Player;},
-    set Player (p) {Player = p; GUI.splash(["Welcome to HellaTomb!"]);},
+    set Player (p) {Player = p;},
     Tiles: Tiles,
     Debug: Debug,
     Save: Save,

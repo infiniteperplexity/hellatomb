@@ -347,7 +347,7 @@ HTomb = (function(HTomb) {
         rock.place(x,y,z);
       }
       c.remove();
-      HTomb.World.validate();
+      HTomb.World.validate.cleanNeighbors(x,y,z);
     }
   });
 
@@ -405,7 +405,7 @@ HTomb = (function(HTomb) {
       } else if (t===DownSlopeTile || t===EmptyTile) {
         tiles[z][x][y] = FloorTile;
       }
-      HTomb.World.validate();
+      HTomb.World.validate.cleanNeighbors(x,y,z);
       c.remove();
     },
     designate: function(master) {

@@ -85,9 +85,8 @@ HTomb.Things.defineCrop = function(args) {
   plant.template = args.template + "Plant";
   plant.baseTemplate = args.template;
   plant.name = plant.name || args.name + " plant";
-  plant.symbol = plant.symbol || '\u22BB';
   plant.matureSymbol = plant.matureSymbol || "\u2698";
-  plant.symbol = plant.symbol || '\u26B5';
+  plant.symbol = plant.symbol || '\u0662';
   plant.fg = plant.fg || args.fg || "white";
   plant.behaviors = {CropBehavior: behavior};
   plant.behaviors.CropBehavior.stage = "plant";
@@ -161,7 +160,7 @@ HTomb.Things.defineCrop({
     matureSymbol: "\u2763"
   },
   herb: {
-    symbol: "\u25C9",
+    symbol: "\u2763",
     name: "amanita cap"
   },
   seed: {

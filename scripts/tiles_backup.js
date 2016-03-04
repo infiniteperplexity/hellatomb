@@ -306,7 +306,7 @@ HTomb = (function(HTomb) {
     if (HTomb.World.tiles[z+1][x][y]===HTomb.Tiles.EmptyTile) {
       HTomb.World.tiles[z+1][x][y] = HTomb.Tiles.FloorTile;
     }
-    HTomb.World.validate();
+    HTomb.World.validate.all();
   };
   // I actually hate the way this works
   Tiles.excavate = function(x,y,z,options) {
@@ -325,7 +325,7 @@ HTomb = (function(HTomb) {
     } else {
       HTomb.World.tiles[z][x][y] = HTomb.Tiles.FloorTile;
     }
-    HTomb.World.validate();
+    HTomb.World.validate.all();
   };
   Tiles.neighbors = function(x,y) {
     var squares = [];

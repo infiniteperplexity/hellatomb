@@ -61,6 +61,7 @@ HTomb = (function(HTomb) {
   GUI.domInit = function() {
     var body = document.body;
     var div = document.createElement("div");
+    div.innerHTML = "testing";
     div.id = "main";
     var contain = document.createElement("div");
     contain.id = "contain";
@@ -75,7 +76,7 @@ HTomb = (function(HTomb) {
     body.appendChild(div);
     div.appendChild(contain);
     div.appendChild(menu);
-    div.appendChild(splash);
+    //div.appendChild(splash);
     contain.appendChild(game);
     contain.appendChild(document.createElement("br"));
     contain.appendChild(scroll);
@@ -178,7 +179,7 @@ HTomb = (function(HTomb) {
 
   // set up message buffer
   GUI.sensoryEvent = function(strng,x,y,z) {
-    if (HTomb.World.visible[z][x][y]) {
+    if (HTomb.World.visible[HTomb.coord(x,y,z)]) {
       GUI.pushMessage(strng);
     }
   };

@@ -162,9 +162,12 @@ HTomb = (function(HTomb) {
     var explored = HTomb.World.explored;
     var tile = tiles[z][x][y];
     var zview = tiles[z][x][y].zview;
-    var vis = (visible[z][x][y]===true || HTomb.Debug.visible===true);
-    var visa = (visible[z+1][x][y]===true);
-    var visb = (visible[z-1][x][y]===true);
+    //var vis = (visible[z][x][y]===true || HTomb.Debug.visible===true);
+    //var visa = (visible[z+1][x][y]===true);
+    //var visb = (visible[z-1][x][y]===true);
+    var vis = (visible[crd]===true || HTomb.Debug.visible===true);
+    var visa = (visible[cabove]===true);
+    var visb = (visible[cbelow]===true);
     var sym, fg, bg;
     // ***** Designated zones show up even in unexplored areas *******
     if (zones[crd]!==undefined) {
@@ -305,7 +308,8 @@ HTomb = (function(HTomb) {
     square.zone = HTomb.World.zones[crd];
     square.turf = HTomb.World.turfs[crd];
     square.explored = HTomb.World.explored[z][x][y];
-    square.visible = HTomb.World.visible[z][x][y];
+    square.visible = HTomb.World.visible[crd];
+    //square.visible = HTomb.World.visible[z][x][y];
     // until we get the real code in place...
     square.visibleBelow = (square.visible && square.terrain.zview===-1) || HTomb.Debug.visible || false;
     square.visibleAbove = (square.visible && (square.terrain.zview===+1 || HTomb.World.tiles[z+1][x][y].zview===-1)) || HTomb.Debug.visible || false;
@@ -346,7 +350,7 @@ HTomb = (function(HTomb) {
     if (HTomb.World.tiles[z+1][x][y]===HTomb.Tiles.EmptyTile) {
       HTomb.World.tiles[z+1][x][y] = HTomb.Tiles.FloorTile;
     }
-    HTomb.World.validate();
+    HTomb.World.validate.cleanNeighbors(x,y,z);
   };
   // I actually hate the way this works
   Tiles.excavate = function(x,y,z,options) {
@@ -365,7 +369,7 @@ HTomb = (function(HTomb) {
     } else {
       HTomb.World.tiles[z][x][y] = HTomb.Tiles.FloorTile;
     }
-    HTomb.World.validate();
+    HTomb.World.validate.cleanNeighbors(x,y,z);
   };
   Tiles.neighbors = function(x,y,n) {
     n = n||8;
@@ -389,21 +393,31 @@ HTomb = (function(HTomb) {
       }
     }
   };
-  Tiles.getNeighbors = function(x,y,z) {
+
+  Tiles.countNeighborsWhere = function(x,y,z,callb) {
     var dirs = ROT.DIRS[8];
     var x1, y1;
-    var neighbors = {};
-    neighbors.squares = [];
-    neighbors.fallables = [];
+    var tally = 0;
     for (var i=0; i<8; i++) {
       x1 = x+dirs[i][0];
       y1 = y+dirs[i][1];
       if (x1>=0 && x1<LEVELW && y1>=0 && y1<LEVELH) {
-        neighbors.squares.push([x1,y1,z]);
-        var square = Tiles.getSquare(x1,y1,z);
-        if (square.terrain.fallable) {
-          neighbors.fallables.push([x1,y1,z]);
+        if (callb(x1,y1,z)===true) {
+          tally+=1;
         }
+      }
+    }
+    return tally;
+  };
+  Tiles.getNeighbors = function(x,y,z) {
+    var dirs = ROT.DIRS[8];
+    var x1, y1;
+    var neighbors = [];
+    for (var i=0; i<8; i++) {
+      x1 = x+dirs[i][0];
+      y1 = y+dirs[i][1];
+      if (x1>=0 && x1<LEVELW && y1>=0 && y1<LEVELH) {
+        neighbors.push([x1,y1,z]);
       }
     }
     return neighbors;

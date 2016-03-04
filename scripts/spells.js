@@ -55,7 +55,7 @@ HTomb = (function(HTomb) {
       //} else if (HTomb.World.items[coord(x,y,z)].containsAny("Corpse")) {
       //  return true;
       }
-      if (Tomb.World.items[coord(x,y,z)] && HTomb.World.items[coord(x,y,z)].containsAny("Corpse")) {
+      if (HTomb.World.items[coord(x,y,z)] && HTomb.World.items[coord(x,y,z)].containsAny("Corpse")) {
         return true;
       }
       return false;
@@ -151,7 +151,7 @@ HTomb = (function(HTomb) {
           HTomb.World.turfs[coord(x,y,z)].destroy();
         }
       }
-      HTomb.World.validate();
+      HTomb.World.validate.cleanNeighbors(x,y,z);
     }
   });
 

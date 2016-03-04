@@ -34,7 +34,7 @@ HTomb = (function(HTomb) {
   HTomb.World.init = function() {
     HTomb.World.fillTiles();
     HTomb.World.generators.newSimplex();
-    HTomb.World.validate();
+    HTomb.World.validate.all();
   };
 
   // Add void tiles to the boundaries of the level
@@ -52,14 +52,14 @@ HTomb = (function(HTomb) {
     }
   };
   // Run this to make sure the basic rules of adjacent terrain are followed
-  HTomb.World.validate = function() {
+  HTomb.World.validate.all = function() {
     for (var x=1; x<LEVELW-1; x++) {
       for (var y=1; y<LEVELH-1; y++) {
         for (var z=1; z<NLEVELS-1; z++) {
           var t = HTomb.World.tiles[z][x][y];
           var below = HTomb.World.tiles[z-1][x][y];
           var above = HTomb.World.tiles[z+1][x][y];
-          // validate slopes
+          // validate.all slopes
           if (t===HTomb.Tiles.UpSlopeTile) {
             if (above.fallable===true) {
               HTomb.World.tiles[z+1][x][y] = HTomb.Tiles.DownSlopeTile;
@@ -75,12 +75,12 @@ HTomb = (function(HTomb) {
               }
             }
           }
-          // validate floors
+          // validate.all floors
           if (t===HTomb.Tiles.EmptyTile && below!==undefined && below.solid===true) {
             HTomb.World.tiles[z][x][y] = HTomb.Tiles.FloorTile;
           }
           t = HTomb.World.tiles[z][x][y];
-          // validate portals
+          // validate.all portals
           if (t.zmove===+1) {
             HTomb.World.portals[coord(x,y,z)] = [x,y,z+1];
           } else if (t.zmove===-1) {
