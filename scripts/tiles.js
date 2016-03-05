@@ -264,12 +264,12 @@ HTomb = (function(HTomb) {
         fg = tile.fg;
       }
       // *** symbol ****
-      if (tile===Tiles.FloorTile && explored[z-1][x][y] && tiles[z-1][x][y].solid!==true) {
-        // tunnel below
-        sym = "\u25E6";
-      } else if ((tile===Tiles.FloorTile || tile===Tiles.EmptyTile) && tiles[z+1][x][y]!==Tiles.EmptyTile) {
+      if ((tile===Tiles.FloorTile || tile===Tiles.EmptyTile) && tiles[z+1][x][y]!==Tiles.EmptyTile) {
         // roof above
         sym = "'";
+      } else if (tile===Tiles.FloorTile && explored[z-1][x][y] && tiles[z-1][x][y].solid!==true) {
+      // tunnel below
+        sym = "\u25E6";
       } else if (turfs[crd] && tile.solid!==true) {
         if (turfs[crd].liquid) {
           if (zview===-1 && turfs[cbelow] && turfs[cbelow].liquid && tiles[z-1][x][y].zmove!==+1) {

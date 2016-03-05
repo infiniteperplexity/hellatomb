@@ -108,7 +108,7 @@ HTomb = (function(HTomb) {
             t.zone = zone;
             t.assigner = master;
             t.assigner.master.taskList.push(t);
-            zone.task.tryAssign(zombie);
+            zone.task.assignTo(zombie);
             return zone;
           }
         }

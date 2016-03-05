@@ -57,7 +57,9 @@ var HTomb = (function() {
     GUI.domInit();
     GUI.splash(["Welcome to HellaTomb!"]);
     HTomb.GUI.render();
+    console.time("worldInit");
     World.init();
+    console.timeEnd("worldInit");
     HTomb.GUI.recenter();
     //Events.subscribe(World.dailyCycle,"TurnBegin");
   };

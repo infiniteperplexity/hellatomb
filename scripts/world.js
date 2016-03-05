@@ -224,7 +224,9 @@ HTomb = (function(HTomb) {
 timeIt("elevation", function() {
     assignElevation(50);
 }); timeIt("lava", function() {
-    placeLava(10);
+    if (HTomb.Debug.faster!==true) {
+      placeLava(10);
+    }
 }); timeIt("graveyards", function() {
     graveyards();
 }); timeIt("slopes", function() {
@@ -471,7 +473,8 @@ timeIt("elevation", function() {
     var cells;
     function nonsolids(x,y,z) {return HTomb.World.tiles[z][x][y].solid!==true;}
     // save some time for now by skipping lower levels
-    for (var z=15; z<=highest; z++) {
+    var bottom = (HTomb.Debug.faster) ? 40 : 15;
+    for (var z=bottom; z<=highest; z++) {
       cells = new HTomb.Cells({
         born: born,
         survive: survive
