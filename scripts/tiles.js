@@ -219,7 +219,7 @@ HTomb = (function(HTomb) {
     } else if (zview===+1 && creatures[cabove] && (vis || visa)) {
       sym = creatures[cabove].symbol;
       fg = fg || WALLFG;
-    } else if (zview===-1 && creatures[cbelow && (vis || visb)]) {
+    } else if (zview===-1 && creatures[cbelow] && (vis || visb)) {
       sym = creatures[cbelow].symbol;
       if (turfs[cbelow] && turfs[cbelow].liquid) {
         fg = fg || turfs[cbelow].fg;
