@@ -619,11 +619,11 @@ HTomb = (function(HTomb) {
       var y = this.zone.y;
       var z = this.zone.z;
       var f = HTomb.World.features[coord(x,y,z)];
-      // if the right kind of plant is there
-      if (f && f.template===this.assignedCrop+"Plant" && f.crop.growTurns===0 && this.canReachZone(cr)) {
-        this.assignTo(cr);
-        return true;
-      }
+      // // if the right kind of plant is there
+      // if (f && f.template===this.assignedCrop+"Plant" && f.crop.growTurns===0 && this.canReachZone(cr)) {
+      //   this.assignTo(cr);
+      //   return true;
+      // }
       if (f===undefined && this.canReachZone(cr)) {
         this.assignTo(cr);
         return true;
@@ -632,7 +632,8 @@ HTomb = (function(HTomb) {
     },
     canDesignateTile: function(x,y,z) {
       var f = HTomb.World.features[coord(x,y,z)];
-      if (f && f.template!==this.assignedCrop+"Plant") {
+      // if (f && f.template!==this.assignedCrop+"Plant") {
+      if (f) {
         return false;
       }
       if (HTomb.World.turfs[coord(x,y,z)] && HTomb.World.turfs[coord(x,y,z)].liquid) {
@@ -650,15 +651,16 @@ HTomb = (function(HTomb) {
       var that = this;
       var crops = this.findSeeds();
       var taskSquares = function(squares) {
-        for (var i=0; i<squares.length; i++) {
-          var crd = squares[i];
-          var f = HTomb.World.features[coord(crd[0],crd[1],crd[2])];
-          if (f && f.crop && crops.indexOf(f.baseTemplate)===-1) {
-            crops.push(f.baseTemplate);
-          }
-        }
+        // for (var i=0; i<squares.length; i++) {
+        //   var crd = squares[i];
+        //   var f = HTomb.World.features[coord(crd[0],crd[1],crd[2])];
+        //   if (f && f.crop && crops.indexOf(f.baseTemplate)===-1) {
+        //     crops.push(f.baseTemplate);
+        //   }
+        // }
         if (crops.length===0) {
-          HTomb.GUI.pushMessage("No seeds or crops available.");
+          HTomb.GUI.pushMessage("No seeds available.");
+          // HTomb.GUI.pushMessage("No seeds or crops available.");
           HTomb.GUI.reset();
           return;
         } else if (crops.length===1) {
@@ -698,16 +700,16 @@ HTomb = (function(HTomb) {
         var y = zone.y;
         var z = zone.z;
         var f = HTomb.World.features[coord(x,y,z)];
-        if (f && f.template===this.assignedCrop+"Plant") {
-          // if the plant is ready to harvest
-          if (f.crop.growTurns===0) {
-            this.seekZoneAI();
-          }
-        } else {
-          var needsSeed = this.fetch(this.assignedCrop+"Seed");
-          if (needsSeed===false) {
-            this.seekZoneAI();
-          }
+        // if (f && f.template===this.assignedCrop+"Plant") {
+        //   // if the plant is ready to harvest
+        //   if (f.crop.growTurns===0) {
+        //     this.seekZoneAI();
+        //   }
+        // } else {
+        var needsSeed = this.fetch(this.assignedCrop+"Seed");
+        if (needsSeed===false) {
+          this.seekZoneAI();
+        // }
         }
       }
       cr.ai.acted = true;
@@ -718,21 +720,23 @@ HTomb = (function(HTomb) {
         HTomb.Things.Soil().place(x,y,z);
       }
       var f = HTomb.World.features[coord(x,y,z)];
-      if (f && f.template===this.assignedCrop+"Plant" && f.crop.growTurns===0) {
-        f.crop.harvestBy(this.assignee);
-        this.finish();
-        this.complete();
-      } else {
-        var seed = null;
-        for (var i=0; i<this.assignee.inventory.items.length; i++) {
-          var item = this.assignee.inventory.items[i];
-          if (item.template===this.assignedCrop+"Seed") {
-            //plant the whole stack at once for now
-            item.crop.plantAt(x,y,z);
-            this.assignee.inventory.items.remove(item);
-            this.unassign();
-            return;
-          }
+      // if (f && f.template===this.assignedCrop+"Plant" && f.crop.growTurns===0) {
+      //   f.crop.harvestBy(this.assignee);
+      //   this.finish();
+      //   this.complete();
+      // } else {
+      var seed = null;
+      for (var i=0; i<this.assignee.inventory.items.length; i++) {
+        var item = this.assignee.inventory.items[i];
+        if (item.template===this.assignedCrop+"Seed") {
+          //plant the whole stack at once for now
+          item.crop.plantAt(x,y,z);
+          this.assignee.inventory.items.remove(item);
+          //this.unassign();
+          this.finish();
+          this.complete();
+          return;
+          // }
         }
       }
     }
@@ -750,7 +754,11 @@ HTomb = (function(HTomb) {
       var y = this.zone.y;
       var z = this.zone.z;
       var thing = HTomb.World.features[coord(x,y,z)];
-      if (thing) {
+      //sort of ad hoce for now?
+      if (thing && thing.crop && thing.crop.growTurns===0) {
+        thing.crop.harvestBy(this.assignee);
+        return;
+      } else if (thing) {
         HTomb.GUI.sensoryEvent("Removed " + thing.describe(),x,y,z);
         thing.feature.harvest();
         //thing.destroy();
@@ -775,17 +783,23 @@ HTomb = (function(HTomb) {
     },
     work: function(x,y,z) {
       var thing = HTomb.World.features[coord(x,y,z)];
-      if (thing) {
+      if (thing && thing.crop && thing.crop.growTurns===0) {
+        this.finish();
+        this.complete();
+        return;
+      } else if (thing) {
         thing.feature.hp-=1;
-        if (thing.feature.hp<=0) {
+        if (thing.featjure.hp<=0) {
           this.finish();
           this.complete();
+          return;
         }
       } else {
         thing = HTomb.World.turfs[coord(x,y,z)];
         if (thing) {
           this.finish();
           this.complete();
+          return;
         }
       }
     }

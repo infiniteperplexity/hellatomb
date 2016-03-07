@@ -134,8 +134,8 @@ HTomb = (function(HTomb) {
     template: "Soil",
     name: "soil",
     symbol: '"',
-    fg: HTomb.Constants.GRASSFG ||"#886644",
-    bg: HTomb.Constants.GRASSBG || "#443322"
+    fg: "#886644",
+    bg: "#443322"
   });
 
   return HTomb;
