@@ -496,6 +496,7 @@ timeIt("elevation", function() {
       cells.apply(function(x,y,val) {
         if (val && HTomb.Tiles.countNeighborsWhere(x,y,z,nonsolids)===0) {
           var mineral = HTomb.Things[template]();
+          mineral.item.makeStack();
           placement.stack(mineral,x,y,z);
         }
       });

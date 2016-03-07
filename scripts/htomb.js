@@ -51,6 +51,17 @@ var HTomb = (function() {
     }
     return -1;
   }
+  function poisson(mean) {
+    var L = Math.exp(-mean);
+    var p = 1.0;
+    var k = 0;
+    do {
+        k++;
+        p *= Math.random();
+    } while (p > L);
+    return k-1;
+  }
+
   // Begin the game
   var init = function() {
     // Initialize the world...could be generate()?
@@ -147,6 +158,7 @@ var HTomb = (function() {
     decoord: decoord,
     shuffle: shuffle,
     coordInArray: coordInArray,
+    poisson: poisson,
     Controls: Controls,
     Commands: Commands,
     turn: turn,

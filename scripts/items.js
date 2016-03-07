@@ -8,9 +8,6 @@ HTomb = (function(HTomb) {
     fg: "#999999",
     stackable: true,
     maxn: 10,
-    stackSize: function() {
-      return parseInt(Math.random()*5)+1;
-    },
     randomColor: 15
   });
 
@@ -21,9 +18,6 @@ HTomb = (function(HTomb) {
     fg: "#AAAAAA",
     stackable: true,
     maxn: 10,
-    stackSize: function() {
-      return parseInt(Math.random()*5)+1;
-    },
     randomColor: 15
   });
 
@@ -51,9 +45,6 @@ HTomb = (function(HTomb) {
     fg: "red",
     stackable: true,
     maxn: 10,
-    stackSize: function() {
-      return parseInt(Math.random()*5)+1;
-    },
     randomColor: 10
   });
 
@@ -65,9 +56,6 @@ HTomb = (function(HTomb) {
     stackable: true,
     maxn: 10,
     plural: true,
-    stackSize: function() {
-      return parseInt(Math.random()*5)+1;
-    },
     randomColor: 10
   });
 
@@ -79,9 +67,6 @@ HTomb = (function(HTomb) {
     stackable: true,
     maxn: 10,
     plural: true,
-    stackSize: function() {
-      return parseInt(Math.random()*5)+1;
-    },
     randomColor: 10
   });
 
@@ -92,9 +77,6 @@ HTomb = (function(HTomb) {
     fg: "cyan",
     stackable: true,
     maxn: 10,
-    stackSize: function() {
-      return parseInt(Math.random()*5)+1;
-    },
     randomColor: 10
   });
 
@@ -106,12 +88,17 @@ HTomb = (function(HTomb) {
     stackable: true,
     maxn: 10,
     plural: true,
-    stackSize: function() {
-      return parseInt(Math.random()*5)+1;
-    },
     randomColor: 10
   });
 
+  HTomb.Things.defineItem({
+    template: "WoodPlank",
+    name: "wooden plank",
+    symbol: "=",
+    fg: "#BB9922",
+    stackable: true,
+    maxn: 10
+  });
 
 
   return HTomb;

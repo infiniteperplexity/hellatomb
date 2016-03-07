@@ -25,16 +25,6 @@ HTomb = (function(HTomb) {
         f.destroy();
       }
     },
-    harvest: function(x,y,z) {
-      var f = HTomb.World.features[coord(x,y,z)];
-      f.feature.hp-=1;
-      if (f.feature.hp===0) {
-        if (f.harvest) {
-          f.harvest();
-        }
-        f.destroy();
-      }
-    },
     onDefine: function() {
       if (this.zoneTemplate) {
         HTomb.Things.defineZone(this.zoneTemplate);
@@ -752,8 +742,7 @@ HTomb = (function(HTomb) {
       var thing = HTomb.World.features[coord(x,y,z)];
       if (thing) {
         HTomb.GUI.sensoryEvent("Removed " + thing.describe(),x,y,z);
-        thing.feature.harvest();
-        //thing.destroy();
+        thing.destroy();
         return;
       }
       thing = HTomb.World.turfs[coord(x,y,z)];

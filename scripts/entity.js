@@ -194,7 +194,7 @@ HTomb = (function(HTomb) {
     template: "Item",
     name: "item",
     stackable: false,
-    n: null,
+    n: 1,
     maxn: 10,
     container: null,
     owned: true,
@@ -223,10 +223,9 @@ HTomb = (function(HTomb) {
         }
       }
     },
-    // generate a random number in a stack...not really a good place to put this code
-    onAdd: function() {
+    makeStack: function() {
       if (this.entity.stackSize && this.stackable && this.n===null) {
-        this.n = this.entity.stackSize();
+        this.n = Math.max(1,HTomb.poisson(this.entity.stackSize));
       }
     }
   });
@@ -236,6 +235,7 @@ HTomb = (function(HTomb) {
     hp: 10,
     maxhp: 10,
     each: ["hp"],
+    yields: null,
     place: function(x,y,z) {
       var c = coord(x,y,z);
       var features = HTomb.World.features;
@@ -249,6 +249,23 @@ HTomb = (function(HTomb) {
       var c = coord(f.x,f.y,f.z);
       var features = HTomb.World.features;
       delete features[c];
+    },
+    harvest: function() {
+      if (this.yields!==null) {
+        var x = this.entity.x;
+        var y = this.entity.y;
+        var z = this.entity.z;
+        for (var template in this.yields) {
+          var n = HTomb.poisson(this.yields[template].n);
+          if (this.yields[template].nozero) {
+            n = Math.max(n,1);
+          }
+          for (var i=0; i<n; i++) {
+            var thing = HTomb.Things[template]().place(x,y,z);
+          }
+        }
+      }
+      this.entity.destroy();
     }
   });
   HTomb.Things.defineBehavior({
@@ -364,7 +381,11 @@ HTomb = (function(HTomb) {
   HTomb.Things.defineFeature = function(args) {
     args = args || {};
     args.behaviors = args.behaviors || {};
-    args.behaviors.Feature = args.behaviors.Feature || {};
+    var feature = {};
+    if (args.yields) {
+      feature.yields = args.yields;
+    }
+    args.behaviors.Feature = args.behaviors.Feature || feature;
     HTomb.Things.defineEntity(args);
   };
   HTomb.Things.defineZone = function(args) {
