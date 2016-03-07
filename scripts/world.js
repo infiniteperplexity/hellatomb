@@ -227,12 +227,12 @@ timeIt("elevation", function() {
     if (HTomb.Debug.faster!==true) {
       placeLava(10);
     }
+}); timeIt("water", function() {
+    waterTable(48,4);
 }); timeIt("graveyards", function() {
     graveyards();
 }); timeIt("slopes", function() {
     addSlopes();
-}); timeIt("water", function() {
-    waterTable(48,4);
 }); timeIt("minerals", function() {
     placeMinerals({template: "IronOre", p: 0.001});
     placeMinerals({template: "Bloodstone", p: 0.001});
@@ -260,7 +260,7 @@ timeIt("elevation", function() {
 }); timeIt("resolving", function() {
     placement.resolve();
 }); timeIt("no hauling", function() {
-    noHauling();
+    notOwned();
 });
   };
 
@@ -382,7 +382,9 @@ timeIt("elevation", function() {
     cells.apply(function(x,y,val) {
       if (val) {
         var z = HTomb.Tiles.groundLevel(x,y);
-        if (HTomb.Tiles.countNeighborsWhere(x,y,z,fallables)===0) {
+        if (HTomb.Tiles.countNeighborsWhere(x,y,z,fallables)===0
+            && HTomb.World.turfs[coord(x,y,z)]===undefined
+            && HTomb.World.turfs[coord(x,y,z-1)]===undefined) {
           var grave = HTomb.Things["Tombstone"]();
           placement.stack(grave,x,y,z);
         }
@@ -547,11 +549,14 @@ timeIt("elevation", function() {
       }
     }
   }
-  function noHauling() {
+  function notOwned() {
+    for (var fe in HTomb.World.features) {
+      HTomb.World.features[fe].owned = false;
+    }
     for (var it in HTomb.World.items) {
       var items = HTomb.World.items[it];
       for (var i=0; i<items.length; i++) {
-        items[i].item.haulable=false;
+        items[i].item.owned=false;
       }
     }
   }

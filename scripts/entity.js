@@ -197,9 +197,9 @@ HTomb = (function(HTomb) {
     n: null,
     maxn: 10,
     container: null,
-    haulable: true,
+    owned: true,
     bulk: 10,
-    each: ["n","haulable"],
+    each: ["n","owned"],
     place: function(x,y,z) {
       var c = coord(x,y,z);
       var pile = HTomb.World.items[c] || ItemContainer();

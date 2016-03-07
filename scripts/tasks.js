@@ -233,7 +233,7 @@ HTomb = (function(HTomb) {
         if (items.containsAny(template)) {
           for (var i=0; i<items.length; i++) {
             var item = items[i];
-            if (item.item.haulable!==false && item.template===template) {
+            if (item.item.owned===true && item.template===template) {
               cr.ai.target = item;
               t = cr.ai.target;
               cr.movement.walkToward(t.x,t.y,t.z);
@@ -253,7 +253,7 @@ HTomb = (function(HTomb) {
           this.finish();
           this.complete();
         }
-      } else if (f && this.clearsFeature===true) {
+      } else if (f && this.clearsFeature===true && f.owned!==true) {
         this.dismantle(x,y,z);
       } else {
         this.incompleteFeature = HTomb.Things.Construction(this.featureTemplate);
@@ -372,6 +372,8 @@ HTomb = (function(HTomb) {
       //shouldn't be able to build surrounded by emptiness
       var t = HTomb.World.tiles[z][x][y];
       if (t===HTomb.Tiles.VoidTile || t===HTomb.Tiles.WallTile) {
+        return false;
+      } else if (HTomb.World.features[coord(x,y,z)] && HTomb.World.features[coord(x,y,z)].owned!==false) {
         return false;
       } else {
         return true;
@@ -507,10 +509,10 @@ HTomb = (function(HTomb) {
                 if (zone && zone.template==="HoardZone") {
                   continue;
                 }
-                // if it's not haulable, skip it
+                // if it's not owned, skip it
                 for (var i=0; i<items.length; i++) {
                   var item = items[i];
-                  if (item.item.haulable!==false) {
+                  if (item.item.owned===true) {
                     cr.ai.target = item;
                     break outerLoop;
                   }

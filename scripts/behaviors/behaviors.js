@@ -33,9 +33,7 @@ HTomb = (function(HTomb) {
     onAdd: function() {this.items = HTomb.ItemContainer(); this.items.parent = this;},
     pickup: function(item) {
       var e = this.entity;
-      if (item.item.haulable===false) {
-        delete item.item.haulable;
-      }
+      item.item.owned = true;
       item.remove();
       HTomb.GUI.sensoryEvent(this.entity.describe() + " picks up " + item.describe(),e.x,e.y,e.z);
       this.add(item);

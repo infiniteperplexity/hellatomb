@@ -23,7 +23,7 @@ HTomb = (function(HTomb) {
     //symbol: "\u2663",
     symbol: ["\u2663","\u2660"],
     fg: "#77BB00",
-    randomColor: 15
+    randomColor: 10
   });
 
   HTomb.Things.defineFeature({
@@ -31,7 +31,7 @@ HTomb = (function(HTomb) {
     name: "shrub",
     symbol: "\u2698",
     fg: "#779922",
-    randomColor: 20
+    randomColor: 15
   });
 
   HTomb.Things.defineFeature({
