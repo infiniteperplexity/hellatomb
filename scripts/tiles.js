@@ -235,7 +235,7 @@ HTomb = (function(HTomb) {
     } else if (zview===+1 && items[cabove]) {
       sym = items[cabove].tail().symbol;
       fg = fg || WALLFG;
-    } else if (zview===+1 && items[cbelow]) {
+    } else if (zview===-1 && items[cbelow]) {
       sym = items[cbelow].tail().symbol;
       if (zview===-1 && turfs[cbelow] && turfs[cbelow].liquid) {
         fg = fg || turfs[cbelow].fg;
@@ -268,7 +268,7 @@ HTomb = (function(HTomb) {
         // roof above
         sym = "'";
       } else if (tile===Tiles.FloorTile && explored[z-1][x][y] && tiles[z-1][x][y].solid!==true) {
-      // tunnel below
+      // explored tunnel below
         sym = "\u25E6";
       } else if (turfs[crd] && tile.solid!==true) {
         if (turfs[crd].liquid) {
