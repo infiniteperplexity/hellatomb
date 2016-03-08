@@ -743,7 +743,7 @@ HTomb = (function(HTomb) {
   });
   HTomb.Things.defineTask({
     template: "DismantleTask",
-    name: "dismantle",
+    name: "harvest/dismantle",
     zoneTemplate: {
       template: "DismantleZone",
       name: "dismantle",

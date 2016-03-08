@@ -371,7 +371,7 @@ timeIt("elevation", function() {
     var p = options.p || 0.01;
     var n = options.n || 3;
     var born = options.born || [0,0.1,0.2,0.3,0.5,0.3,0.2,0];
-    var survive = options.survive || [1,1,1,1,0.6,0.4,0.2,0.1];
+    var survive = options.survive || [0.7,0.8,0.8,0.8,0.6,0.4,0.2,0.1];
     var cells = new HTomb.Cells({
       born: born,
       survive: survive
