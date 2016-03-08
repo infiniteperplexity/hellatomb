@@ -789,7 +789,7 @@ HTomb = (function(HTomb) {
         return;
       } else if (thing) {
         thing.feature.hp-=1;
-        if (thing.featjure.hp<=0) {
+        if (thing.feature.hp<=0) {
           this.finish();
           this.complete();
           return;

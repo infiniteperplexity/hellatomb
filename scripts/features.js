@@ -135,7 +135,7 @@ HTomb = (function(HTomb) {
     name: "soil",
     symbol: '"',
     fg: "#886644",
-    bg: "#443322"
+    bg: "#332211"
   });
 
   return HTomb;
