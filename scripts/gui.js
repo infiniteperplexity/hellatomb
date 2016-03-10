@@ -25,6 +25,7 @@ HTomb = (function(HTomb) {
   var XSKEW = HTomb.Constants.XSKEW;
   var YSKEW = HTomb.Constants.YSKEW;
   var TEXTSPACING = HTomb.Constants.TEXTSPACING;
+  var TEXTWIDTH = HTomb.Constants.TEXTWIDTH;
 
   // set up GUI and display
   var GUI = HTomb.GUI;
@@ -52,8 +53,8 @@ HTomb = (function(HTomb) {
     spacing: TEXTSPACING
   });
   var splashDisplay = new ROT.Display({
-    width: SCREENW+MENUW,
-    height: SCREENH+MENUH,
+    width: SCREENW*(CHARWIDTH/TEXTWIDTH)+MENUW,
+    height: MENUH,
     fontSize: TEXTSIZE,
     fontFamily: TEXTFONT,
     spacing: TEXTSPACING
@@ -61,10 +62,7 @@ HTomb = (function(HTomb) {
   GUI.domInit = function() {
     var body = document.body;
     var div = document.createElement("div");
-    div.innerHTML = "testing";
     div.id = "main";
-    var contain = document.createElement("div");
-    contain.id = "contain";
     var game = document.createElement("div");
     game.id = "game";
     var menu = document.createElement("div");
@@ -74,16 +72,14 @@ HTomb = (function(HTomb) {
     var splash = document.createElement("div");
     splash.id = "splash";
     body.appendChild(div);
-    div.appendChild(contain);
+    div.appendChild(game);
     div.appendChild(menu);
-    //div.appendChild(splash);
-    contain.appendChild(game);
-    contain.appendChild(document.createElement("br"));
-    contain.appendChild(scroll);
+    div.appendChild(scroll);
+    div.appendChild(splash);
     game.appendChild(display.getContainer());
     menu.appendChild(menuDisplay.getContainer());
     scroll.appendChild(scrollDisplay.getContainer());
-    //splash.appendChild(splashDisplay.getContainer());
+    splash.appendChild(splashDisplay.getContainer());
   };
 
   // Attach input events
@@ -141,17 +137,12 @@ HTomb = (function(HTomb) {
       shiftArrow=null;
     }
   }
+  // this may change a bit if I add click functionality to other canvases
   var mousedown = function(click) {
     // Convert X and Y from pixels to characters
     var x = Math.floor((click.clientX+XSKEW)/CHARWIDTH-1);
     var y = Math.floor((click.clientY+YSKEW)/CHARHEIGHT-1);
-    // If the click is not on the game screen, pass the actual X and Y positions
-    if (GUI.panels.overlay!==null || x>=SCREENW || y>=SCREENH) {
-      Controls.context.clickAt(x,y);
-    // If the click is on the game screen, pass the X and Y tile coordinates
-    } else {
-      Controls.context.clickTile(x+gameScreen.xoffset,y+gameScreen.yoffset);
-    }
+    Controls.context.clickTile(x+gameScreen.xoffset,y+gameScreen.yoffset);
   };
   var mousemove = function(move) {
     // Convert X and Y from pixels to characters
@@ -176,6 +167,7 @@ HTomb = (function(HTomb) {
   display.getContainer().addEventListener("mousemove",mousemove);
   menuDisplay.getContainer().addEventListener("mousemove",function() {HTomb.Controls.context.mouseOver();});
   scrollDisplay.getContainer().addEventListener("mousemove",function() {HTomb.Controls.context.mouseOver();});
+  splashDisplay.getContainer().addEventListener("mousedown",function() {GUI.reset();});
 
   // set up message buffer
   GUI.sensoryEvent = function(strng,x,y,z) {
@@ -195,17 +187,11 @@ HTomb = (function(HTomb) {
   };
   // Render display panels
   GUI.render = function() {
-    if (GUI.panels.overlay !== null) {
-      // The overlay, if any, obscures all other panels
-      // Shoudl we add one for the minimap?
-      GUI.panels.overlay.render();
-    } else {
-      // Draw all the panels
-      GUI.panels.main.render();
-      GUI.panels.middle.render();
-      GUI.panels.bottom.render();
-      GUI.panels.right.render();
-    }
+    // Draw all the panels
+    GUI.panels.main.render();
+    GUI.panels.middle.render();
+    GUI.panels.bottom.render();
+    GUI.panels.right.render();
   };
   // Draw a character at the appropriate X and Y tile
   GUI.drawTile = function(x,y,ch,fg,bg) {
@@ -235,20 +221,18 @@ HTomb = (function(HTomb) {
       bg
     );
   };
-  // Display a splash screen
+
   GUI.splash = function(arr) {
+    // we may not want to force the player to reset the GUI...but let's try it out
     Controls.context = new ControlContext();
-    var splash = {};
-    splash.render = function() {
-      for (var i=0; i<SCREENH+SCROLLH; i++) {
-        display.drawText(1,1+i,"%c{black}"+(UNIBLOCK.repeat(SCREENW+MENUW+1)));
-      }
-      for (var j=0; j<arr.length; j++) {
-        display.drawText(4, 3+j, arr[j]);
-      }
-    };
-    GUI.panels.overlay = splash;
-    GUI.render();
+    var splash = document.getElementById("splash");
+    splash.style.display = "initial";
+    for (var i=0; i<SCREENH+SCROLLH; i++) {
+      splashDisplay.drawText(1,1+i,"%c{black}"+(UNIBLOCK.repeat(SCREENW+MENUW+1)));
+    }
+    for (var j=0; j<arr.length; j++) {
+      splashDisplay.drawText(4, 3+j, arr[j]);
+    }
   };
   // Reset the GUI
   GUI.reset = function() {
@@ -256,9 +240,9 @@ HTomb = (function(HTomb) {
       main: gameScreen,
       middle: status,
       bottom: scroll,
-      right: menu,
-      overlay: null
+      right: menu
     };
+    document.getElementById("splash").style.display = "none";
     Controls.context = main;
     GUI.updateMenu();
     GUI.recenter();
@@ -578,8 +562,7 @@ HTomb = (function(HTomb) {
     var square = HTomb.Tiles.getSquare(x,y,z);
     var details = [];
     details = details.concat(square.terrain.details());
-    details = details.concat()
-    //GUI.splash(details);
+    GUI.splash(details);
   }
   main.mouseOver = function() {
     if (GUI.panels.overlay===null) {

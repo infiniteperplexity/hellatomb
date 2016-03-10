@@ -66,11 +66,12 @@ var HTomb = (function() {
   var init = function() {
     // Initialize the world...could be generate()?
     GUI.domInit();
-    GUI.splash(["Welcome to HellaTomb!"]);
-    HTomb.GUI.render();
     console.time("worldInit");
     World.init();
     console.timeEnd("worldInit");
+    GUI.reset();
+    GUI.splash(["Welcome to HellaTomb!"]);
+    HTomb.GUI.render();
     HTomb.GUI.recenter();
     //Events.subscribe(World.dailyCycle,"TurnBegin");
   };
