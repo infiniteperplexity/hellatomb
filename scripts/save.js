@@ -7,6 +7,7 @@ HTomb = (function(HTomb) {
 
   HTomb.Save.saveGame = function() {
     var saveGame = {};
+    console.log("testing");
     saveGame.things = HTomb.World.things;
     saveGame.tiles = HTomb.World.tiles;
     saveGame.explored = HTomb.World.explored;
@@ -21,6 +22,9 @@ HTomb = (function(HTomb) {
     console.log(json.length);
   };
 
+  var seen = [];
+  HTomb.Save.duplicates = [];
+  HTomb.Save.nThings = 0;
   HTomb.Save.stringify = function(obj) {
     var json = JSON.stringify(obj, function(key, val) {
       if (val===undefined) {
@@ -36,6 +40,7 @@ HTomb = (function(HTomb) {
         return val.stringify();
         // if it's from the global things table, stringify it normally
       } else if (this===HTomb.World.things) {
+        HTomb.Save.nThings+=1;
         // stringify only those things on the "each" list
         for (var p in val) {
           if (p!=="each" && val.hasOwnProperty(p)===false) {
@@ -54,6 +59,9 @@ HTomb = (function(HTomb) {
         return {tid: val.thingId};
       } else {
         //console.log("normal value");
+        if (seen.indexOf(val)!==-1 && HTomb.Save.duplicates.indexOf(val)!==-1) {
+          HTomb.Save.duplicates.push([this, key, val]);
+        }
         return val;
       }
     });
