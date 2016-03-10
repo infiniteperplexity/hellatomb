@@ -148,13 +148,8 @@ HTomb = (function(HTomb) {
     // Convert X and Y from pixels to characters
     var x = Math.floor((move.clientX+XSKEW)/CHARWIDTH-1);
     var y = Math.floor((move.clientY+YSKEW)/CHARHEIGHT-1);
-    // If the hover is not on the game screen, pass the actual X and Y positions
-    if (GUI.panels.overlay!==null || x>=SCREENW || y>=SCREENH || x<0 || y<0) {
-      Controls.context.mouseOver(x,y);
-    } else {
       // If the hover is on the game screen, pass the X and Y tile coordinates
-      Controls.context.mouseTile(x+gameScreen.xoffset,y+gameScreen.yoffset);
-    }
+    Controls.context.mouseTile(x+gameScreen.xoffset,y+gameScreen.yoffset);
   };
   // Bind a ROT.js keyboard constant to a function for a particular context
   var bindKey = function(target, key, func) {
@@ -222,27 +217,32 @@ HTomb = (function(HTomb) {
     );
   };
 
+  var splashActive = false;
   GUI.splash = function(arr) {
     // we may not want to force the player to reset the GUI...but let's try it out
+    splashActive = true;
     Controls.context = new ControlContext();
-    var splash = document.getElementById("splash");
-    splash.style.display = "initial";
     for (var i=0; i<SCREENH+SCROLLH; i++) {
       splashDisplay.drawText(1,1+i,"%c{black}"+(UNIBLOCK.repeat(SCREENW+MENUW+1)));
     }
     for (var j=0; j<arr.length; j++) {
       splashDisplay.drawText(4, 3+j, arr[j]);
     }
+    var splash = document.getElementById("splash");
+    splash.style.display = "initial";
   };
   // Reset the GUI
   GUI.reset = function() {
+    if (splashActive===true) {
+      document.getElementById("splash").style.display = "none";
+      splashActive = false;
+    }
     GUI.panels = {
       main: gameScreen,
       middle: status,
       bottom: scroll,
       right: menu
     };
-    document.getElementById("splash").style.display = "none";
     Controls.context = main;
     GUI.updateMenu();
     GUI.recenter();
@@ -372,15 +372,11 @@ HTomb = (function(HTomb) {
   // By default, dragging the mouse outside the game screen resets the game screen
   // This clears out highlighted tiles from hovering, for example
   ControlContext.prototype.mouseOver = function() {
-    if (GUI.panels.overlay===null) {
-      gameScreen.render();
-    }
+    gameScreen.render();
   };
 
   ControlContext.prototype.mouseTile = function(x,y) {
-    if (GUI.panels.overlay===null) {
-      GUI.panels.main.render();
-    }
+    GUI.panels.main.render();
     GUI.highlightTile(x,y,"#0000FF");
     var z = gameScreen.z;
     var txt = examineSquare(x,y,z);
@@ -565,11 +561,9 @@ HTomb = (function(HTomb) {
     GUI.splash(details);
   }
   main.mouseOver = function() {
-    if (GUI.panels.overlay===null) {
-      // The main control context always wants to show the instructions
-      GUI.displayMenu(defaultText);
-      gameScreen.render();
-    }
+    // The main control context always wants to show the instructions
+    GUI.displayMenu(defaultText);
+    gameScreen.render();
   };
 
   // Update the right-hand menu instructions
