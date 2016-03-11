@@ -139,37 +139,23 @@ HTomb = (function(HTomb) {
     }
   });
 
-  // try tunnel below "\u2213"
-  // deep water U223B?
-  // sideways tilda 2240
-  // not tilde 2241
-  // minus tilde 2242
-  // sinewave 223F
-  // star equals 225B for growing plants?  or 225A, 22A5 up tack, xor 22BB
-
   Tiles.getSymbol = function(x,y,z) {
-    var fg, bg;
+    var glyph = Tiles.getGlyph(x,y,z);
+    var bg = Tiles.getBackground(x,y,z);
+    return [glyph[0],glyph[1],bg];
+  }
+  Tiles.getBackground = function(x,y,z) {
     var crd = HTomb.coord(x,y,z);
-    var cabove = HTomb.coord(x,y,z+1);
     var cbelow = HTomb.coord(x,y,z-1);
-    var tiles = HTomb.World.tiles;
-    var creatures = HTomb.World.creatures;
-    var items = HTomb.World.items;
-    var features = HTomb.World.features;
     var turfs = HTomb.World.turfs;
     var zones = HTomb.World.zones;
     var visible = HTomb.World.visible;
     var explored = HTomb.World.explored;
+    var tiles = HTomb.World.tiles;
     var tile = tiles[z][x][y];
     var zview = tiles[z][x][y].zview;
-    //var vis = (visible[z][x][y]===true || HTomb.Debug.visible===true);
-    //var visa = (visible[z+1][x][y]===true);
-    //var visb = (visible[z-1][x][y]===true);
     var vis = (visible[crd]===true || HTomb.Debug.visible===true);
-    var visa = (visible[cabove]===true);
-    var visb = (visible[cbelow]===true);
-    var sym, fg, bg;
-    // ***** Designated zones show up even in unexplored areas *******
+    var bg;
     if (zones[crd]!==undefined) {
       bg = zones[crd].bg;
     }
@@ -177,10 +163,10 @@ HTomb = (function(HTomb) {
     if (!explored[z][x][y] && HTomb.Debug.explored!==true) {
       // unexplored tiles with an explored floor tile above are rendered as non-visible wall tiles
       if (tiles[z+1][x][y]===Tiles.FloorTile && explored[z+1][x][y]) {
-        return[Tiles.WallTile.symbol,SHADOWFG, bg || WALLBG];
+        return (bg || WALLBG);
       } else {
         // otherwise paint the tile black
-        return [" ","black", bg || "black"];
+        return "black";
       }
     }
     // *********** Choose the background color *******************************
@@ -208,7 +194,36 @@ HTomb = (function(HTomb) {
     }
     // ** Otherwise, use the tile background
     bg = bg || tile.bg;
-    // **** All non-visible tiles have the same foreground
+    return bg;
+  };
+
+  Tiles.getGlyph = function(x,y,z) {
+    var crd = HTomb.coord(x,y,z);
+    var cabove = HTomb.coord(x,y,z+1);
+    var cbelow = HTomb.coord(x,y,z-1);
+    var tiles = HTomb.World.tiles;
+    var creatures = HTomb.World.creatures;
+    var items = HTomb.World.items;
+    var features = HTomb.World.features;
+    var turfs = HTomb.World.turfs;
+    var zones = HTomb.World.zones;
+    var visible = HTomb.World.visible;
+    var explored = HTomb.World.explored;
+    var tile = tiles[z][x][y];
+    var zview = tiles[z][x][y].zview;
+    var vis = (visible[crd]===true || HTomb.Debug.visible===true);
+    var visa = (visible[cabove]===true);
+    var visb = (visible[cbelow]===true);
+    var sym, fg;
+    if (!explored[z][x][y] && HTomb.Debug.explored!==true) {
+      // unexplored tiles with an explored floor tile above are rendered as non-visible wall tiles
+      if (tiles[z+1][x][y]===Tiles.FloorTile && explored[z+1][x][y]) {
+        return [Tiles.WallTile.symbol,SHADOWFG];
+      } else {
+        // otherwise paint the tile black
+        return [" ","black"];
+      }
+    }
     if (vis===false) {
       fg = SHADOWFG;
     }
@@ -293,8 +308,7 @@ HTomb = (function(HTomb) {
     }
     sym = sym || "X";
     fg = fg || "white";
-    bg = bg || "black";
-    return [sym,fg,bg];
+    return [sym,fg];
   };
 
   HTomb.Tiles.getSquare = function(x,y,z) {

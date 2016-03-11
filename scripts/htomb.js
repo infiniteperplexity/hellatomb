@@ -27,14 +27,20 @@ var HTomb = (function() {
     y = c;
     return [x,y,z];
   }
-  // the shuffle function in ROT.js empties the original array
   function shuffle(arr) {
-    var a = arr.randomize();
-    for(var i=0; i<a.length;i++) {
-      arr.push(a[i]);
-    }
-    return arr;
+    //Fisher-Yates
+    var i = arr.length;
+    if ( i == 0 ) return false;
+    while ( --i ) {
+       var j = Math.floor( Math.random() * ( i + 1 ) );
+       var tempi = arr[i];
+       var tempj = arr[j];
+       arr[i] = tempj;
+       arr[j] = tempi;
+     }
+     return arr;
   }
+
   function coordInArray(c, a) {
     var match;
     var mis;
@@ -60,6 +66,16 @@ var HTomb = (function() {
         p *= Math.random();
     } while (p > L);
     return k-1;
+  }
+
+  function alphatize(newc,oldc,alpha) {
+    var oldc = ROT.Color.fromHex(oldc);
+    var newc = ROT.Color.fromHex(newc);
+    for (var i=0; i<3; i++) {
+      newc[i] = alpha*newc[i]+(1-alpha)*oldc[i];
+    }
+    newc = ROT.Color.toString(newc);
+    return newc;
   }
 
   // Begin the game
@@ -160,6 +176,7 @@ var HTomb = (function() {
     shuffle: shuffle,
     coordInArray: coordInArray,
     poisson: poisson,
+    alphatize: alphatize,
     Controls: Controls,
     Commands: Commands,
     turn: turn,

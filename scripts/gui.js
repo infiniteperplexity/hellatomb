@@ -207,7 +207,7 @@ HTomb = (function(HTomb) {
     var xoffset = gameScreen.xoffset || 0;
     var yoffset = gameScreen.yoffset || 0;
     var z = gameScreen.z;
-    var sym = HTomb.Tiles.getSymbol(x,y,z);
+    var sym = HTomb.Tiles.getGlyph(x,y,z);
     display.draw(
       x-xoffset,
       y-yoffset,
@@ -220,14 +220,14 @@ HTomb = (function(HTomb) {
   var splashActive = false;
   GUI.splash = function(arr) {
     // we may not want to force the player to reset the GUI...but let's try it out
-    splashActive = true;
-    Controls.context = new ControlContext();
     for (var i=0; i<SCREENH+SCROLLH; i++) {
-      splashDisplay.drawText(1,1+i,"%c{black}"+(UNIBLOCK.repeat(SCREENW+MENUW+1)));
+      splashDisplay.drawText(1,1+i,"%c{black}"+(UNIBLOCK.repeat(SCREENW*(CHARWIDTH/TEXTWIDTH)+MENUW-2)));
     }
     for (var j=0; j<arr.length; j++) {
       splashDisplay.drawText(4, 3+j, arr[j]);
     }
+    splashActive = true;
+    Controls.context = new ControlContext();
     var splash = document.getElementById("splash");
     splash.style.display = "initial";
   };

@@ -60,11 +60,11 @@ HTomb = (function(HTomb) {
       var z = this.entity.z;
       for (var i=0; i<backoffs.length; i++) {
         var dir = backoffs[i];
-        var t = HTomb.World.tiles[z][x][y];
-        var tu = HTomb.World.tiles[z+1][x][y];
-        var td = HTomb.World.tiles[z-1][x][y];
+        //var t = HTomb.World.tiles[z][x][y];
+        //var tu = HTomb.World.tiles[z+1][x][y];
+        //var td = HTomb.World.tiles[z-1][x][y];
         var cr = HTomb.World.creatures[coord(x+dir[0],y+dir[1],z+dir[2])];
-        var f = HTomb.World.features[coord(x+dir[0],y+dir[1],z+dir[2])];
+        //var f = HTomb.World.features[coord(x+dir[0],y+dir[1],z+dir[2])];
         // modify this to allow non-player creatures to displace
         if (this.canMove(x+dir[0],y+dir[1],z+dir[2])===false) {
           continue;
@@ -131,45 +131,57 @@ HTomb = (function(HTomb) {
       var dx = x-this.entity.x;
       var dy = y-this.entity.y;
       var dz = z-this.entity.z;
-      var square = HTomb.Tiles.getSquare(x,y,z);
-      var t = HTomb.World.tiles[z-dz][x-dx][y-dy];
-      var tu = HTomb.World.tiles[z+1-dz][x-dx][y-dy];
-      var td = HTomb.World.tiles[z-1-dz][x-dx][y-dy];
-      if (square.zone && square.zone.template==="ForbiddenZone" && this.entity.minion && square.zone.task.assigner===this.entity.minion.master) {
-        return false;
-      // can't go through solid feature
-      } else if (square.feature && square.feature.solid===true && this.phases!==true) {
-        return false;
-      // can't go through solid terrain
-      } else if (square.terrain.solid===true && this.phases!==true) {
-        return false;
-      // can't walk over a pit
-      } else if (square.terrain.fallable===true && this.flies!==true) {
-        return false;
-      } else if (square.turf && square.turf.liquid && this.swims!==true) {
-        return false;
-      // non-flyers can't climb diagonally
-      } else if (this.flies!==true && dz!==0 && (dx!==0 || dy!==0)) {
-        return false;
-      // non-flyers need a slope in order to go up
-      } else if (dz===+1 && this.flies!==true && t.zmove!==+1) {
-        return false;
-      // non-phasers can't go through a ceiling
-      } else if (dz===+1 && this.phases!==true && tu.fallable!==true && tu.zmove!==-1) {
-        return false;
-      // non-phasers can't go down through a floor
-      } else if (dz===-1 && t.fallable!==true && t.zmove!==-1 && this.phases!==true) {
-        return false;
-      // sort of a perfunctory check...
-      } else if (this.walks===true) {
-        return true;
-      } else if (this.flies===true) {
-        return true;
-      } else if (this.swims===true && square.turf && square.turf.liquid) {
-        return true;
-      } else {
+      var c = coord(x,y,z);
+      var zone = HTomb.World.zones[c];
+      if (zone && zone.template==="ForbiddenZone" && this.entity.minion && zone.task.assigner===this.entity.minion.master) {
         return false;
       }
+      // can't go through solid feature
+      var feature = HTomb.World.features[c];
+      if (feature && feature.solid===true && this.phases!==true) {
+        return false;
+      }
+      // can't go through solid terrain
+      var terrain = HTomb.World.tiles[z][x][y];
+      if (terrain.solid===true && this.phases!==true) {
+        return false;
+      }
+      // can't walk over a pit
+      if (terrain.fallable===true && this.flies!==true) {
+        return false;
+      }
+      var turf = HTomb.World.turfs[c];
+      if (turf && turf.liquid && this.swims!==true) {
+        return false;
+      }
+      // non-flyers can't climb diagonally
+      if (this.flies!==true && dz!==0 && (dx!==0 || dy!==0)) {
+        return false;
+      // non-flyers need a slope in order to go up
+      }
+      var t = HTomb.World.tiles[z-dz][x-dx][y-dy];
+      if (dz===+1 && this.flies!==true && t.zmove!==+1) {
+        return false;
+      }
+      var tu = HTomb.World.tiles[z+1-dz][x-dx][y-dy];
+      // non-phasers can't go through a ceiling
+      if (dz===+1 && this.phases!==true && tu.fallable!==true && tu.zmove!==-1) {
+        return false;
+      }
+      // non-phasers can't go down through a floor
+      if (dz===-1 && t.fallable!==true && t.zmove!==-1 && this.phases!==true) {
+        return false;
+      }
+      if (this.walks===true) {
+        return true;
+      }
+      if (this.flies===true) {
+        return true;
+      }
+      if (this.swims===true && turf && turf.liquid) {
+        return true;
+      }
+      return false;
     }
   });
 
