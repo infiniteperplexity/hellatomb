@@ -48,7 +48,13 @@ HTomb = (function(HTomb) {
       if (HTomb.Player.movement.canPass(newx,newy,z)) {
         Commands.movePlayer(newx,newy,z);
       } else if (HTomb.World.creatures[coord(newx,newy,z)]!==undefined) {
-        Commands.displaceCreature(newx,newy,z);
+        var c = HTomb.World.creatures[coord(newx,newy,z)];
+        if (c.ai && c.ai.hostile===false) {
+          Commands.displaceCreature(newx,newy,z);
+        } else {
+          HTomb.Player.combat.attack(c);
+          HTomb.turn();
+        }
       } else if (square.feature && square.feature.activate) {
         square.feature.activate();
       } else if (HTomb.Debug.mobility===true) {

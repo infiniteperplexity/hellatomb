@@ -191,7 +191,8 @@ HTomb = (function(HTomb) {
     // unimplemented
     target: null,
     // unimplemented
-    mood: null,
+    hostile: true,
+    //allegiance: null,
     acted: false,
     each: ["target","mood","acted"],
     // We may want to save a path for the entity
@@ -265,14 +266,15 @@ HTomb = (function(HTomb) {
   	// worry about multiple attacks later
   	attack: function(thing) {
       // if it's a combatant, you might miss
-      if (thing.combat) {
-        thing.defend(this);
-        if (Math.random()<0.5) {
-          thing.body.endure(this.damage);
-        }
-      } else {
+      HTomb.GUI.sensoryEvent(this.entity.describe() + " attacks " + thing.describe()+".",this.entity.x,this.entity.y,this.entity.z);
+      //if (thing.combat) {
+        //thing.defend(this);
+        //if (Math.random()<0.5) {
+          //thing.body.endure(this.damage);
+        //}
+      //} else {
         //fill this in later
-      }
+      //}
   		//create a damage packet, with an amount and type
   	},
   	//should be on the damage packet..//hit: function() {},

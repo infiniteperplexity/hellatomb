@@ -32,7 +32,7 @@ HTomb = (function(HTomb) {
     symbol: "z",
     fg: "#99FF66",
     behaviors: {
-      AI: {},
+      AI: {hostile: false},
       Movement: {swims: true},
       Sight: {},
       Worker: {},
@@ -44,9 +44,7 @@ HTomb = (function(HTomb) {
             has: 10,
             needs: 1
           },
-          BoneMaterial: {
-            has: 10
-          }
+          BoneMaterial: 10
         }
       }
     }
