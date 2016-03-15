@@ -15,7 +15,14 @@ HTomb = (function(HTomb) {
         Sight: {},
         AI: {},
         Master: {tasks: ["DigTask","BuildTask","CraftTask","DismantleTask","PatrolTask","FarmTask","ForbidTask","HoardTask","Undesignate"]},
-        SpellCaster: {spells: ["RaiseZombie"]}
+        SpellCaster: {spells: ["RaiseZombie"]},
+        Body: {
+          materials: {
+            FleshMaterial: 10,
+            BoneMaterial: 10
+          }
+        },
+        Combat: {}
       }
   });
 
@@ -30,10 +37,16 @@ HTomb = (function(HTomb) {
       Sight: {},
       Worker: {},
       Inventory: {capacity: 2},
+      Combat: {},
       Body: {
         materials: {
-          FleshMaterial: 10,
-          BoneMaterial: 10
+          FleshMaterial: {
+            has: 10,
+            needs: 1
+          },
+          BoneMaterial: {
+            has: 10
+          }
         }
       }
     }
@@ -47,7 +60,14 @@ HTomb = (function(HTomb) {
     behaviors: {
       AI: {},
       Movement: {flies: true},
-      Sight: {}
+      Sight: {},
+      Combat: {},
+      Body: {
+        materials: {
+          FleshMaterial: 5,
+          BoneMaterial: 2
+        }
+      }
     }
   });
 
@@ -58,7 +78,14 @@ HTomb = (function(HTomb) {
     fg: "#BBBBBB",
     behaviors: {
       AI: {},
-      Movement: {}
+      Movement: {},
+      Combat: {},
+      Body: {
+        materials: {
+          FleshMaterial: 5,
+          BoneMaterial: 2
+        }
+      }
     }
   });
 
@@ -69,7 +96,14 @@ HTomb = (function(HTomb) {
     fg: "#FF8888",
     behaviors: {
       AI: {},
-      Movement: {swims: true, walks: false}
+      Movement: {swims: true, walks: false},
+      Combat: {},
+      Body: {
+        materials: {
+          FleshMaterial: 5,
+          BoneMaterial: 2
+        }
+      }
     }
   });
 

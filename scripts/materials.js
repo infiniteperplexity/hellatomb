@@ -24,6 +24,7 @@ HTomb = (function(HTomb) {
   //******Types of damage
   HTomb.Types.define({
   	template: "Damage",
+    plural: "Damage",
   	name: "damage",
   });
 

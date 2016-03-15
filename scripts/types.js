@@ -35,9 +35,12 @@ HTomb = (function(HTomb) {
   	if (args.parent==="Type") {
   		t = Object.create(type);
       // make an object to hold shortcuts
+      if (args.plural===undefined) {
+        args.plural = args.template+"s";
+      }
 
-      if (HTomb[args.template+"s"]===undefined) {
-        HTomb[args.template+"s"] = {};
+      if (HTomb[args.plural]===undefined) {
+        HTomb[args.plural] = {};
       }
       // Create a new shortcut function for defining templates within the Type
       HTomb.Types["define" + args.template] = function(opts) {
@@ -48,10 +51,11 @@ HTomb = (function(HTomb) {
       // define a concrete type
   		t = Object.create(HTomb.Types.templates[args.parent]);
       // create an enum-style construct
-      if (HTomb[args.parent+"s"]===undefined) {
+      var plural = HTomb.Types.templates[args.parent].plural;
+      if (HTomb[plural]===undefined) {
         console.log([args.parent,args.template]);
       }
-  		HTomb[args.parent+"s"][args.template] = t;
+  		HTomb[plural][args.template] = t;
   		HTomb.Types.templates[args.parent].types.push(t);
   	}
   	// Add the arguments to the template

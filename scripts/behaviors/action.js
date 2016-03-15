@@ -255,28 +255,55 @@ HTomb = (function(HTomb) {
   HTomb.Things.defineBehavior({
   	template: "Combat",
   	name: "combat",
+    damage: null,
+    onCreate: function(options) {
+      options = options || {};
+      for (var d in options.damage) {
+        this.damage[d] = options.damage[d];
+      }
+    },
   	// worry about multiple attacks later
-  	attack: function() {
+  	attack: function(thing) {
+      // if it's a combatant, you might miss
+      if (thing.combat) {
+        thing.defend(this);
+        if (Math.random()<0.5) {
+          thing.body.endure(this.damage);
+        }
+      } else {
+        //fill this in later
+      }
   		//create a damage packet, with an amount and type
   	},
   	//should be on the damage packet..//hit: function() {},
   	defend: function() {
-
+      // do nothing for now
   	}
   });
 
   HTomb.Things.defineBehavior({
   	template: "Body",
   	name: "body",
-  	materials: {},
-  	endure: function(damage) {},
-    onAdd: function() {
-      for (var m in this.materials) {
-        // this is sort of creating a concrete instance of a material...should that go into Type somewhere?
-        this.materials[m] = {
-          material: HTomb.Materials[m],
-          n: this.materials[m]
-        };
+  	materials: null,
+  	endure: function(damage) {
+      for (var d in damage) {
+        //need to deal damage to every material, based on some kind of cress-reference table...
+      }
+    },
+    onCreate: function(options) {
+      this.materials = {};
+      options = options || {};
+      for (var m in options.materials) {
+        this.materials[m] = {};
+        // if there's just one number, fall back on a default
+        if (typeof(options.materials[m])==="number") {
+          this.materials[m].has = options.materials[m];
+          this.materials[m].needs = Math.floor(options.materials[m]/2);
+        } else {
+        // otherwise expect maximum and minimum
+          this.materials[m].has = options.materials[m].has;
+          this.materials[m].needs = options.materials[m].needs;
+        }
       }
     }
   });
