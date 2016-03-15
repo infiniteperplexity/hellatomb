@@ -15,14 +15,30 @@ HTomb = (function(HTomb) {
 
   var Tiles = HTomb.Tiles;
   // Define a generic tile
-  HTomb.Types.define({
-    template: "Tile",
-    name: "tile",
-    symbol: " "
+  HTomb.Things.define({
+    template: "Terrain",
+    name: "terrain",
+    parent: "Thing",
+    symbol: "X",
+    fg: "white",
+    bg: "black",
+    types: [],
+    onDefine: function() {
+      HTomb.Tiles[this.template] = this;
+      HTomb.Things.templates.Terrain.types.push(this);
+    },
+    stringify: function() {
+      // returns a number
+      return HTomb.Things.templates.Terrain.types.indexOf(this);
+    },
+    parse: function(json) {
+      // parses a number into a terrain type
+      return HTomb.Things.templates.Terrain.types[json];
+    }
   });
 
   // Define specific types of tiles
-  HTomb.Types.defineTile({
+  HTomb.Things.defineTerrain({
     template: "VoidTile",
     name: "boundary",
     symbol: " ",
@@ -33,9 +49,7 @@ HTomb = (function(HTomb) {
       return ["This is an indestructible boundary tile."];
     }
   });
-  console.log(HTomb.Tiles);
-
-  HTomb.Types.defineTile({
+  HTomb.Things.defineTerrain({
     template: "EmptyTile",
     name: "empty",
     //symbol: "\u25CB",
@@ -56,7 +70,7 @@ HTomb = (function(HTomb) {
       ];
     }
   });
-  HTomb.Types.defineTile({
+  HTomb.Things.defineTerrain({
     template: "FloorTile",
     name: "floor",
     symbol: ".",
@@ -71,7 +85,7 @@ HTomb = (function(HTomb) {
       ];
     }
   });
-  HTomb.Types.defineTile({
+  HTomb.Things.defineTerrain({
     template: "WallTile",
     name: "wall",
     symbol: "#",
@@ -87,11 +101,11 @@ HTomb = (function(HTomb) {
       ];
     }
   });
-
-  HTomb.Types.defineTile({
+  HTomb.Things.defineTerrain({
     template: "UpSlopeTile",
     name: "upward slope",
     symbol: "\u02C4",
+    constructionSymbol: "\u25BF",
     fg: WALLFG,
     zview: +1,
     zmove: +1,
@@ -105,8 +119,7 @@ HTomb = (function(HTomb) {
       ];
     }
   });
-
-  HTomb.Types.defineTile({
+  HTomb.Things.defineTerrain({
     template: "DownSlopeTile",
     name: "downward slope",
     symbol: "\u02C5",
@@ -125,10 +138,6 @@ HTomb = (function(HTomb) {
       ];
     }
   });
-
-
-
-
 
   Tiles.getSymbol = function(x,y,z) {
     var glyph = Tiles.getGlyph(x,y,z);

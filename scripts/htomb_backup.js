@@ -167,7 +167,6 @@ var HTomb = (function() {
   var Debug = {};
   var Save = {};
   var Things = {};
-  var Types = {};
   // Allow public access to the submodules
   return {
     Constants: Constants,
@@ -191,7 +190,6 @@ var HTomb = (function() {
     Tiles: Tiles,
     Debug: Debug,
     Save: Save,
-    Types: Types,
     Things: Things,
     stopTime: stopTime,
     startTime: startTime,
