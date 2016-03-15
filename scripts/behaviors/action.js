@@ -252,5 +252,34 @@ HTomb = (function(HTomb) {
     }
   });
 
+  HTomb.Things.defineBehavior({
+  	template: "Combat",
+  	name: "combat",
+  	// worry about multiple attacks later
+  	attack: function() {
+  		//create a damage packet, with an amount and type
+  	},
+  	//should be on the damage packet..//hit: function() {},
+  	defend: function() {
+
+  	}
+  });
+
+  HTomb.Things.defineBehavior({
+  	template: "Body",
+  	name: "body",
+  	materials: {},
+  	endure: function(damage) {},
+    onAdd: function() {
+      for (var m in this.materials) {
+        // this is sort of creating a concrete instance of a material...should that go into Type somewhere?
+        this.materials[m] = {
+          material: HTomb.Materials[m],
+          n: this.materials[m]
+        };
+      }
+    }
+  });
+
   return HTomb;
 })(HTomb);

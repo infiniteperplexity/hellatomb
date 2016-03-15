@@ -33,7 +33,6 @@ HTomb = (function(HTomb) {
       return ["This is an indestructible boundary tile."];
     }
   });
-  console.log(HTomb.Tiles);
 
   HTomb.Types.defineTile({
     template: "EmptyTile",

@@ -29,7 +29,13 @@ HTomb = (function(HTomb) {
       Movement: {swims: true},
       Sight: {},
       Worker: {},
-      Inventory: {capacity: 2}
+      Inventory: {capacity: 2},
+      Body: {
+        materials: {
+          FleshMaterial: 10,
+          BoneMaterial: 10
+        }
+      }
     }
   });
 
