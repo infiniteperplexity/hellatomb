@@ -22,7 +22,12 @@ HTomb = (function(HTomb) {
             BoneMaterial: 10
           }
         },
-        Combat: {}
+        Combat: {
+          accuracy: 1,
+          damage: {
+            SlashingDamage: 3
+          }
+        }
       }
   });
 
@@ -37,13 +42,45 @@ HTomb = (function(HTomb) {
       Sight: {},
       Worker: {},
       Inventory: {capacity: 2},
-      Combat: {},
+      Combat: {
+        accuracy: 1,
+        damage: {
+          SlashingDamage: 1,
+          CrushingDamage: 1
+        }
+      },
       Body: {
         materials: {
           FleshMaterial: {
             has: 10,
             needs: 1
           },
+          BoneMaterial: 10
+        }
+      }
+    }
+  });
+
+  HTomb.Things.defineCreature({
+    template: "Ghoul",
+    name: "ghoul",
+    symbol: "z",
+    fg: "#FF5522",
+    behaviors: {
+      AI: {hostile: true},
+      Movement: {swims: true},
+      Sight: {},
+      Worker: {},
+      Inventory: {capacity: 2},
+      Combat: {
+        accuracy: 1,
+        damage: {
+          SlashingDamage: 3
+        }
+      },
+      Body: {
+        materials: {
+          FleshMaterial: 10,
           BoneMaterial: 10
         }
       }

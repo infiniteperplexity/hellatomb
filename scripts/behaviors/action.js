@@ -191,7 +191,7 @@ HTomb = (function(HTomb) {
     // unimplemented
     target: null,
     // unimplemented
-    hostile: true,
+    hostile: false,
     //allegiance: null,
     acted: false,
     each: ["target","mood","acted"],
@@ -208,8 +208,13 @@ HTomb = (function(HTomb) {
         this.acted = false;
         return false;
       }
+      // Temporary: If the creature is hostile...
+      if (this.acted===false && this.hostile===true) {
+        this.target = HTomb.Player;
+        this.patrol(this.target.x,this.target.y,this.target.z);
+      }
       // If the creature is a minion...
-      if (this.entity.minion) {
+      if (this.acted===false && this.entity.minion) {
         // If it has a task assigned, then run the AI for the task
         if (this.entity.minion.task) {
           this.entity.minion.task.ai();

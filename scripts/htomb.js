@@ -149,6 +149,37 @@ var HTomb = (function() {
     // Render the GUI
     GUI.render();
     startTime();
+    //make sure a ghoul appears at 50, and once every hundred turns otherwise
+    if (Math.random()<0.01 || World.dailyCycle.turn===50) {
+      var placed = false;
+      while(placed===false) {
+        var gx = Math.floor(Math.random()*LEVELW)+1;
+        var gy = Math.floor(Math.random()*LEVELH)+1;
+        var gz = Tiles.groundLevel(gx,gy);
+        if (World.creatures[coord(gx,gy,gz)]===undefined) {
+          var ghoul = Things.Ghoul();
+          ghoul.place(gx,gy,gz);
+          placed = true;
+        }
+      }
+      //***currently broken based on how ExhumeTask works
+      // for (var i in World.items) {
+      //   if (World.items[i].template==="Corpse") {
+      //     var co = World.items[i];
+      //     var f = HTomb.World.features[coord(co.x,co.y,co.z)];
+      //     if (f && f.template==="Tombstone") {
+      //       var g = Things.Ghast();
+      //       g.place(co.x,co.y,co.z);
+      //       World.tiles[co.x,co.y,co.z] = Tiles.UpSlopeTile;
+      //       var t = Things.ExhumeTask();
+      //       t.assignTo(g);
+      //       HTomb.GUI.sensoryEvent("You hear an ominous stirring below the earth...",co.x,co.y,co.z);
+      //       co.remove();
+      //       break;
+      //     }
+      //   }
+      // }
+    }
     World.dailyCycle.onTurnBegin();
     Events.publish({type: "TurnEnd"});
   };
