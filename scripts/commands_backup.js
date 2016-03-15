@@ -50,41 +50,68 @@ HTomb = (function(HTomb) {
       newz-=1;
     }
     var square = HTomb.Tiles.getSquare(newx,newy,newz);
-    if (HTomb.Player.movement===undefined) {
-      HTomb.GUI.pushMessage("You can't move!");
-    // attack a touchable, hostile creature
-    } else if (square.creature && square.creature.ai && square.creature.ai.hostile && HTomb.Tiles.isTouchableFrom(newx, newy, newz, x, y, z)) {
-      HTomb.Player.combat.attack(square.creature);
-      HTomb.turn();
-      return;
-    // if you can move, either move or displace
-    } else if (HTomb.Player.movement.canMove(newx,newy,newz)) {
-      if (square.creature && square.creature.ai && square.creature.ai.hostile===false) {
-        Commands.displaceCreature(newx,newy,newz);
-        return;
-      } else {
-        Commands.movePlayer(newx,newy,newz);
-        return;
-      }
-    // open a door, etc.
-    } else if (square.feature && square.feature.activate) {
-      square.feature.activate();
-      return;
-    } else if (HTomb.Debug.mobility===true) {
-      Commands.movePlayer(newx,newy,newz);
-      return;
-    } else if (newz===z) {
-      if (HTomb.World.tiles[z][x][y].zmove===+1) {
+    // If you can't go that way...this is all a huge mess
+    if (HTomb.Player.movement) {
+      if (square.creature && square.creature.ai && square.creature.ai.hostile && HTomb.Tiles.istouchableFrom(newx, newy, z, x, y, z)) {
+        HTomb.Player.combat.attack(c);
+        HTomb.turn();
+      } else if (HTomb.Player.movement.canPass(newx,newy,z)) {
+        Commands.movePlayer(newx,newy,z);
+      } else if (square.creature && square.creature.ai && square.creature.ai.hostile===false) {
+        Commands.displaceCreature(newx,newy,z);
+      } else if (square.feature && square.feature.activate) {
+        square.feature.activate();
+      } else if (HTomb.Debug.mobility===true) {
+        Commands.movePlayer(newx,newy,z);
+      } else if (HTomb.World.tiles[z][x][y].zmove===+1) {
         Commands.tryMoveUp();
-        return;
       } else if (HTomb.World.tiles[z][x][y].zmove===-1) {
         Commands.tryMoveDown();
-        return;
+      } else {
+        HTomb.GUI.pushMessage("Can't go that way.");
       }
+    } else {
+      HTomb.GUI.pushMessage("You can't move!");
     }
-    HTomb.GUI.pushMessage("Can't go that way.");
   };
-
+  Commands.tryMoveUp = function() {
+    var x = HTomb.Player.x;
+    var y = HTomb.Player.y;
+    var z = HTomb.Player.z;
+    var square = HTomb.Tiles.getSquare(x,y,z);
+    if (HTomb.Debug.mobility===true) {
+      Commands.movePlayer(x,y,z+1);
+    } else if (square.terrain.zmove===+1) {
+      if (HTomb.Player.movement.canPass(x,y,z+1) && HTomb.World.tiles[z+1][x][y].zmove===-1) {
+        HTomb.GUI.pushMessage("You scramble up the slope.");
+        Commands.movePlayer(x,y,z+1);
+        // This is allows player to move through floors
+      } else if (HTomb.World.creatures[coord(x,y,z+1)]) {
+        Commands.displaceCreature(x,y,z+1);
+      }
+    } else {
+      HTomb.GUI.pushMessage("Can't go up here.");
+    }
+  };
+  Commands.tryMoveDown = function() {
+    var x = HTomb.Player.x;
+    var y = HTomb.Player.y;
+    var z = HTomb.Player.z;
+    var square = HTomb.Tiles.getSquare(x,y,z);
+    if (HTomb.Debug.mobility===true) {
+      Commands.movePlayer(x,y,z-1);
+    } else if (square.terrain.zmove===-1) {
+      if (HTomb.Player.movement.canPass(x,y,z-1)) {
+        HTomb.GUI.pushMessage("You scramble down the slope.");
+        Commands.movePlayer(x,y,z-1);
+        // This is allows player to move through floors
+      } else if (HTomb.World.creatures[coord(x,y,z-1)]) {
+        Commands.displaceCreature(x,y,z-1);
+      }
+    } else {
+      HTomb.GUI.pushMessage("Can't go down here.");
+    }
+  };
   Commands.act = function() {
     function activate(x,y,z) {
       var f = HTomb.World.features[coord(x,y,z)];
@@ -161,14 +188,6 @@ HTomb = (function(HTomb) {
   };
   // Move the player, glance, and spend an action
   Commands.movePlayer = function(x,y,z) {
-    var x0 = HTomb.Player.x;
-    var y0 = HTomb.Player.y;
-    var z0 = HTomb.Player.z;
-    if (z===z0+1) {
-      HTomb.GUI.pushMessage("You scramble up the slope.");
-    } else if (z===z0-1) {
-      HTomb.GUI.pushMessage("You scramble down the slope.");
-    }
     HTomb.Player.place(x,y,z);
     var square = HTomb.Tiles.getSquare(x,y,z);
     Commands.glance(square);

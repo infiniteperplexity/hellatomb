@@ -211,7 +211,12 @@ HTomb = (function(HTomb) {
       // Temporary: If the creature is hostile...
       if (this.acted===false && this.hostile===true) {
         this.target = HTomb.Player;
-        this.patrol(this.target.x,this.target.y,this.target.z);
+        if (HTomb.Tiles.isTouchableFrom(this.target.x, this.target.y,this.target.z, this.entity.x, this.entity.y, this.entity.z)) {
+          this.entity.combat.attack(this.target);
+          this.acted = true;
+        } else {
+          this.entity.movement.walkToward(this.target.x,this.target.y,this.target.z);
+        }
       }
       // If the creature is a minion...
       if (this.acted===false && this.entity.minion) {

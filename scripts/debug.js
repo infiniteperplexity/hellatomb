@@ -9,6 +9,7 @@ HTomb = (function(HTomb) {
   Debug.showpaths = true; //not yet implemented
   Debug.messages = true;
   Debug.faster = true;
+  Debug.paused = true;
   Debug.pushMessage = function(msg) {
     if (Debug.messages===true) {
       //HTomb.GUI.pushMessage(msg);

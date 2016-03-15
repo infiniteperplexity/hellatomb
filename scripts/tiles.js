@@ -447,6 +447,8 @@ HTomb = (function(HTomb) {
     t = HTomb.World.tiles[z][x][y];
     if (t.zmove===+1) {
       touchable.push([x,y,z+1]);
+    } else if (t.zmove===-1 || t.fallable) {
+      touchable.push([x,y,z-1]);
     }
     return touchable;
   };

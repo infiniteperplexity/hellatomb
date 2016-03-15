@@ -148,7 +148,9 @@ var HTomb = (function() {
     GUI.recenter();
     // Render the GUI
     GUI.render();
-    startTime();
+    if (HTomb.Debug.paused!==true) {
+      startTime();
+    }
     //make sure a ghoul appears at 50, and once every hundred turns otherwise
     if (Math.random()<0.01 || World.dailyCycle.turn===50) {
       var placed = false;
@@ -156,9 +158,11 @@ var HTomb = (function() {
         var gx = Math.floor(Math.random()*LEVELW)+1;
         var gy = Math.floor(Math.random()*LEVELH)+1;
         var gz = Tiles.groundLevel(gx,gy);
-        if (World.creatures[coord(gx,gy,gz)]===undefined) {
+        if (World.creatures[coord(gx,gy,gz)]===undefined && World.tiles[gz][gx][gy].solid!==true && World.tiles[gz][gx][gy].fallable!==true) {
           var ghoul = Things.Ghoul();
           ghoul.place(gx,gy,gz);
+          //just to keep track
+          console.log("placed a ghoul");
           placed = true;
         }
       }
