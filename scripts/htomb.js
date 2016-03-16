@@ -69,20 +69,22 @@ var HTomb = (function() {
   }
 
   function alphaHex(newc,oldc,alpha) {
+    var combined = [];
     for (var i=0; i<3; i++) {
-      newc[i] = alpha*newc[i]+(1-alpha)*oldc[i];
+      combined[i] = alpha*newc[i]+(1-alpha)*oldc[i];
     }
-    return newc;
+    return combined;
   }
 
   function alphatize(newc,oldc,alpha) {
     var oldc = ROT.Color.fromString(oldc);
     var newc = ROT.Color.fromString(newc);
+    var combined = [];
     for (var i=0; i<3; i++) {
-      newc[i] = alpha*newc[i]+(1-alpha)*oldc[i];
+      combined[i] = alpha*newc[i]+(1-alpha)*oldc[i];
     }
-    newc = ROT.Color.toHex(newc);
-    return newc;
+    combined = ROT.Color.toHex(combined);
+    return combined;
   }
 
   // Begin the game
@@ -117,12 +119,12 @@ var HTomb = (function() {
     HTomb.turn();
   }
   var particleTime = undefined;
-  var particleSpeed = 100;
+  var particleSpeed = 50;
   function startParticles() {
     if (particleTime===undefined) {
       particleTime = setInterval(function() {
         //console.log("updating particles");
-        Particles.update();
+        Particles.update(particleSpeed);
         GUI.renderParticles();
       },particleSpeed);
     }

@@ -867,6 +867,7 @@ HTomb = (function(HTomb) {
     }
   };
 
+  var oldSquares;
   GUI.renderParticles = function() {
     var squares = {};
     var p,c,x,y,z;
@@ -898,6 +899,9 @@ HTomb = (function(HTomb) {
     }
     // process the particles
     for (var s in squares) {
+      if (oldSquares[s]) {
+        delete oldSquares[s];
+      }
       c = HTomb.decoord(s);
       x = c[0];
       y = c[1];
@@ -914,13 +918,25 @@ HTomb = (function(HTomb) {
         pfg[1] = Math.min(255,Math.max(pfg[1],0));
         pfg[2] = Math.min(255,Math.max(pfg[2],0));
         //fg = HTomb.alphaHex(pfg, fg, particles[k].alpha);
-        fg = HTomb.alphaHex(fg, pfg, particles[k].alpha);
-        console.log(fg);
+        fg = HTomb.alphaHex(pfg, fg, particles[k].alpha);
       }
+      fg[0] = Math.round(fg[0]);
+      fg[1] = Math.round(fg[1]);
+      fg[2] = Math.round(fg[2]);
       fg = ROT.Color.toHex(fg);
       ch = particles[particles.length-1].symbol;
       HTomb.GUI.drawGlyph(x,y,ch,fg);
     }
+    // clean up expired particles
+    for (var o in oldSquares) {
+      c = HTomb.decoord(o);
+      x = c[0];
+      y = c[1];
+      z = c[2];
+      var g = HTomb.Tiles.getGlyph(x,y,z);
+      HTomb.GUI.drawGlyph(x,y,g[0],g[1]);
+    }
+    oldSquares = squares;
   };
 
 

@@ -19,16 +19,18 @@ HTomb = (function(HTomb) {
     distz: 0,
     distr: 1,
     // velocity
-    v: 0.25,
+    v: 0.1,
     vz: 0,
     vr: 0,
+    //a: -0.01,
+    a: 0,
     // rate of emission
     tick: 0,
-    rate: 1,
+    rate: 5,
     //how many particles to emit before going away
-    n: 10,
+    n: 50,
     // lifetime
-    t: 1,
+    t: 10,
     tr: 1,
     fg: "#FF0000",
     // rgb randomness
@@ -36,8 +38,10 @@ HTomb = (function(HTomb) {
     gr: 10,
     br: 10,
     alpha: 0.75,
+    fade: 0.9,
     particles : null,
-    chars: "abcdefghijlmnopqrstuvwxyz",
+    //chars: "abcdefghijlmnopqrstuvwxyz",
+    chars: ["\u037C","\u037D","\u03A6","\u03A8","\u03A9","\u03B1","\u03B3","\u03B4","\u03B6"],
     emit: function() {
       if (this.n<=0) {
         return;
@@ -66,15 +70,13 @@ HTomb = (function(HTomb) {
       p.vx = r*Math.cos(a);
       p.vy = r*Math.sin(a);
       p.vz = 0;
-      p.ax = 0;
-      p.ay = 0;
+      p.ax = this.a*Math.cos(a);
+      p.ay = this.a*Math.sin(a);
       p.az = 0;
-      //p.life = this.t+this.tr*ROT.RNG.getNormal(0,1);
-      p.life = p.t;
+      p.life = this.t+this.tr*ROT.RNG.getNormal(0,1);
       var s = this.fg;
       p.fg = ROT.Color.randomize(s,this.rr,this.gr,this.br);
-      s = Math.floor(Math.random()*this.chars.length);
-      p.symbol = this.chars[s];
+      p.symbol = this.randomChar();
       p.alpha = this.alpha;
       this.onEmit(p);
       this.particles.push(p);
@@ -103,8 +105,10 @@ HTomb = (function(HTomb) {
           p.vx += p.ax;
           p.vy += p.ay;
           p.vz += p.az;
-          p.t-=1;
-          if (p.t<=0) {
+          p.symbol = this.randomChar();
+          p.life-=1;
+          p.alpha*=this.fade;
+          if (p.life<=0) {
             expired.push(p);
           }
           this.eachUpdate(p);
@@ -122,13 +126,17 @@ HTomb = (function(HTomb) {
         HTomb.Particles.emitters.splice(HTomb.Particles.emitters.indexOf(this));
       }
     },
+    randomChar: function() {
+      var s = Math.floor(Math.random()*this.chars.length);
+      return this.chars[s];
+    },
     onEmit: function(p) {},
     preUpdate: function() {},
     postUpdate: function() {},
     eachUpdate: function(p) {}
   };
 
-  HTomb.Particles.update = function() {
+  HTomb.Particles.update = function(pspeed) {
     for (var i=0; i<HTomb.Particles.emitters.length; i++) {
       HTomb.Particles.emitters[i].update();
     }
