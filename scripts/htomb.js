@@ -68,13 +68,20 @@ var HTomb = (function() {
     return k-1;
   }
 
-  function alphatize(newc,oldc,alpha) {
-    var oldc = ROT.Color.fromHex(oldc);
-    var newc = ROT.Color.fromHex(newc);
+  function alphaHex(newc,oldc,alpha) {
     for (var i=0; i<3; i++) {
       newc[i] = alpha*newc[i]+(1-alpha)*oldc[i];
     }
-    newc = ROT.Color.toString(newc);
+    return newc;
+  }
+
+  function alphatize(newc,oldc,alpha) {
+    var oldc = ROT.Color.fromString(oldc);
+    var newc = ROT.Color.fromString(newc);
+    for (var i=0; i<3; i++) {
+      newc[i] = alpha*newc[i]+(1-alpha)*oldc[i];
+    }
+    newc = ROT.Color.toHex(newc);
     return newc;
   }
 
@@ -110,7 +117,7 @@ var HTomb = (function() {
     HTomb.turn();
   }
   var particleTime = undefined;
-  var particleSpeed = 1000;
+  var particleSpeed = 100;
   function startParticles() {
     if (particleTime===undefined) {
       particleTime = setInterval(function() {
@@ -202,6 +209,7 @@ var HTomb = (function() {
     coordInArray: coordInArray,
     poisson: poisson,
     alphatize: alphatize,
+    alphaHex: alphaHex,
     Controls: Controls,
     Commands: Commands,
     turn: turn,

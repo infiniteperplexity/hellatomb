@@ -3,15 +3,7 @@ HTomb = (function(HTomb) {
   var coord = HTomb.coord;
 
   HTomb.Particles.emitters = [];
-
-  HTomb.Particles.Emitter = function(args) {
-    args = args || {};
-    for (var arg in args) {
-      this.arg = args.arg;
-    }
-    HTomb.Particles.emitters.push(this);
-  }
-  HTomb.Particles.Emitter.prototype = {
+  var emitter = {
     // position of origin
     x: null,
     y: null,
@@ -27,25 +19,33 @@ HTomb = (function(HTomb) {
     distz: 0,
     distr: 1,
     // velocity
-    v: 1,
+    v: 0.25,
     vz: 0,
     vr: 0,
     // rate of emission
+    tick: 0,
     rate: 1,
+    //how many particles to emit before going away
+    n: 10,
     // lifetime
-    t: 3,
-    tr: 2,
-    fg: [88,88,88],
+    t: 1,
+    tr: 1,
+    fg: "#FF0000",
     // rgb randomness
     rr: 10,
     gr: 10,
     br: 10,
-    alpha: 1.0,
+    alpha: 0.75,
     particles : null,
     chars: "abcdefghijlmnopqrstuvwxyz",
     emit: function() {
-      if (particles===null) {
-        particles = [];
+      if (this.n<=0) {
+        return;
+      } else {
+        this.n-=1;
+      }
+      if (this.particles===null) {
+        this.particles = [];
       }
       var p = {};
       //set a bunch of properties
@@ -53,7 +53,7 @@ HTomb = (function(HTomb) {
       var a,r;
       //randomize starting position
       //assume no directional tendency for now
-      a = ROT.RNG.getUniform()*Math.PI;
+      a = ROT.RNG.getUniform()*2*Math.PI;
       r = this.distr*ROT.RNG.getNormal(0,1); //this can drop below zero
       p.x = this.x+r*Math.cos(a);
       p.y = this.y+r*Math.sin(a);
@@ -69,17 +69,28 @@ HTomb = (function(HTomb) {
       p.ax = 0;
       p.ay = 0;
       p.az = 0;
-      p.life = this.t+this.tr*ROT.RNG.getNormal(0,1);
+      //p.life = this.t+this.tr*ROT.RNG.getNormal(0,1);
+      p.life = p.t;
       var s = this.fg;
-      s = ROT.Color.randomize(fg,this.rr,this.gr,this.br);
-      p.fg = ROT.Color.toString(fg);
+      p.fg = ROT.Color.randomize(s,this.rr,this.gr,this.br);
       s = Math.floor(Math.random()*this.chars.length);
       p.symbol = this.chars[s];
       p.alpha = this.alpha;
       this.onEmit(p);
-      particles.push(p);
+      this.particles.push(p);
     },
     update: function() {
+      if (this.rate>1) {
+        for (var t=0; t<this.rate; t++) {
+          this.emit();
+        }
+      } else {
+        this.tick+=1;
+        if (this.tick>=1/this.rate) {
+          this.tick = 0;
+          this.emit();
+        }
+      }
       // or maybe afterwards?
       this.preUpdate();
       if (this.particles) {
@@ -122,6 +133,22 @@ HTomb = (function(HTomb) {
       HTomb.Particles.emitters[i].update();
     }
   };
+
+  HTomb.Particles.addEmitter = function(x,y,z,args) {
+    args = args || {};
+    var e = Object.create(emitter);
+    e.fg = ROT.Color.fromString(e.fg);
+    e.x = x;
+    e.y = y;
+    e.z = z;
+    for (var arg in args) {
+      e.arg = args.arg;
+    }
+    e.particles = [];
+    e.emit();
+    HTomb.Particles.emitters.push(e);
+    HTomb.startParticles();
+  }
 
 
   return HTomb;

@@ -26,7 +26,7 @@ HTomb = (function(HTomb) {
   var YSKEW = HTomb.Constants.YSKEW;
   var TEXTSPACING = HTomb.Constants.TEXTSPACING;
   var TEXTWIDTH = HTomb.Constants.TEXTWIDTH;
-
+  var coord = HTomb.coord;
   // set up GUI and display
   var GUI = HTomb.GUI;
   GUI.panels = {};
@@ -571,7 +571,8 @@ HTomb = (function(HTomb) {
   };
   // Clicking a tile looks...this may be obsolete
   main.clickTile = function(x,y) {
-    viewDetails(x,y,gameScreen.z);
+    HTomb.Particles.addEmitter(x,y,gameScreen.z);
+    //viewDetails(x,y,gameScreen.z);
   };
   function viewDetails(x,y,z) {
     var square = HTomb.Tiles.getSquare(x,y,z);
@@ -873,21 +874,21 @@ HTomb = (function(HTomb) {
     for (var j=0; j<HTomb.Particles.emitters.length; j++) {
       var emitter = HTomb.Particles.emitters[j];
       for (var i=0; i<emitter.particles.length; i++) {
-        p = this.particles[i];
+        p = emitter.particles[i];
         // don't collect particles that aren't on the screen
         x = Math.round(p.x);
-        if (x<gameScreen.xoffset || x>gameScreen.xoffset+SCREENW) {
+        if (x<gameScreen.xoffset || x>=gameScreen.xoffset+SCREENW || x>=LEVELW-1) {
           continue;
         }
         y = Math.round(p.y);
-        if (y<gameScreen.yoffset || y>gameScreen.yoffset+SCREENH) {
+        if (y<gameScreen.yoffset || y>=gameScreen.yoffset+SCREENH || y>=LEVELH-1) {
           continue;
         }
         z = Math.round(p.z);
         // only bother with particles on the same level for now...or maybe within one level?
-        if (z!==gameScreen.z) {
-          continue;
-        }
+        //if (z!==gameScreen.z) {
+        //  continue;
+        //}
         c = coord(x,y,z);
         if (squares[c]===undefined) {
           squares[c] = [];
@@ -896,7 +897,7 @@ HTomb = (function(HTomb) {
       }
     }
     // process the particles
-    for (var s=0; s<squares.length; s++) {
+    for (var s in squares) {
       c = HTomb.decoord(s);
       x = c[0];
       y = c[1];
@@ -906,11 +907,19 @@ HTomb = (function(HTomb) {
       var ch, fg;
       // if there are ever invisible particles we may need to handle this differently
       fg = HTomb.Tiles.getGlyph(x,y,z)[1];
+      fg = ROT.Color.fromString(fg);
       for (var k=0; k<particles.length; k++) {
-        fg = HTomb.alphatize(particles[k].fg, fg, particles[k].alpha);
+        var pfg = particles[k].fg;
+        pfg[0] = Math.min(255,Math.max(pfg[0],0));
+        pfg[1] = Math.min(255,Math.max(pfg[1],0));
+        pfg[2] = Math.min(255,Math.max(pfg[2],0));
+        //fg = HTomb.alphaHex(pfg, fg, particles[k].alpha);
+        fg = HTomb.alphaHex(fg, pfg, particles[k].alpha);
+        console.log(fg);
       }
+      fg = ROT.Color.toHex(fg);
       ch = particles[particles.length-1].symbol;
-      HTomb.GUI.drawGlyph(ch,fg,x,y);
+      HTomb.GUI.drawGlyph(x,y,ch,fg);
     }
   };
 
