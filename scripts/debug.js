@@ -10,6 +10,7 @@ HTomb = (function(HTomb) {
   Debug.messages = true;
   Debug.faster = true;
   Debug.paused = true;
+  //Debug.peaceful = true;
   Debug.pushMessage = function(msg) {
     if (Debug.messages===true) {
       //HTomb.GUI.pushMessage(msg);
