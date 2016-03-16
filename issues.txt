@@ -1,12 +1,14 @@
 Small:
-- don't put graves below water table
++ don't put graves below water table
 - randomize growing times
 - visibility of items and/or creatures under water
 - some sort of position tracking (x/y) for survey mode
 - stay in survey mode after designating?
 - change no hauling to some other name or idea
-
-Big:
+- add a variety of articles and such to "describe()"
+- fold Exhume into Dig, make sure their can be non-player masters
+- scroll backwards through message history
+- details view
 - add lighting
 - grass and stuff dies in shade and spreads in light?
 - merge dismantling and harvesting
@@ -15,3 +17,12 @@ Big:
 - prerequisite items for tasks
 - queueing of zones?
 - items have bulk
+- particle system
+- drain life spell
+- zombies attack stuff too
+- ghouls attack zombies
+- will of wisps
+- make it so saving deals with all Types correctly
+- consider going over to material/contour system
+- clean up the covering up of old symbols
+- make months shorter
