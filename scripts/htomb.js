@@ -109,9 +109,25 @@ var HTomb = (function() {
   function passTime() {
     HTomb.turn();
   }
+  var particleTime = undefined;
+  var particleSpeed = 1000;
+  function startParticles() {
+    if (particleTime===undefined) {
+      particleTime = setInterval(function() {
+        //console.log("updating particles");
+        Particles.update();
+        GUI.renderParticles();
+      },particleSpeed);
+    }
+  }
+  function stopParticles() {
+    clearInterval(particleTime);
+    particleTime = undefined;
+  }
 
   // Process a turn of play
   var turn = function() {
+    startParticles();
     Events.publish({type: "TurnBegin"});
     stopTime();
     var Player = HTomb.Player;
@@ -175,6 +191,7 @@ var HTomb = (function() {
   var Save = {};
   var Things = {};
   var Types = {};
+  var Particles = {};
   // Allow public access to the submodules
   return {
     Constants: Constants,
@@ -202,8 +219,11 @@ var HTomb = (function() {
     Things: Things,
     stopTime: stopTime,
     startTime: startTime,
+    startParticles: startParticles,
+    stopParticles: stopParticles,
     getSpeed: getSpeed,
-    setSpeed: setSpeed
+    setSpeed: setSpeed,
+    Particles: Particles
   };
 })();
 // Start the game when the window loads

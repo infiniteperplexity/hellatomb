@@ -610,6 +610,7 @@ timeIt("elevation", function() {
   }
 
 
+
   HTomb.World.dailyCycle = {
     hour: 8,
     minute: 0,
@@ -696,6 +697,38 @@ timeIt("elevation", function() {
       return arr;
     }
   };
+
+
+  // faster to track this as globally rather than in grass
+  var grassGrower = {};
+  grassGrower.growGrass = function() {
+    // check only once every ten turns
+    // could add to some kind of scheduler, to preserve frame rate
+    if (HTomb.World.dailyCycle.turn%50!==0) {
+      return;
+    }
+    for (var x=1; x<LEVELW-1; x++) {
+      for (var y=1; y<LEVELH-1; y++) {
+        if (Math.random()>=0.1) {
+          continue;
+        }
+        var z = HTomb.Tiles.groundLevel(x,y);
+        if (HTomb.World.tiles[z][x][y]!==HTomb.Tiles.FloorTile || HTomb.World.turfs[coord(x,y,z)]) {
+          continue;
+        }
+        // count adjacent grass
+        var n = HTomb.Tiles.countNeighborsWhere(x,y,z,function(x,y,z) {
+          return (HTomb.World.turfs[coord(x,y,z)] && HTomb.World.turfs[coord(x,y,z)].template==="Grass");
+        });
+        if (n>0) {
+          var grass = HTomb.Things.Grass();
+          grass.place(x,y,z);
+        }
+      }
+    }
+  };
+  //HTomb.Events.subscribe(grassGrower,"TurnBegin");
+  grassGrower.onTurnBegin = grassGrower.growGrass;
 
   return HTomb;
 })(HTomb);

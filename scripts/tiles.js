@@ -413,6 +413,21 @@ HTomb = (function(HTomb) {
     }
     return tally;
   };
+  Tiles.getNeighborsWhere = function(x,y,z,callb) {
+    var dirs = ROT.DIRS[8];
+    var x1, y1;
+    var squares = [];
+    for (var i=0; i<8; i++) {
+      x1 = x+dirs[i][0];
+      y1 = y+dirs[i][1];
+      if (x1>=0 && x1<LEVELW && y1>=0 && y1<LEVELH) {
+        if (callb(x1,y1,z)===true) {
+          squares.push([x1,y1,z]);
+        }
+      }
+    }
+    return squares;
+  };
   Tiles.getNeighbors = function(x,y,z) {
     var dirs = ROT.DIRS[8];
     var x1, y1;

@@ -24,7 +24,9 @@ HTomb = (function(HTomb) {
     if (Events[etype] === undefined) {
       Events[etype] = [];
     }
-    Events[etype].splice(Events[etype].indexOf(listener),1);
+    if (Events[etype].indexOf(listener)!==-1) {
+      Events[etype].splice(Events[etype].indexOf(listener),1);
+    }
   };
   return HTomb;
 })(HTomb);

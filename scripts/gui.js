@@ -202,6 +202,22 @@ HTomb = (function(HTomb) {
       bg
     );
   };
+
+  GUI.drawGlyph = function(x,y,ch,fg) {
+    var xoffset = gameScreen.xoffset || 0;
+    var yoffset = gameScreen.yoffset || 0;
+    fg = fg || "white";
+    var z = gameScreen.z;
+    var bg = HTomb.Tiles.getBackground(x,y,z);
+    display.draw(
+      x-xoffset,
+      y-yoffset,
+      ch,
+      fg,
+      bg
+    );
+  };
+
   // Change the background color of the appropriate X and Y tile
   GUI.highlightTile = function(x,y,bg) {
     var xoffset = gameScreen.xoffset || 0;
@@ -219,6 +235,8 @@ HTomb = (function(HTomb) {
 
   var splashActive = false;
   GUI.splash = function(arr) {
+    HTomb.stopTime();
+    HTomb.stopParticles();
     // we may not want to force the player to reset the GUI...but let's try it out
     for (var i=0; i<SCREENH+SCROLLH; i++) {
       splashDisplay.drawText(1,1+i,"%c{black}"+(UNIBLOCK.repeat(SCREENW*(CHARWIDTH/TEXTWIDTH)+MENUW-2)));
@@ -284,6 +302,7 @@ HTomb = (function(HTomb) {
         display.draw(this.x0+x-xoffset,this.y0+y-yoffset, sym[0], sym[1], sym[2]);
       }
     }
+    GUI.renderParticles();
   };
   // Show status, currently including hit points and coordinates
   var status = new Panel(1,0);
@@ -846,6 +865,55 @@ HTomb = (function(HTomb) {
       }
     }
   };
+
+  GUI.renderParticles = function() {
+    var squares = {};
+    var p,c,x,y,z;
+    // collect the particles
+    for (var j=0; j<HTomb.Particles.emitters.length; j++) {
+      var emitter = HTomb.Particles.emitters[j];
+      for (var i=0; i<emitter.particles.length; i++) {
+        p = this.particles[i];
+        // don't collect particles that aren't on the screen
+        x = Math.round(p.x);
+        if (x<gameScreen.xoffset || x>gameScreen.xoffset+SCREENW) {
+          continue;
+        }
+        y = Math.round(p.y);
+        if (y<gameScreen.yoffset || y>gameScreen.yoffset+SCREENH) {
+          continue;
+        }
+        z = Math.round(p.z);
+        // only bother with particles on the same level for now...or maybe within one level?
+        if (z!==gameScreen.z) {
+          continue;
+        }
+        c = coord(x,y,z);
+        if (squares[c]===undefined) {
+          squares[c] = [];
+        }
+        squares[c].push(p);
+      }
+    }
+    // process the particles
+    for (var s=0; s<squares.length; s++) {
+      c = HTomb.decoord(s);
+      x = c[0];
+      y = c[1];
+      z = c[2];
+      var particles = squares[s];
+      HTomb.shuffle(particles);
+      var ch, fg;
+      // if there are ever invisible particles we may need to handle this differently
+      fg = HTomb.Tiles.getGlyph(x,y,z)[1];
+      for (var k=0; k<particles.length; k++) {
+        fg = HTomb.alphatize(particles[k].fg, fg, particles[k].alpha);
+      }
+      ch = particles[particles.length-1].symbol;
+      HTomb.GUI.drawGlyph(ch,fg,x,y);
+    }
+  };
+
 
   return HTomb;
 })(HTomb);
