@@ -18,14 +18,15 @@ HTomb = (function(HTomb) {
         SpellCaster: {spells: ["RaiseZombie"]},
         Body: {
           materials: {
-            FleshMaterial: 10,
-            BoneMaterial: 10
+            Flesh: 10,
+            Bone: 10
           }
         },
         Combat: {
           accuracy: 1,
+          evasion: 2,
           damage: {
-            SlashingDamage: 3
+            Slashing: 2
           }
         }
       }
@@ -45,17 +46,17 @@ HTomb = (function(HTomb) {
       Combat: {
         accuracy: 1,
         damage: {
-          SlashingDamage: 1,
-          CrushingDamage: 1
+          Slashing: 1,
+          Crushing: 1
         }
       },
       Body: {
         materials: {
-          FleshMaterial: {
-            has: 10,
+          Flesh: {
+            max: 10,
             needs: 1
           },
-          BoneMaterial: 10
+          Bone: 10
         }
       }
     }
@@ -73,15 +74,15 @@ HTomb = (function(HTomb) {
       Worker: {},
       Inventory: {capacity: 2},
       Combat: {
-        accuracy: 1,
+        accuracy: 0,
         damage: {
-          SlashingDamage: 3
+          Slashing: 1
         }
       },
       Body: {
         materials: {
-          FleshMaterial: 10,
-          BoneMaterial: 10
+          Flesh: 10,
+          Bone: 10
         }
       }
     }
@@ -99,8 +100,8 @@ HTomb = (function(HTomb) {
       Combat: {},
       Body: {
         materials: {
-          FleshMaterial: 5,
-          BoneMaterial: 2
+          Flesh: 5,
+          Bone: 2
         }
       }
     }
@@ -117,8 +118,8 @@ HTomb = (function(HTomb) {
       Combat: {},
       Body: {
         materials: {
-          FleshMaterial: 5,
-          BoneMaterial: 2
+          Flesh: 5,
+          Bone: 2
         }
       }
     }
@@ -135,8 +136,8 @@ HTomb = (function(HTomb) {
       Combat: {},
       Body: {
         materials: {
-          FleshMaterial: 5,
-          BoneMaterial: 2
+          Flesh: 5,
+          Bone: 2
         }
       }
     }

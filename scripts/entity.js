@@ -187,6 +187,11 @@ HTomb = (function(HTomb) {
       var c = coord(cr.x,cr.y,cr.z);
       var creatures = HTomb.World.creatures;
       delete creatures[c];
+    },
+    die: function() {
+      //maybe check to see if the parent entity has a different "die" function
+      HTomb.GUI.sensoryEvent(this.entity.describe() + " dies.",this.entity.x,this.entity.y,this.entity.z);
+      this.entity.destroy();
     }
   });
 

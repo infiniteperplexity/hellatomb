@@ -15,10 +15,6 @@ HTomb = (function(HTomb) {
     //each: ["walks","climbs","flies","swims"],
     // Walk in one of the eight random directions
     walkRandom: function() {
-      //var r = Math.floor(Math.random()*8);
-      //var dx = ROT.DIRS[8][r][0];
-      //var dy = ROT.DIRS[8][r][1];
-      //return this.tryStep(dx,dy);
       var r = Math.floor(Math.random()*26);
       var dx = HTomb.dirs[26][r][0];
       var dy = HTomb.dirs[26][r][1];
@@ -60,11 +56,7 @@ HTomb = (function(HTomb) {
       var z = this.entity.z;
       for (var i=0; i<backoffs.length; i++) {
         var dir = backoffs[i];
-        //var t = HTomb.World.tiles[z][x][y];
-        //var tu = HTomb.World.tiles[z+1][x][y];
-        //var td = HTomb.World.tiles[z-1][x][y];
         var cr = HTomb.World.creatures[coord(x+dir[0],y+dir[1],z+dir[2])];
-        //var f = HTomb.World.features[coord(x+dir[0],y+dir[1],z+dir[2])];
         // modify this to allow non-player creatures to displace
         if (this.canMove(x+dir[0],y+dir[1],z+dir[2])===false) {
           continue;
@@ -266,26 +258,29 @@ HTomb = (function(HTomb) {
   HTomb.Things.defineBehavior({
   	template: "Combat",
   	name: "combat",
+    accuracy: 0,
+    evasion: 0,
+    armor: 0,
     damage: null,
     onCreate: function(options) {
-      options = options || {};
-      for (var d in options.damage) {
-        this.damage[d] = options.damage[d];
-      }
+      //options = options || {};
+      // is this even necessary?
+      //for (var d in options.damage) {
+      //  this.damage[d] = options.damage[d];
+      //}
     },
   	// worry about multiple attacks later
   	attack: function(thing) {
       // if it's a combatant, you might miss
       HTomb.GUI.sensoryEvent(this.entity.describe() + " attacks " + thing.describe()+".",this.entity.x,this.entity.y,this.entity.z);
-      //if (thing.combat) {
-        //thing.defend(this);
-        //if (Math.random()<0.5) {
-          //thing.body.endure(this.damage);
-        //}
-      //} else {
-        //fill this in later
-      //}
-  		//create a damage packet, with an amount and type
+      var evade = (thing.combat) ? thing.combat.evasion : 0;
+      // basic hit roll
+      var roll = Math.random()+(this.accuracy-evade)/10;
+      console.log(this.entity.describe() + " rolled " + roll + " to hit.");
+      if (roll >= (1/3)) {
+        //apply armor in some way?
+        thing.body.endure(this);
+      }
   	},
   	//should be on the damage packet..//hit: function() {},
   	defend: function() {
@@ -297,9 +292,25 @@ HTomb = (function(HTomb) {
   	template: "Body",
   	name: "body",
   	materials: null,
-  	endure: function(damage) {
+  	endure: function(attack) {
+      var damage = attack.damage;
       for (var d in damage) {
-        //need to deal damage to every material, based on some kind of cress-reference table...
+        for (var m in this.materials) {
+          var n = damage[d];
+          n = Math.max(ROT.RNG.getNormal(n,n/2),0);
+          var adjusted = Math.round(n*HTomb.Types.templates.Damage.table[d][m]);
+          console.log(attack.entity.describe() + " deals " + adjusted + " " + d + " damage to " + this.entity.describe() +"'s " + m);
+          this.materials[m].has-=adjusted;
+          console.log(this.entity.describe() + " has " + this.materials[m].has + " points left of " + m);
+          //chance of death?
+          //need to deal damage to every material, based on some kind of cress-reference table...
+        }
+        for (var m in this.materials) {
+          //how do we decide how to die first?  just do it in order I guess...
+          if (this.materials[m].has < this.materials[m].needs) {
+            this.entity.creature.die();
+          }
+        }
       }
     },
     onCreate: function(options) {
@@ -309,11 +320,13 @@ HTomb = (function(HTomb) {
         this.materials[m] = {};
         // if there's just one number, fall back on a default
         if (typeof(options.materials[m])==="number") {
+          this.materials[m].max = options.materials[m];
           this.materials[m].has = options.materials[m];
           this.materials[m].needs = Math.floor(options.materials[m]/2);
         } else {
         // otherwise expect maximum and minimum
-          this.materials[m].has = options.materials[m].has;
+          this.materials[m].max = options.materials[m].max;
+          this.materials[m].has = options.materials[m].max;
           this.materials[m].needs = options.materials[m].needs;
         }
       }

@@ -152,7 +152,8 @@ var HTomb = (function() {
       startTime();
     }
     //make sure a ghoul appears at 50, and once every hundred turns otherwise
-    if (Math.random()<0.01 || World.dailyCycle.turn===50) {
+    //if (Math.random()<0.01 || World.dailyCycle.turn===50) {
+    if (World.dailyCycle.turn===1) {
       var placed = false;
       while(placed===false) {
         var gx = Math.floor(Math.random()*LEVELW)+1;

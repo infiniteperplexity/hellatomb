@@ -89,7 +89,7 @@ HTomb = (function(HTomb) {
     HTomb.Things.templates[args.template] = t;
     // Don't fire onDefine for the top-level thing
     if (t.onDefine && args.parent!=="Thing") {
-      t.onDefine();
+      t.onDefine(args);
     }
   };
 
