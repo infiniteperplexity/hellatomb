@@ -3,6 +3,16 @@ Small:
 + merge dismantling and harvesting
 + figure out pop-up screen
 + grass grows back?
++ particle system
+
+- particles for spells
+- fold Exhume into Dig, make sure their can be non-player masters
+- will of wisps
+- drain life spell
+- zombies attack stuff too
+- ghouls attack zombies
+- details view
+- add lighting
 
 - randomize growing times
 - visibility of items and/or creatures under water
@@ -10,20 +20,15 @@ Small:
 - stay in survey mode after designating?
 - change no hauling to some other name or idea
 - add a variety of articles and such to "describe()"
-- fold Exhume into Dig, make sure their can be non-player masters
 - scroll backwards through message history
-- details view
-- add lighting
 - grass dies in shade?
 - figure out asynchronous loading of resources
 - prerequisite items for tasks
 - queueing of zones?
 - items have bulk
-- particle system
-- drain life spell
-- zombies attack stuff too
-- ghouls attack zombies
-- will of wisps
+
+
+- something to make it so particle rendering isn't interrupted by normal rendering?
 - make it so saving deals with all Types correctly
 - consider going over to material/contour system
 - clean up the covering up of old symbols

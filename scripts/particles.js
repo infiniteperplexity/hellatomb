@@ -65,7 +65,6 @@ HTomb = (function(HTomb) {
       //assume no z coordinate
       //randomize starting velocity
       // actually for now just have them spew outward
-      //a = ROT.RNG.getUniform()*Math.PI;
       r = this.v+this.vr*ROT.RNG.getNormal(0,1);
       p.vx = r*Math.cos(a);
       p.vy = r*Math.sin(a);
