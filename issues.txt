@@ -37,3 +37,39 @@ Small:
 - clean up the covering up of old symbols
 - make months shorter
 - create a scheduler for periodic events, so not everything updates on the same turn
+
+~
+What's the detail view going to be like?
+
+Tile:
+  - What is it?
+  - Is there a ceiling?
+  - What are its properties?
+  - What does building or digging do?
+Creature:
+  - What is it?
+  - Whose team is it on?
+  - What is it doing?
+  - What materials is it made out of?
+  - How good of shape is it in?
+  - What's it carrying?
+Items:
+  - What's on the ground?
+  - What can be done with it?
+  - Is it owned?
+Feature:
+  - What's on the ground?
+  - Can it be harvested?
+  - Who owns it?
+  - What else can be done with it?
+Substance:
+  - What is it?
+  - What state is it in?
+  - What does it do?
+Zone:
+  - What is it?
+  - What does it do?
+  - Who assigned it?
+  - Who is it assigned to?
+Other:
+  - What is the lighting like?
