@@ -195,14 +195,16 @@ HTomb = (function(HTomb) {
     var z = gameScreen.z;
     var g = HTomb.Tiles.getGlyph(x,y,z);
     var bg = HTomb.Tiles.getBackground(x,y,z);
+    var sym = [g[0],g[1],bg];
+    sym = HTomb.World.dailyCycle.shade(sym);
     display.draw(
       x-xoffset,
       y-yoffset,
-      g[0],
-      g[1],
-      bg
+      sym[0],
+      sym[1],
+      sym[2]
     );
-  }
+  };
   // Draw a character at the appropriate X and Y tile
   GUI.drawTile = function(x,y,ch,fg,bg) {
     var xoffset = gameScreen.xoffset || 0;
@@ -297,6 +299,10 @@ HTomb = (function(HTomb) {
   // Keep track of which Z level it is on
   gameScreen.z = 1;
   gameScreen.render = function() {
+    // if (HTomb.Debug.renderTally===undefined) {
+    //   HTomb.Debug.renderTally = 0;
+    // }
+    // HTomb.Debug.renderTally+=1;
     var z = gameScreen.z;
     var xoffset = gameScreen.xoffset;
     var yoffset = gameScreen.yoffset;
@@ -310,9 +316,9 @@ HTomb = (function(HTomb) {
         var p = HTomb.Player;
         if (x===p.x && y===p.y && z===p.z) {
           // don't dim the player's foreground at night
-          sym[2] = HTomb.World.dailyCycle.shade(sym,x,y,z)[2];
+          sym[2] = HTomb.World.dailyCycle.shade(sym)[2];
         } else {
-          sym = HTomb.World.dailyCycle.shade(sym,x,y,z);
+          sym = HTomb.World.dailyCycle.shade(sym);
         }
         display.draw(this.x0+x-xoffset,this.y0+y-yoffset, sym[0], sym[1], sym[2]);
       }
@@ -545,6 +551,29 @@ HTomb = (function(HTomb) {
     survey.saveY = gameScreen.yoffset;
     survey.saveZ = gameScreen.z;
     GUI.updateMenu();
+  };
+
+  HTomb.Debug.zoomTo = function(x,y,z) {
+    if (typeof(x)==="object") {
+      z = x.z;
+      y = x.y;
+      x = x.x;
+    }
+    GUI.surveyMode();
+    HTomb.Debug.explored = true;
+    HTomb.Debug.visible = true;
+    survey.z = z;
+    if (x >= survey.xoffset+SCREENW-2) {
+      survey.xoffset = x-SCREENW+2;
+    } else if (x <= survey.xoffset) {
+      survey.xoffset = x-1;
+    }
+    if (y >= survey.yoffset+SCREENH-2) {
+      survey.yoffset = y-SCREENH+2;
+    } else if (y <= survey.yoffset) {
+      survey.yoffset = y-1;
+    }
+    gameScreen.render();
   };
 
   // These are the default controls

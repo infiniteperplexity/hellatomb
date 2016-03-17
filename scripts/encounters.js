@@ -18,6 +18,8 @@ HTomb = (function(HTomb) {
     }
   });
   HTomb.Encounters.roll = function(callb) {
+    //for now we don't use this
+    return;
     callb = callb || function() {return true;};
     var cumulative = 0;
     var table = [];
@@ -62,22 +64,27 @@ HTomb = (function(HTomb) {
       tries+=1;
       var x = Math.floor(Math.random()*LEVELW);
       var y = Math.floor(Math.random()*LEVELH);
-      if (x>LEVELW/2) {
-        x = LEVELW-2;
+      var r = Math.random();
+      if (r<0.5) {
+        if (x>LEVELW/2) {
+          x = LEVELW-2;
+        } else {
+          x = 1;
+        }
       } else {
-        x = 1;
-      }
-      if (y>LEVELH/2) {
-        y = LEVELH-2;
-      } else {
-        y = 1;
+        if (y>LEVELH/2) {
+          y = LEVELH-2;
+        } else {
+          y = 1;
+        }
       }
       var z = HTomb.Tiles.groundLevel(x,y);
       if (callb(x,y,z)) {
+        console.log("returning " + [x,y,z]);
         return [x,y,z];
       }
       if (tries>=TRIES) {
-        alert("failed to find ")
+        alert("failed to find ");
         return;
       }
     }

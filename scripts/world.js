@@ -671,8 +671,7 @@ timeIt("elevation", function() {
     lightLevel: function() {
       var dawn = 6;
       var dusk = 17;
-      //var darkest = 128;
-      var darkest = 32;
+      var darkest = 64;
       var light, moonlight;
       if (this.hour < dawn || this.hour >= dusk+1) {
         return darkest;
@@ -688,10 +687,9 @@ timeIt("elevation", function() {
         return 255;
       }
     },
-    shade: function(arr,x,y,z) {
+    shade: function(arr) {
       var c = ROT.Color.fromString(arr[1]);
       var bg = ROT.Color.fromString(arr[2]);
-      //c = ROT.Color.multiply(c,[this.lightLevel(),this.lightLevel(),255]);
       c = ROT.Color.multiply(c,[this.lightLevel(),this.lightLevel(),this.lightLevel()]);
       bg = ROT.Color.multiply(bg,[this.lightLevel(),this.lightLevel(),this.lightLevel()]);
       c[0] = (isNaN(c[0])) ? 0 : c[0];

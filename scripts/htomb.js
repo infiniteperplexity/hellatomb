@@ -183,6 +183,11 @@ var HTomb = (function() {
     }
     World.dailyCycle.onTurnBegin();
     Events.publish({type: "TurnEnd"});
+    // if (HTomb.Debug.renderTally===undefined) {
+    //   HTomb.Debug.renderTally = 0;
+    // }
+    // console.log("rendered screen " + HTomb.Debug.renderTally + " times this turn.");
+    // HTomb.Debug.renderTally = 0;
   };
 
   // Set up the various submodules that will be used

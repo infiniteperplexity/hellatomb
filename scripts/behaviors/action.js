@@ -76,6 +76,7 @@ HTomb = (function(HTomb) {
           return true;
         }
       }
+      console.log(this.entity);
       console.log("creature couldn't move.");
       return false;
     },
@@ -225,6 +226,7 @@ HTomb = (function(HTomb) {
         this.wander();
       }
       if (this.acted===false) {
+        console.log(this.entity);
         HTomb.Debug.pushMessage("creature failed to act!");
       }
       // Reset activity for next turn

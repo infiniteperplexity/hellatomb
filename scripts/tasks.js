@@ -453,7 +453,7 @@ HTomb = (function(HTomb) {
           for (var i=0; i<squares.length; i++) {
             var crd = squares[i];
             var z = HTomb.World.zones[coord(crd[0], crd[1], crd[2])];
-            if (z && z.assigner!==master) {
+            if (z && z.assigner!==master.entity) {
               continue;
             }
             if (z && z.task) {

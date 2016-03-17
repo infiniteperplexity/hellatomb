@@ -26,11 +26,11 @@ HTomb = (function(HTomb) {
     a: 0,
     // rate of emission
     tick: 0,
-    rate: 5,
+    rate: 20,
     //how many particles to emit before going away
-    n: 25,
+    n: 100,
     // lifetime
-    t: 8,
+    t: 5,
     tr: 1,
     fg: "#FF0000",
     // rgb randomness

@@ -16,8 +16,9 @@ HTomb = (function(HTomb) {
       var items, zombie, i;
       function raiseZombie(x,y,z) {
         if (that.canDesignateTile(x,y,z)) {
-          HTomb.Particles.addEmitter(c.x,c.y,c.z,{fg: "black", dist: 1});
-          HTomb.Particles.addEmitter(x,y,z,{fg: "black", dist: 1});
+          HTomb.Particles.addEmitter(c.x,c.y,c.z,{fg: "black", dist: 1, alpha: 1, fade: 0.9,});
+          //HTomb.Particles.addEmitter(x,y,z,{fg: "black", dist: 1, alpha: 1, fade: 0.9});
+          HTomb.Particles.addEmitter(x,y,z,{fg: "black", dist: 4, alpha: 1, v: -0.5, fade: 0.9});
           // cast directly on a corpse
           items = HTomb.World.items[coord(x,y,z)]
           if (items) {
@@ -61,7 +62,7 @@ HTomb = (function(HTomb) {
           HTomb.GUI.pushMessage("Can't cast the spell there.");
         }
       }
-      HTomb.GUI.selectSquare(c.z,raiseZombie,"Select a tile with a tombstone or corpse.");
+      HTomb.GUI.selectSquare(c.z,raiseZombie,{message:"Select a tile with a tombstone or corpse."});
     },
     canDesignateTile: function(x,y,z) {
       if (HTomb.World.explored[z][x][y]!==true) {
