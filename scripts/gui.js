@@ -664,6 +664,10 @@ HTomb = (function(HTomb) {
     var context = Object.create(survey);
     context.menuText = ["Use movement keys to navigate.","Comma go down.","Period to go up.","Escape to exit."];
     HTomb.Controls.context = context;
+    if (options.message) {
+      context.menuText.unshift("");
+      context.menuText.unshift(options.message);
+    }
     GUI.updateMenu();
     survey.saveX = gameScreen.xoffset;
     survey.saveY = gameScreen.yoffset;

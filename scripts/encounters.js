@@ -18,19 +18,15 @@ HTomb = (function(HTomb) {
     }
   });
   HTomb.Encounters.roll = function(callb) {
+    callb = callb || function() {return true;};
     var cumulative = 0;
-    var table;
-    if (callb===undefined) {
-      table = HTomb.Encounters.table;
-    } else {
-      table = [];
-      for (var k=0; k<HTomb.Encounters.table.length; k++) {
-        if (callb(HTomb.Encounters.table[k][1])) {
-          if (HTomb.Debug.peaceful && HTomb.Encounters.table[k][1].hostile) {
-            continue;
-          } else {
-            table.push(HTomb.Encounters.table[k]);
-          }
+    var table = [];
+    for (var k=0; k<HTomb.Encounters.table.length; k++) {
+      if (callb(HTomb.Encounters.table[k][1])) {
+        if (HTomb.Debug.peaceful && HTomb.Encounters.table[k][1].hostile) {
+          continue;
+        } else {
+          table.push(HTomb.Encounters.table[k]);
         }
       }
     }
@@ -91,6 +87,7 @@ HTomb = (function(HTomb) {
     template: "GhoulTest",
     name: "ghoul test",
     frequency: 1,
+    hostile: true,
     spawn: function() {
       var c = HTomb.Tiles.getEdgeSquare();
       var cr = HTomb.Things.Ghoul();

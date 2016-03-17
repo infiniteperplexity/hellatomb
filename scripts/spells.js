@@ -61,7 +61,7 @@ HTomb = (function(HTomb) {
           HTomb.GUI.pushMessage("Can't cast the spell there.");
         }
       }
-      HTomb.GUI.selectSquare(c.z,raiseZombie);
+      HTomb.GUI.selectSquare(c.z,raiseZombie,"Select a tile with a tombstone or corpse.");
     },
     canDesignateTile: function(x,y,z) {
       if (HTomb.World.explored[z][x][y]!==true) {

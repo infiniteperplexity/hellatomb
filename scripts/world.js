@@ -16,8 +16,6 @@ HTomb = (function(HTomb) {
     return grid;
   }
 
-
-  console.time("lists");
   HTomb.World.things = [];
   HTomb.World.tiles = grid3d();
   HTomb.World.explored = grid3d();
@@ -640,7 +638,7 @@ timeIt("elevation", function() {
     twilight: {symbol: "\u25D2"},
     fullMoon: {symbol: "\u26AA", light: 64},
     waxing: {symbol: "\u263D", light: 32},
-    newMoon: {symbol: "\u25CF", light: 0},
+    newMoon: {symbol: "\u25CF", light: 1},
     times: {
       dawn: 6,
       dusk: 17,
@@ -673,7 +671,8 @@ timeIt("elevation", function() {
     lightLevel: function() {
       var dawn = 6;
       var dusk = 17;
-      var darkest = 128;
+      //var darkest = 128;
+      var darkest = 32;
       var light, moonlight;
       if (this.hour < dawn || this.hour >= dusk+1) {
         return darkest;
@@ -691,11 +690,20 @@ timeIt("elevation", function() {
     },
     shade: function(arr,x,y,z) {
       var c = ROT.Color.fromString(arr[1]);
-      c = ROT.Color.multiply(c,[this.lightLevel(),this.lightLevel(),255]);
+      var bg = ROT.Color.fromString(arr[2]);
+      //c = ROT.Color.multiply(c,[this.lightLevel(),this.lightLevel(),255]);
+      c = ROT.Color.multiply(c,[this.lightLevel(),this.lightLevel(),this.lightLevel()]);
+      bg = ROT.Color.multiply(bg,[this.lightLevel(),this.lightLevel(),this.lightLevel()]);
       c[0] = (isNaN(c[0])) ? 0 : c[0];
       c[1] = (isNaN(c[1])) ? 0 : c[1];
+      c[2] = (isNaN(c[2])) ? 0 : c[2];
       c = ROT.Color.toHex(c);
+      bg[0] = (isNaN(bg[0])) ? 0 : bg[0];
+      bg[1] = (isNaN(bg[1])) ? 0 : bg[1];
+      bg[2] = (isNaN(bg[2])) ? 0 : bg[2];
+      bg = ROT.Color.toHex(bg);
       arr[1] = c;
+      arr[2] = bg;
       return arr;
     }
   };

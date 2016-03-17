@@ -27,6 +27,8 @@ Small:
 - prerequisite items for tasks
 - queueing of zones?
 - items have bulk
+- make sure refreshTile accounts for light level
+- make sure moon phase light levels work right
 
 
 - something to make it so particle rendering isn't interrupted by normal rendering?
