@@ -593,13 +593,14 @@ HTomb = (function(HTomb) {
   };
   // Clicking a tile looks...this may be obsolete
   main.clickTile = function(x,y) {
-    HTomb.Particles.addEmitter(x,y,gameScreen.z);
-    //viewDetails(x,y,gameScreen.z);
+    viewDetails(x,y,gameScreen.z);
   };
+
   function viewDetails(x,y,z) {
     var square = HTomb.Tiles.getSquare(x,y,z);
     var details = [];
-    details = details.concat(square.terrain.details());
+    details = details.concat(square.terrain.details.description);
+    details = details.concat(square.terrain.details.notes);
     GUI.splash(details);
   }
   main.mouseOver = function() {

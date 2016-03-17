@@ -128,6 +128,7 @@ HTomb = (function(HTomb) {
         zone.place(x,y,z);
         var t = HTomb.Things[this.template]();
         zone.task = t;
+        zone.assigner = master;
         t.zone = zone;
         t.assigner = master;
         t.assigner.master.taskList.push(t);
@@ -136,6 +137,7 @@ HTomb = (function(HTomb) {
         dzone.place(x,y,z);
         var dt = HTomb.Things.DummyTask({fakeAs: this.template, name: this.name});
         dzone.task = dt;
+        dzone.assigner = master;
         dt.zone = dzone;
         dt.assigner = master;
         dt.assigner.master.taskList.push(dt);
@@ -257,6 +259,7 @@ HTomb = (function(HTomb) {
     },
     work: function(x,y,z) {
       var f = HTomb.World.features[coord(x,y,z)];
+      var cr = this.assignee;
       if (f===this.incompleteFeature) {
         f.steps-=1;
         if (f.steps<=0) {
@@ -360,6 +363,19 @@ HTomb = (function(HTomb) {
       }
       c.remove();
       HTomb.World.validate.cleanNeighbors(x,y,z);
+    },
+    work: function(x,y,z) {
+      var f = HTomb.World.features[coord(x,y,z)];
+      if (f && f.template==="Tombstone") {
+        f.feature.hp-=1;
+        if (f.feature.hp===0) {
+          f.explode();
+          HTomb.World.tiles[z][x][y] = HTomb.Tiles.DownSlopeTile;
+          this.complete();
+        }
+      } else {
+        HTomb.Things.templates.Task.work.call(this,x,y,z);
+      }
     }
   });
 
@@ -437,6 +453,9 @@ HTomb = (function(HTomb) {
           for (var i=0; i<squares.length; i++) {
             var crd = squares[i];
             var z = HTomb.World.zones[coord(crd[0], crd[1], crd[2])];
+            if (z && z.assigner!==master) {
+              continue;
+            }
             if (z && z.task) {
               z.task.cancel();
             }
@@ -619,11 +638,6 @@ HTomb = (function(HTomb) {
       var y = this.zone.y;
       var z = this.zone.z;
       var f = HTomb.World.features[coord(x,y,z)];
-      // // if the right kind of plant is there
-      // if (f && f.template===this.assignedCrop+"Plant" && f.crop.growTurns===0 && this.canReachZone(cr)) {
-      //   this.assignTo(cr);
-      //   return true;
-      // }
       if (f===undefined && this.canReachZone(cr)) {
         this.assignTo(cr);
         return true;
@@ -651,16 +665,8 @@ HTomb = (function(HTomb) {
       var that = this;
       var crops = this.findSeeds();
       var taskSquares = function(squares) {
-        // for (var i=0; i<squares.length; i++) {
-        //   var crd = squares[i];
-        //   var f = HTomb.World.features[coord(crd[0],crd[1],crd[2])];
-        //   if (f && f.crop && crops.indexOf(f.baseTemplate)===-1) {
-        //     crops.push(f.baseTemplate);
-        //   }
-        // }
         if (crops.length===0) {
           HTomb.GUI.pushMessage("No seeds available.");
-          // HTomb.GUI.pushMessage("No seeds or crops available.");
           HTomb.GUI.reset();
           return;
         } else if (crops.length===1) {
@@ -700,16 +706,9 @@ HTomb = (function(HTomb) {
         var y = zone.y;
         var z = zone.z;
         var f = HTomb.World.features[coord(x,y,z)];
-        // if (f && f.template===this.assignedCrop+"Plant") {
-        //   // if the plant is ready to harvest
-        //   if (f.crop.growTurns===0) {
-        //     this.seekZoneAI();
-        //   }
-        // } else {
         var needsSeed = this.fetch(this.assignedCrop+"Seed");
         if (needsSeed===false) {
           this.seekZoneAI();
-        // }
         }
       }
       cr.ai.acted = true;
@@ -720,11 +719,6 @@ HTomb = (function(HTomb) {
         HTomb.Things.Soil().place(x,y,z);
       }
       var f = HTomb.World.features[coord(x,y,z)];
-      // if (f && f.template===this.assignedCrop+"Plant" && f.crop.growTurns===0) {
-      //   f.crop.harvestBy(this.assignee);
-      //   this.finish();
-      //   this.complete();
-      // } else {
       var seed = null;
       for (var i=0; i<this.assignee.inventory.items.length; i++) {
         var item = this.assignee.inventory.items[i];
@@ -732,11 +726,9 @@ HTomb = (function(HTomb) {
           //plant the whole stack at once for now
           item.crop.plantAt(x,y,z);
           this.assignee.inventory.items.remove(item);
-          //this.unassign();
           this.finish();
           this.complete();
           return;
-          // }
         }
       }
     }
@@ -761,7 +753,6 @@ HTomb = (function(HTomb) {
       } else if (thing) {
         HTomb.GUI.sensoryEvent("Removed " + thing.describe(),x,y,z);
         thing.feature.harvest();
-        //thing.destroy();
         return;
       }
       thing = HTomb.World.turfs[coord(x,y,z)];
@@ -851,7 +842,6 @@ HTomb = (function(HTomb) {
           function createZone(x,y,z) {
             var zone = that.placeZone(x,y,z);
             if (zone) {
-              //console.log(zone.task);
               zone.completeFeature = HTomb.Things[feature.template]();
             }
           }
@@ -892,50 +882,3 @@ HTomb = (function(HTomb) {
 
   return HTomb;
 })(HTomb);
-
-
-/*
-
-Q: Turn a floor tile into a wall tile?
-A: Build on the tile once to create a slope, and then build on the tile again to create a wall.
-
-Q: Turn an upward slope into a wall tile?
-A: Build once on the slope.
-
-Q: Build a passage to the next level up?
-A: Build once on a floor tile to create a slope.  If there is no ceiling above, you can reach the next level up.  Otherwise, dig a hole in the ceiling (see below.)
-
-Q: Turn a deep pit or trench into a shallow pit or trench?
-A: Build once in the pit.  Do not build above the pit or a worker may place a floor above the slope.
-
-Q: Fill in a pit from above?
-A: Build once in the pit to create a slope, then build in it a second time to fill in the pit.
-
-Q: Build a floor in an empty tile?
-A: Build once in the empty tile.
-
-Q: Build a ceiling from above?
-A: Same as building a floor.
-
-Q: Build a ceiling from below?
-A: Build an upward slope directly below, then build on the level above.
-
-Q: Dig a shallow pit or trench in the floor?
-A: Dig once on a floor tile to create a downward slope.
-
-Q: Dig a deep pit or trench in the floor?
-A: Dig once on a floor tile to create a downward slope; then dig once more either above or on the slope.  Do not dig in the pit if there is an upward slope directly below the tile, or a worker might remove the floor of the pit.
-
-Q: Build a passage to the next level down?
-A: Dig once on a floor tile.
-
-Q: Create a tunnel (with floor and ceiling intact) from a wall tile?
-A: Dig once in the wall tile.  Make sure there is not an upward slope directly below the tile, or a worker might remove the floor of the tunnel.
-
-Q: Dig a hole in the ceiling from below?
-A: Build once on the floor directly below to create an upward slope.  Then dig once in the wall tile above.
-
-Q: Dig a hole in the ceiling from above?
-A: Same as digging a shallow pit.
-
-*/

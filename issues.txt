@@ -4,9 +4,10 @@ Small:
 + figure out pop-up screen
 + grass grows back?
 + particle system
++ particles for spells
++ fold Exhume into Dig, make sure their can be non-player masters
 
-- particles for spells
-- fold Exhume into Dig, make sure their can be non-player masters
+
 - will of wisps
 - drain life spell
 - zombies attack stuff too

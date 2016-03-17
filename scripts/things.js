@@ -53,7 +53,6 @@ HTomb = (function(HTomb) {
     var t;
     if (args.parent===undefined || (args.parent!=="Thing" && HTomb.Things.templates[args.parent]===undefined)) {
       args.parent = "Thing";
-      HTomb.Debug.pushMessage("Warning: No or invalid parent type given.");
     }
     if (args.parent==="Thing") {
       t = Object.create(thing);

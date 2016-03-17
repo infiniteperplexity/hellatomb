@@ -29,8 +29,8 @@ HTomb = (function(HTomb) {
     opaque: true,
     solid: true,
     immutable: true,
-    details: function() {
-      return ["This is an indestructible boundary tile."];
+    details: {
+      description: "An indestructible boundary tile."
     }
   });
 
@@ -46,13 +46,13 @@ HTomb = (function(HTomb) {
     //bg: HTomb.Constants.BELOWBG,
     bg: "black",
     fallable: true,
-    details: function() {
-      return [
-        "This is an empty tile.  It has no floor and no ceiling.",
-        "A non-flying creature cannot cross it.",
+    details: {
+      description: "An empty tile with no floor but possibly a ceiling.",
+      notes: [
+        "A non-flying creature cannot cross this space.",
         "Build here to add a floor.",
-        "Digging here digs in the space below."
-      ];
+        "Dig here to dig into the space below."
+      ]
     }
   });
   HTomb.Types.defineTile({
@@ -61,13 +61,13 @@ HTomb = (function(HTomb) {
     symbol: ".",
     fg: FLOORFG,
     bg: FLOORBG,
-    details: function() {
-      return [
-        "This is a floor tile.",
+    details: {
+      description: "A tile with a floor and possibly a ceiling.",
+      notes: [
         "If there is no ceiling, a flying creature can go up here.",
         "Building here adds an upward slope.",
         "Digging here removes the floor, and might also dig into stone below."
-      ];
+      ]
     }
   });
   HTomb.Types.defineTile({
@@ -78,12 +78,12 @@ HTomb = (function(HTomb) {
     opaque: true,
     solid: true,
     bg: WALLBG,
-    details: function() {
-      return [
-        "This is a solid wall tile.",
+    details: {
+      description: "This is a solid wall tile.",
+      notes: [
         "Digging here usually creates a tunnel.",
         "If there is an explored upward slope below, digging here also digs out the floor."
-      ];
+      ]
     }
   });
 
@@ -95,13 +95,13 @@ HTomb = (function(HTomb) {
     zview: +1,
     zmove: +1,
     bg: WALLBG,
-    details: function() {
-      return [
-        "This is an upward slope tile.",
+    details: {
+      description: "This is an upward slope tile.",
+      notes: [
         "Most creatures can climb up here, if there is no ceiling above.",
         "You can see up this slope.",
         "Building here turns the slope into a wall tile."
-      ];
+      ]
     }
   });
 
@@ -113,21 +113,16 @@ HTomb = (function(HTomb) {
     zmove: -1,
     fg: BELOWFG,
     bg: BELOWBG,
-    allowsFeatures: false,
-    details: function() {
-      return [
-        "This is a downward slope tile.",
+    details: {
+      description: "This is a downward slope tile.",
+      notes: [
         "Most creatures can climb down here.",
         "You can see down this slope.",
         "Building here creates a floor.",
         "Digging here removes the slope and the upward slope below."
-      ];
+      ]
     }
   });
-
-
-
-
 
   Tiles.getSymbol = function(x,y,z) {
     var glyph = Tiles.getGlyph(x,y,z);
@@ -146,7 +141,7 @@ HTomb = (function(HTomb) {
     var zview = tiles[z][x][y].zview;
     var vis = (visible[crd]===true || HTomb.Debug.visible===true);
     var bg;
-    if (zones[crd]!==undefined) {
+    if (zones[crd]!==undefined && zones[crd].assigner===HTomb.Player) {
       bg = zones[crd].bg;
     }
     // ****** If the square has not been explored... ****************

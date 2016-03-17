@@ -28,9 +28,9 @@ HTomb = (function(HTomb) {
     tick: 0,
     rate: 5,
     //how many particles to emit before going away
-    n: 50,
+    n: 25,
     // lifetime
-    t: 10,
+    t: 8,
     tr: 1,
     fg: "#FF0000",
     // rgb randomness
@@ -58,7 +58,7 @@ HTomb = (function(HTomb) {
       //randomize starting position
       //assume no directional tendency for now
       a = ROT.RNG.getUniform()*2*Math.PI;
-      r = this.distr*ROT.RNG.getNormal(0,1); //this can drop below zero
+      r = this.dist+this.distr*ROT.RNG.getNormal(0,1); //this can drop below zero
       p.x = this.x+r*Math.cos(a);
       p.y = this.y+r*Math.sin(a);
       p.z = this.z+0;
@@ -80,14 +80,14 @@ HTomb = (function(HTomb) {
       this.onEmit(p);
       this.particles.push(p);
     },
-    update: function() {
-      if (this.rate>1) {
+    update: function(spd) {
+      if (this.rate>(spd/1000)) {
         for (var t=0; t<this.rate; t++) {
           this.emit();
         }
       } else {
-        this.tick+=1;
-        if (this.tick>=1/this.rate) {
+        this.tick+=(spd/1000);
+        if (this.tick>=spd/(1000*this.rate)) {
           this.tick = 0;
           this.emit();
         }
@@ -135,22 +135,22 @@ HTomb = (function(HTomb) {
     eachUpdate: function(p) {}
   };
 
-  HTomb.Particles.update = function(pspeed) {
+  HTomb.Particles.update = function(spd) {
     for (var i=0; i<HTomb.Particles.emitters.length; i++) {
-      HTomb.Particles.emitters[i].update();
+      HTomb.Particles.emitters[i].update(spd);
     }
   };
 
   HTomb.Particles.addEmitter = function(x,y,z,args) {
     args = args || {};
     var e = Object.create(emitter);
-    e.fg = ROT.Color.fromString(e.fg);
     e.x = x;
     e.y = y;
     e.z = z;
     for (var arg in args) {
-      e.arg = args.arg;
+      e[arg] = args[arg];
     }
+    e.fg = ROT.Color.fromString(e.fg);
     e.particles = [];
     e.emit();
     HTomb.Particles.emitters.push(e);
