@@ -22,6 +22,9 @@ HTomb = (function(HTomb) {
       if (options.range) {
         this.range = options.range;
       }
+    },
+    getSeen: function() {
+      
     }
   });
 

@@ -151,7 +151,7 @@ HTomb = (function(HTomb) {
         return (bg || WALLBG);
       } else {
         // otherwise paint the tile black
-        return "black";
+        return (bg || "black");
       }
     }
     // *********** Choose the background color *******************************

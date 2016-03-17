@@ -184,12 +184,16 @@ HTomb = (function(HTomb) {
     // unimplemented
     target: null,
     // unimplemented
-    hostile: false,
+    team: null,
     //allegiance: null,
     acted: false,
     each: ["target","mood","acted"],
     // We may want to save a path for the entity
     onAdd: function(){this.entity.path = [];},
+    setTeam: function(team) {
+      //feeling ambivalent about tracking teams...
+      this.team = team;
+    },
     isFriendly: function() {return true;},
     act: function() {
       // If the entity is the player, don't choose for it...maybe this should be a Behavior?
@@ -334,6 +338,43 @@ HTomb = (function(HTomb) {
       }
     }
   });
+
+  HTomb.Types.define({
+    template: "Team",
+    name: "team",
+    members: null,
+    enemies: null,
+    allies: null,
+    onDefine: function() {
+      this.members = this.members || [];
+      this.enemies = this.enemies || [];
+      this.allies = this.allies || [];
+    }
+  });
+
+  // the player and affiliated minions
+  HTomb.Types.defineTeam({
+    template: "PlayerTeam",
+    name: "player"
+  });
+
+  HTomb.Types.defineTeam({
+    template: "DefaultTeam",
+    name: "default"
+  });
+
+  // non-aggressive animals
+  HTomb.Types.defineTeam({
+    template: "AnimalTeam",
+    name: "animals"
+  });
+
+  HTomb.Types.defineTeam({
+    template: "GhoulTeam",
+    name: "ghouls",
+    hates: ["PlayerTeam"]
+  });
+
 
   return HTomb;
 })(HTomb);
