@@ -73,3 +73,12 @@ Zone:
   - Who is it assigned to?
 Other:
   - What is the lighting like?
+
+
+Global status view:
+  - How may zombies and other minions?...lets you zoom to it.
+  - What all jobs are out there?  Also zoom, if it's assigned...or zoom to zone.
+  - What items do you have in hoards?
+  - What features and such have you built?
+
+Maybe tab between those?  Esc to go back?
