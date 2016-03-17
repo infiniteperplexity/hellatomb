@@ -188,6 +188,21 @@ HTomb = (function(HTomb) {
     GUI.panels.bottom.render();
     GUI.panels.right.render();
   };
+
+  GUI.refreshTile = function(x,y) {
+    var xoffset = gameScreen.xoffset || 0;
+    var yoffset = gameScreen.yoffset || 0;
+    var z = gameScreen.z;
+    var g = HTomb.Tiles.getGlyph(x,y,z);
+    var bg = HTomb.Tiles.getBackground(x,y,z);
+    display.draw(
+      x-xoffset,
+      y-yoffset,
+      g[0],
+      g[1],
+      bg
+    );
+  }
   // Draw a character at the appropriate X and Y tile
   GUI.drawTile = function(x,y,ch,fg,bg) {
     var xoffset = gameScreen.xoffset || 0;
@@ -390,13 +405,20 @@ HTomb = (function(HTomb) {
   };
   // By default, dragging the mouse outside the game screen resets the game screen
   // This clears out highlighted tiles from hovering, for example
+  var oldCursor = null;
   ControlContext.prototype.mouseOver = function() {
-    gameScreen.render();
+    if (oldCursor!==null) {
+      GUI.refreshTile(oldCursor[0],oldCursor[1]);
+    }
+    oldCursor = null;
   };
 
   ControlContext.prototype.mouseTile = function(x,y) {
-    GUI.panels.main.render();
+    if (oldCursor!==null) {
+      GUI.refreshTile(oldCursor[0],oldCursor[1]);
+    }
     GUI.highlightTile(x,y,"#0000FF");
+    oldCursor = [x,y];
     var z = gameScreen.z;
     var txt = examineSquare(x,y,z);
     var myText = this.menuText || defaultText;
@@ -932,9 +954,7 @@ HTomb = (function(HTomb) {
       c = HTomb.decoord(o);
       x = c[0];
       y = c[1];
-      z = c[2];
-      var g = HTomb.Tiles.getGlyph(x,y,z);
-      HTomb.GUI.drawGlyph(x,y,g[0],g[1]);
+      HTomb.GUI.refreshTile(x,y);
     }
     oldSquares = squares;
   };
