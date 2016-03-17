@@ -735,7 +735,7 @@ timeIt("elevation", function() {
       }
     }
   };
-  //HTomb.Events.subscribe(grassGrower,"TurnBegin");
+  HTomb.Events.subscribe(grassGrower,"TurnBegin");
   grassGrower.onTurnBegin = grassGrower.growGrass;
 
   return HTomb;
