@@ -82,3 +82,5 @@ Global status view:
   - What features and such have you built?
 
 Maybe tab between those?  Esc to go back?
+
+~
