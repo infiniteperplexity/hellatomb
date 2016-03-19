@@ -5,26 +5,183 @@ HTomb = (function(HTomb) {
   var LEVELH = HTomb.Constants.LEVELH;
   var coord = HTomb.coord;
 
-/*
+  HTomb.Types.define({
+    template: "Routine",
+    name: "routine",
+    act: function(ai) {
+      if (false) {
+        ai.acted = true;
+      }
+    }
+  });
 
-So...right now we have somewhat AI-like behavior split among Movement and
-AI...so...what does Movement contain?
-- It has walkTowards, walkAway, and walkRandom.  One could possibly justify those there.
-- tryStep is a weird one...like probably properly an AI thing.  I'm thinking Movement
-shouldn't be all composit, whereas AI should.  So wait...can anything every Move without AI?
-Eh.
-So...
+  HTomb.Types.defineRoutine({
+    template: "ServeMaster",
+    name: "serve master",
+    act: function(ai) {
+      if (ai.entity.minion===undefined) {
+        return;
+      }
+      if (ai.entity.minion.task) {
+        ai.entity.minion.task.ai();
+      } else {
+        // Otherwise, patrol around the creature's master
+        // or maybe check for tasks now?
+        ai.patrol(ai.entity.minion.master.x,ai.entity.minion.master.y,ai.entity.minion.master.z);
+      }
+    }
+  });
+  HTomb.Types.defineRoutine({
+    template: "WanderAimlessly",
+    name: "wander aimlessly",
+    act: function(ai) {
+      ai.wander();
+    }
+  });
+  HTomb.Types.defineRoutine({
+    template: "CheckForHostile",
+    name: "check for hostile",
+    act: function(ai) {
+      // for now this is way too slow
+      return false;
+      var x = ai.entity.x;
+      var y = ai.entity.y;
+      var z = ai.entity.z;
+      if (ai.target===null) {
+        // works well when there are few creatures
+        var hostiles = HTomb.World.creaturesWithin(x,y,z,10,function(cr) {
+          return ai.isHostile(cr);
+        });
+        if (hostiles.length>0) {
+          HTomb.shuffle(hostiles);
+          ai.target = hostiles[0];
+        }
+      }
+      if (ai.target && ai.isHostile(ai.target)) {
+        if (HTomb.Tiles.isTouchableFrom(ai.target.x, ai.target.y,ai.target.z, ai.entity.x, ai.entity.y, ai.entity.z)) {
+          ai.entity.combat.attack(ai.target);
+          ai.acted = true;
+        } else {
+          ai.walkToward(ai.target);
+        }
+      }
+    }
+  });
 
-*/
-  // The Movement behavior allows the creature to move
+
+
+
+  HTomb.Types.defineRoutine({
+    template: "HuntDeadThings",
+    name: "hunt dead things",
+    act: function(ai) {
+      // should this hunt in sight range first?
+      if (ai.target===null) {
+        var zombies = [];
+        for (var c in HTomb.World.creatures) {
+          var cr = HTomb.World.creatures[c];
+          if (c.template==="Zombie") {
+
+          }
+        }
+      }
+    }
+  });
+
+  HTomb.Types.define({
+    template: "Team",
+    name: "team",
+    members: null,
+    enemies: null,
+    allies: null,
+    onDefine: function() {
+      this.members = this.members || [];
+      this.enemies = this.enemies || [];
+      this.allies = this.allies || [];
+    }
+  });
+
+
   HTomb.Things.defineBehavior({
-    template: "Movement",
-    name: "movement",
-    // flags for different kinds of movement
-    walks: true,
-    climbs: true,
-    //each: ["walks","climbs","flies","swims"],
-    // Walk in one of the eight random directions
+    template: "AI",
+    name: "ai",
+    // unimplemented
+    target: null,
+    // unimplemented
+    team: null,
+    //allegiance: null,
+    acted: false,
+    each: ["target","team","acted"],
+    priority: null,
+    alert: null,
+    goals: null,
+    fallback: null,
+
+    // We may want to save a path for the entity
+    onAdd: function(){
+      this.path = [];
+      this.alert = HTomb.Routines.CheckForHostile;
+      this.goals = [];
+      this.goals.push(HTomb.Routines.ServeMaster);
+      this.fallback = HTomb.Routines.WanderAimlessly;
+    },
+    setTeam: function(team) {
+      //feeling ambivalent about tracking teams...
+      this.team = team;
+    },
+    isHostile: function() {return false;},
+    isFriendly: function() {return true;},
+    act: function() {
+      // If the entity is the player, don't choose for it...maybe this should be a Behavior?
+      if (this.entity===HTomb.Player) {
+        return false;
+      }
+      // If the creature has already acted, bail out
+      if (this.acted===true) {
+        this.acted = false;
+        return false;
+      }
+      if (this.acted===false) {
+        this.alert.act(this);
+      }
+      for (var i=0; i<this.goals.length; i++) {
+        if (this.acted===false) {
+          this.goals[i].act(this);
+        }
+      }
+      if (this.acted===false) {
+        this.fallback.act(this);
+      }
+      if (this.acted===false) {
+        console.log(this.entity);
+        HTomb.Debug.pushMessage("creature failed to act!");
+      }
+      // Reset activity for next turn
+      this.acted = false;
+    },
+    // A patrolling creature tries to stay within a certain orbit of a target square
+    patrol: function(x,y,z,min,max) {
+      min = min || 2;
+      max = max || 5;
+      if (!this.entity.movement) {
+        return false;
+      }
+      var dist = HTomb.Path.distance(this.entity.x,this.entity.y,x,y);
+      if (dist<min) {
+        this.acted = this.walkAway(x,y,z);
+      } else if (dist>max) {
+        this.acted = this.walkToward(x,y,z);
+      } else {
+        this.acted = this.walkRandom();
+      }
+    },
+    // A wandering creature walks randomly...so far it won't scale slopes
+    wander: function() {
+      if (!this.entity.movement) {
+        return false;
+      }
+      this.acted = this.walkRandom();
+    },
     walkRandom: function() {
       var r = Math.floor(Math.random()*26);
       var dx = HTomb.dirs[26][r][0];
@@ -69,13 +226,13 @@ So...
         var dir = backoffs[i];
         var cr = HTomb.World.creatures[coord(x+dir[0],y+dir[1],z+dir[2])];
         // modify this to allow non-player creatures to displace
-        if (this.canMove(x+dir[0],y+dir[1],z+dir[2])===false) {
+        if (this.entity.movement.canMove(x+dir[0],y+dir[1],z+dir[2])===false) {
           continue;
         } else if (cr) {
           if (cr.ai && cr.ai.isFriendly && cr.player===undefined && cr.movement) {
             // try displacing only half the time?
             if (Math.random()<=0.5) {
-              this.displaceCreature(cr);
+              cr.movement.displaceCreature(cr);
             } else {
               continue;
             }
@@ -83,7 +240,7 @@ So...
             continue;
           }
         } else {
-          this.stepTo(x+dir[0],y+dir[1],z+dir[2]);
+          this.entity.movement.stepTo(x+dir[0],y+dir[1],z+dir[2]);
           return true;
         }
       }
@@ -91,242 +248,6 @@ So...
       console.log("creature couldn't move.");
       return false;
     },
-  });
-
-  HTomb.Things.defineBehavior({
-    template: "AI",
-    name: "ai",
-    // unimplemented
-    target: null,
-    HTomb.Types.define({
-      template: "Routine",
-      name: "routine",
-      act: function(ai) {
-        if (false) {
-          ai.acted = true;
-        }
-      }
-    });
-
-    HTomb.Types.defineRoutine({
-      template: "ServeMaster",
-      name: "serve master",
-      act: function(ai) {
-        if (ai.entity.minion.task) {
-          ai.entity.minion.task.ai();
-        } else {
-          // Otherwise, patrol around the creature's master
-          // or maybe check for tasks now?
-          ai.patrol(ai.entity.minion.master.x,ai.entity.minion.master.y,ai.entity.minion.master.z);
-        }
-      }
-    });
-    HTomb.Types.defineRoutine({
-      template: "WanderAimlessly",
-      name: "wander aimlessly",
-      act: function(ai) {
-        ai.wander();
-      }
-    });
-
-    HTomb.Types.defineRoutine({
-      template: "HuntDeadThings",
-      name: "hunt dead things",
-      act: function(ai) {
-          // should this hunt in sight range first?
-          if (ai.target===null) {
-            var zombies = [];
-            for (var c in HTomb.World.creatures) {
-              var cr = HTomb.World.creatures[c];
-              if (c.template==="Zombie") {
-
-              }
-            }
-          }
-        }
-      }
-    });
-
-    // unimplemented
-    team: null,
-    //allegiance: null,
-    acted: false,
-    each: ["target","mood","acted"],
-    // We may want to save a path for the entity
-    onAdd: function(){this.entity.path = [];},
-    setTeam: function(team) {
-      //feeling ambivalent about tracking teams...
-      this.team = team;
-    },
-    isFriendly: function() {return true;},
-    act: function() {
-      // If the entity is the player, don't choose for it...maybe this should be a Behavior?
-      if (this.entity===HTomb.Player) {
-        return false;
-      }
-      // If the creature has already acted, bail out
-      if (this.acted===true) {
-        this.acted = false;
-        return false;
-      }
-      // Temporary: If the creature is hostile...
-      if (this.acted===false && this.hostile===true) {
-        this.target = HTomb.Player;
-        if (HTomb.Tiles.isTouchableFrom(this.target.x, this.target.y,this.target.z, this.entity.x, this.entity.y, this.entity.z)) {
-          this.entity.combat.attack(this.target);
-          this.acted = true;
-        } else {
-          this.entity.movement.walkToward(this.target.x,this.target.y,this.target.z);
-        }
-      }
-      // If the creature is a minion...
-      if (this.acted===false && this.entity.minion) {
-        // If it has a task assigned, then run the AI for the task
-        if (this.entity.minion.task) {
-          this.entity.minion.task.ai();
-        } else {
-          // Otherwise, patrol around the creature's master
-          this.patrol(this.entity.minion.master.x,this.entity.minion.master.y,this.entity.minion.master.z);
-        }
-      }
-      // Otherwise, wander randomly
-      if (this.acted===false) {
-        this.wander();
-      }
-      if (this.acted===false) {
-        console.log(this.entity);
-        HTomb.Debug.pushMessage("creature failed to act!");
-      }
-      // Reset activity for next turn
-      this.acted = false;
-    },
-    // A patrolling creature tries to stay within a certain orbit of a target square
-    patrol: function(x,y,z,min,max) {
-      min = min || 2;
-      max = max || 5;
-      if (!this.entity.movement) {
-        return false;
-      }
-      var dist = HTomb.Path.distance(this.entity.x,this.entity.y,x,y);
-      if (dist<min) {
-        this.acted = this.entity.movement.walkAway(x,y,z);
-      } else if (dist>max) {
-        this.acted = this.entity.movement.walkToward(x,y,z);
-      } else {
-        this.acted = this.entity.movement.walkRandom();
-      }
-    },
-    // A wandering creature walks randomly...so far it won't scale slopes
-    wander: function() {
-      if (!this.entity.movement) {
-        return false;
-      }
-      this.acted = this.entity.movement.walkRandom();
-    }
-  });
-
-
-  HTomb.Types.define({
-    template: "Team",
-    name: "team",
-    members: null,
-    enemies: null,
-    allies: null,
-    onDefine: function() {
-      this.members = this.members || [];
-      this.enemies = this.enemies || [];
-      this.allies = this.allies || [];
-    }
-  });
-
-
-  HTomb.Things.defineBehavior({
-    template: "AI",
-    name: "ai",
-    // unimplemented
-    target: null,
-    // unimplemented
-    team: null,
-    //allegiance: null,
-    acted: false,
-    each: ["target","mood","acted"],
-    // We may want to save a path for the entity
-    onAdd: function(){
-      this.entity.path = [];
-      this.entity.routine = [];
-      routines.push(HTomb.Routines.CheckForHostile);
-      routines.push(HTomb.Routines.ServeMaster);
-      routines.push(HTomb.Routines.WanderAimlessly);
-    },
-    setTeam: function(team) {
-      //feeling ambivalent about tracking teams...
-      this.team = team;
-    },
-    isFriendly: function() {return true;},
-    act: function() {
-      // If the entity is the player, don't choose for it...maybe this should be a Behavior?
-      if (this.entity===HTomb.Player) {
-        return false;
-      }
-      // If the creature has already acted, bail out
-      if (this.acted===true) {
-        this.acted = false;
-        return false;
-      }
-      // Temporary: If the creature is hostile...
-      if (this.acted===false && this.hostile===true) {
-        this.target = HTomb.Player;
-        if (HTomb.Tiles.isTouchableFrom(this.target.x, this.target.y,this.target.z, this.entity.x, this.entity.y, this.entity.z)) {
-          this.entity.combat.attack(this.target);
-          this.acted = true;
-        } else {
-          this.entity.movement.walkToward(this.target.x,this.target.y,this.target.z);
-        }
-      }
-      // If the creature is a minion...
-      if (this.acted===false && this.entity.minion) {
-        // If it has a task assigned, then run the AI for the task
-        if (this.entity.minion.task) {
-          this.entity.minion.task.ai();
-        } else {
-          // Otherwise, patrol around the creature's master
-          this.patrol(this.entity.minion.master.x,this.entity.minion.master.y,this.entity.minion.master.z);
-        }
-      }
-      // Otherwise, wander randomly
-      if (this.acted===false) {
-        this.wander();
-      }
-      if (this.acted===false) {
-        console.log(this.entity);
-        HTomb.Debug.pushMessage("creature failed to act!");
-      }
-      // Reset activity for next turn
-      this.acted = false;
-    },
-    // A patrolling creature tries to stay within a certain orbit of a target square
-    patrol: function(x,y,z,min,max) {
-      min = min || 2;
-      max = max || 5;
-      if (!this.entity.movement) {
-        return false;
-      }
-      var dist = HTomb.Path.distance(this.entity.x,this.entity.y,x,y);
-      if (dist<min) {
-        this.acted = this.entity.movement.walkAway(x,y,z);
-      } else if (dist>max) {
-        this.acted = this.entity.movement.walkToward(x,y,z);
-      } else {
-        this.acted = this.entity.movement.walkRandom();
-      }
-    },
-    // A wandering creature walks randomly...so far it won't scale slopes
-    wander: function() {
-      if (!this.entity.movement) {
-        return false;
-      }
-      this.acted = this.entity.movement.walkRandom();
-    }
   });
 
   // the player and affiliated minions

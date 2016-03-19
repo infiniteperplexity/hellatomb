@@ -472,5 +472,16 @@ HTomb = (function(HTomb) {
       return false;
     }
   };
+
+  //
+  HTomb.Tiles.squaresWithinSquare = function(x,y,z,n) {
+    var squares = [];
+    for (var i=-n; i<=n; i++) {
+      for (var j=-n; j<=n; j++) {
+        squares.push([x+i,y+j,z]);
+      }
+    }
+    return squares;
+  };
   return HTomb;
 })(HTomb);

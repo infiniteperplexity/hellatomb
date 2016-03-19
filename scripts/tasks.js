@@ -123,26 +123,27 @@ HTomb = (function(HTomb) {
     // the last parameter is optional
     placeZone: function(x,y,z, master) {
       master = master || HTomb.Player;
+      var zone, t;
       if (this.canDesignateTile(x,y,z)) {
-        var zone = HTomb.Things[this.zoneTemplate.template]();
+        zone = HTomb.Things[this.zoneTemplate.template]();
         zone.place(x,y,z);
-        var t = HTomb.Things[this.template]();
+        t = HTomb.Things[this.template]();
         zone.task = t;
         zone.assigner = master;
         t.zone = zone;
         t.assigner = master;
         t.assigner.master.taskList.push(t);
       } else if (HTomb.World.explored[z][x][y]!==true) {
-        var dzone = HTomb.Things.DummyZone({name: this.zoneTemplate.name, bg: this.zoneTemplate.bg});
-        dzone.place(x,y,z);
-        var dt = HTomb.Things.DummyTask({fakeAs: this.template, name: this.name});
-        dzone.task = dt;
-        dzone.assigner = master;
-        dt.zone = dzone;
-        dt.assigner = master;
-        dt.assigner.master.taskList.push(dt);
+        zone = HTomb.Things.DummyZone({name: this.zoneTemplate.name, bg: this.zoneTemplate.bg});
+        zone.place(x,y,z);
+        t = HTomb.Things.DummyTask({fakeAs: this.template, name: this.name});
+        zone.task = t;
+        zone.assigner = master;
+        t.zone = zone;
+        t.assigner = master;
+        t.assigner.master.taskList.push(t);
       }
-      return (zone || dzone);
+      return zone;
     },
     // note that this passes the behavior, not the entity
     designate: function(master) {
@@ -195,12 +196,12 @@ HTomb = (function(HTomb) {
         if (HTomb.Tiles.isTouchableFrom(x,y,z,cr.x,cr.y,cr.z)) {
           this.work(x,y,z);
         } else if (dist>0 || cr.z!==z) {
-          cr.movement.walkToward(x,y,z);
+          cr.ai.walkToward(x,y,z);
         } else if (dist===0) {
-          cr.movement.walkRandom();
+          cr.ai.walkRandom();
         } else {
           this.unassign();
-          cr.movement.walkRandom();
+          cr.ai.walkRandom();
         }
       }
       cr.ai.acted = true;
@@ -225,7 +226,7 @@ HTomb = (function(HTomb) {
       }
       // if you've already found one walk toward it
       if (cr.ai.target && cr.ai.target.template===template) {
-        cr.movement.walkToward(t.x,t.y,t.z);
+        cr.ai.walkToward(t.x,t.y,t.z);
         return true;
       }
       // look for one, first in hoards
@@ -235,7 +236,7 @@ HTomb = (function(HTomb) {
           if (items && items.containsAny(template)) {
             cr.ai.target = items.getFirst(template);
             t = cr.ai.target;
-            cr.movement.walkToward(t.x,t.y,t.z);
+            cr.ai.walkToward(t.x,t.y,t.z);
             return true;
           }
         }
@@ -248,7 +249,7 @@ HTomb = (function(HTomb) {
             if (item.item.owned===true && item.template===template) {
               cr.ai.target = item;
               t = cr.ai.target;
-              cr.movement.walkToward(t.x,t.y,t.z);
+              cr.ai.walkToward(t.x,t.y,t.z);
               return true;
             }
           }
@@ -522,13 +523,13 @@ HTomb = (function(HTomb) {
         var path = HTomb.Path.aStar(cr.x,cr.y,cr.z,x,y,z);
         if (path===false) {
           this.unassign();
-          cr.movement.walkRandom();
+          cr.ai.walkRandom();
         } else {
           if (cr.inventory.items.length>0) {
             if (cr.x===x && cr.y===y && cr.z===z) {
               cr.inventory.drop(cr.inventory.items[0]);
             } else {
-              cr.movement.walkToward(x,y,z);
+              cr.ai.walkToward(x,y,z);
             }
           } else {
               //search for items...should shuffle them first or something
@@ -552,12 +553,12 @@ HTomb = (function(HTomb) {
               // should maybe use fetch with an option to avoid things in hoards?
               if (cr.ai.target===null) {
                 this.unassign();
-                cr.movement.walkRandom();
+                cr.ai.walkRandom();
               } else if (cr.x===cr.ai.target.x && cr.y===cr.ai.target.y && cr.z===cr.ai.target.z) {
                 cr.inventory.pickup(item);
                 cr.ai.target = null;
               } else {
-                cr.movement.walkToward(cr.ai.target.x,cr.ai.target.y,cr.ai.target.z);
+                cr.ai.walkToward(cr.ai.target.x,cr.ai.target.y,cr.ai.target.z);
               }
           }
         }

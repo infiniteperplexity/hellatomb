@@ -6,6 +6,14 @@ HTomb = (function(HTomb) {
   var coord = HTomb.coord;
 
   HTomb.Things.defineBehavior({
+    template: "Player",
+    name: "player",
+    onAdd: function() {
+      HTomb.Player = this.entity;
+    }
+  });
+
+  HTomb.Things.defineBehavior({
     template: "Senses",
     name: "senses",
     sightRange: 10,
@@ -315,7 +323,10 @@ HTomb = (function(HTomb) {
       }
       return false;
     }
-  });HTomb.Things.defineBehavior({
+  });
+
+
+  HTomb.Things.defineBehavior({
   	template: "Body",
   	name: "body",
   	materials: null,

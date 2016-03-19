@@ -738,5 +738,34 @@ timeIt("elevation", function() {
   HTomb.Events.subscribe(grassGrower,"TurnBegin");
   grassGrower.onTurnBegin = grassGrower.growGrass;
 
+  //callback is optional
+  HTomb.World.creaturesWithin = function(x,y,z,r,callb) {
+    var creatures = [];
+    for (var c in HTomb.World.creatures) {
+      var cr = HTomb.World.creatures[c];
+      if (callb && callb(cr)===false) {
+        continue;
+      } else {
+        if (HTomb.Path.distance(x,y,cr.x,cr.y) && Math.abs(z-cr.z)<=1) {
+          creatures.push(cr);
+        }
+      }
+    }
+    return creatures;
+  };
+
+   HTomb.World.creaturesWithin = function(x,y,z,r,callb) {
+     var creatures = [];
+     for (var i=-r; i<=r; i++) {
+       for (var j=-r; j<=r; j++) {
+         var cr = HTomb.World.creatures[coord(x+i,y+j,z)];
+         if (cr && (callb===undefined || callb(cr))) {
+           creatures.push(cr);
+         }
+       }
+     }
+     return creatures;
+   };
+
   return HTomb;
 })(HTomb);
