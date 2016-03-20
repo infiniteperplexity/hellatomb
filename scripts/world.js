@@ -56,6 +56,8 @@ HTomb = (function(HTomb) {
     cleaned: {}
   };
   HTomb.World.validate.clean = function() {
+    //lighting can only be done all at once?
+    HTomb.World.validate.lighting();
     for (var crd in this.dirty) {
       if (this.cleaned[crd]) {
         continue;

@@ -58,36 +58,42 @@ HTomb = (function(HTomb) {
     caster.compute(x,y,r,show);
   };
 
-  HTomb.FOV.ambientLight = function() {
-    var light = 255;
+  // pass the ambient light level
+  HTomb.FOV.ambientLight = function(light) {
     for (var x=1; x<LEVELW-1; x++) {
       for (var y=1; y<LEVELH-1; y++) {
         var blocked = false;
         for (var z=NLEVELS-2; z>0; z--) {
           z0 = z;
-          if (blocked===false && passLight(x,y)) {
+          grid = HTomb.World.tiles[z];
+          // visit every square, illuminating it fully if unblocked
+          if (blocked===false && passlight(x,y)) {
             HTomb.World.lit[z][x][y] = -light;
-          } else {
-            HTomb.World.lit[z][x][y] = (HTomb.World.lit[z][x][y]>=0) ? 0 : HTomb.World.lit[z][x][y];
-          }
-          for (var i=0; i<4; i++) {
-            var d = ROT.DIRS[4][i];
-            var dx = d[0];
-            var dy = d[1];
-            if (passLight(x+dx,y+dy)) {
-              HTomb.World.lit[z][x][y] = Math.min(HTomb.World.lit[z][x][y],light/2);
+            for (var i=0; i<4; i++) {
+              // illuminate neighboring squares if unblocked
+              var d = ROT.DIRS[4][i];
+              var dx = d[0];
+              var dy = d[1];
+              if (passlight(x+dx,y+dy)) {
+                // illuminate it halfway unless
+                HTomb.World.lit[z][x][y] = Math.min(HTomb.World.lit[z][x][y],-light/2);
+              }
             }
-          }
-          if (HTomb.World.tiles[z][x][y]===HTomb.Tiles.EmptyTile || HTomb.Tiles.DownSlopeTile) {
-            z-=1;
+            //
+            if (HTomb.World.tiles[z][x][y].zview!==-1) {
+              blocked = true;
+            }
           } else {
-            blocked = true;
+            // maybe not have zero as the lowest light level?
+            var darkest = 96;
+            HTomb.World.lit[z][x][y] = (HTomb.World.lit[z][x][y]>=0) ? -darkest : HTomb.World.lit[z][x][y];
           }
         }
       }
     }
   };
 
+  var lightLevel = 255;
   HTomb.FOV.pointLights = function() {
     for (var l in HTomb.World.lights) {
       var light = HTomb.World.lights[l];
@@ -95,10 +101,12 @@ HTomb = (function(HTomb) {
       var x = c[0];
       var y = c[1];
       var z = c[2];
-
+      lightLevel = 255;
+      illuminate(x,y,z,10); //all lights 10 for now
     }
   };
 
+  // we need some way for the light to fade over time...
   function illuminate(x,y,z,r) {
     x0 = x;
     y0 = y;
@@ -109,23 +117,52 @@ HTomb = (function(HTomb) {
   }
 
   function light(x,y,r,v) {
-    //light this space
-    if (grid[x][y].zview===+1) {
-      //light above space
-    } else if (grid[x][y].zview===-1) {
-      //light below space
+    var d = Math.sqrt((x-x0)*(x-x0)+(y-y0)*(y-y0));
+    var thisLevel = -(d/r)*lightLevel;
+    HTomb.World.lit[z0][x][y] = Math.min(HTomb.World.lit[z0][x][y],thisLevel);
+    if (HTomb.World.grid[z0+1][x][y].zview===-1) {
+      HTomb.World.lit[z0+1][x][y] = Math.min(HTomb.World.lit[z0+1][x][y],thisLevel);
     }
-  };
+    if (grid[x][y].zview===-1) {
+      HTomb.World.lit[z0-1][x][y] = Math.min(HTomb.World.lit[z0+1][x][y],thisLevel);
+    }
+  }
 
-  function resolveLights() {
-    for (x=1; x<LEVELW-1; x++) {
-      for (y=1; y<LEVELH-1; y++) {
-        for (z=1; z<NLEVELS-1; z++) {
+  HTomb.FOV.resolveLights = function() {
+    for (var x=1; x<LEVELW-1; x++) {
+      for (var y=1; y<LEVELH-1; y++) {
+        for (var z=1; z<NLEVELS-1; z++) {
           HTomb.World.lit[z][x][y] = -HTomb.World.lit[z][x][y];
         }
       }
     }
-  }
+  };
+
+  HTomb.World.validate.lighting = function() {
+    console.log("validating lighting on turn "+HTomb.World.dailyCycle.turn);
+    HTomb.FOV.ambientLight(HTomb.World.dailyCycle.lightLevel());
+    //HTomb.FOV.pointLights();
+    HTomb.FOV.resolveLights();
+  };
+
+  HTomb.FOV.shade = function(arr,x,y,z) {
+    var light = HTomb.World.lit[z][x][y];
+    var c = ROT.Color.fromString(arr[1]);
+    var bg = ROT.Color.fromString(arr[2]);
+    c = ROT.Color.multiply(c,[light,light,light]);
+    bg = ROT.Color.multiply(bg,[light,light,light]);
+    c[0] = (isNaN(c[0])) ? 0 : c[0];
+    c[1] = (isNaN(c[1])) ? 0 : c[1];
+    c[2] = (isNaN(c[2])) ? 0 : c[2];
+    c = ROT.Color.toHex(c);
+    bg[0] = (isNaN(bg[0])) ? 0 : bg[0];
+    bg[1] = (isNaN(bg[1])) ? 0 : bg[1];
+    bg[2] = (isNaN(bg[2])) ? 0 : bg[2];
+    bg = ROT.Color.toHex(bg);
+    arr[1] = c;
+    arr[2] = bg;
+    return arr;
+  };
 
 
   return HTomb;

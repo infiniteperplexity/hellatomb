@@ -42,16 +42,16 @@ HTomb = (function(HTomb) {
     template: "CheckForHostile",
     name: "check for hostile",
     act: function(ai) {
-      // for now this is way too slow
-      return false;
-      var x = ai.entity.x;
-      var y = ai.entity.y;
-      var z = ai.entity.z;
+      // this performance might be okay
       if (ai.target===null) {
-        // works well when there are few creatures
-        var hostiles = HTomb.World.creaturesWithin(x,y,z,10,function(cr) {
-          return ai.isHostile(cr);
-        });
+        var teams = HTomb.Types.templates.Team.types;
+        var hostiles = [];
+        for (var i=0; i<teams.length; i++) {
+          if (teams[i].isHostile(ai.team)) {
+            hostiles = hostiles.concat(teams[i].members);
+          }
+        }
+        hostiles = hostiles.filter(function(e,i,a){return (HTomb.Tiles.distance(ai.entity.x,ai.entity.y,e.x,e.y)<=10 && Math.abs(ai.entity.z-e.z)<-1);});
         if (hostiles.length>0) {
           HTomb.shuffle(hostiles);
           ai.target = hostiles[0];
@@ -88,20 +88,6 @@ HTomb = (function(HTomb) {
     }
   });
 
-  HTomb.Types.define({
-    template: "Team",
-    name: "team",
-    members: null,
-    enemies: null,
-    allies: null,
-    onDefine: function() {
-      this.members = this.members || [];
-      this.enemies = this.enemies || [];
-      this.allies = this.allies || [];
-    }
-  });
-
-
   HTomb.Things.defineBehavior({
     template: "AI",
     name: "ai",
@@ -116,7 +102,13 @@ HTomb = (function(HTomb) {
     alert: null,
     goals: null,
     fallback: null,
-
+    isHostile: function(thing) {
+      if (thing.ai===undefined || thing.ai.team===undefined || this.team===undefined) {
+        return false;
+      } else {
+        return this.team.isHostile(thing.ai.team);
+      }
+    },
     // We may want to save a path for the entity
     onAdd: function(){
       this.path = [];
@@ -124,13 +116,18 @@ HTomb = (function(HTomb) {
       this.goals = [];
       this.goals.push(HTomb.Routines.ServeMaster);
       this.fallback = HTomb.Routines.WanderAimlessly;
+      if (this.team===null) {
+        this.setTeam(HTomb.Teams.AnimalTeam);
+      } else {
+        // make sure this gets set properly
+        this.setTeam(this.team);
+      }
     },
     setTeam: function(team) {
       //feeling ambivalent about tracking teams...
       this.team = team;
+      HTomb.Types.templates[team.template].members.push(this.entity);
     },
-    isHostile: function() {return false;},
-    isFriendly: function() {return true;},
     act: function() {
       // If the entity is the player, don't choose for it...maybe this should be a Behavior?
       if (this.entity===HTomb.Player) {
@@ -250,6 +247,28 @@ HTomb = (function(HTomb) {
     },
   });
 
+
+  HTomb.Types.define({
+    template: "Team",
+    name: "team",
+    members: null,
+    enemies: null,
+    allies: null,
+    onDefine: function() {
+      this.members = this.members || [];
+      this.enemies = this.enemies || [];
+      this.allies = this.allies || [];
+    },
+    isHostile: function(team) {
+      if (team.enemies.indexOf(this.template)>=0 || this.enemies.indexOf(team.template)>=0) {
+        return true;
+      } else {
+        return false;
+      }
+    }
+  });
+
+
   // the player and affiliated minions
   HTomb.Types.defineTeam({
     template: "PlayerTeam",
@@ -270,7 +289,7 @@ HTomb = (function(HTomb) {
   HTomb.Types.defineTeam({
     template: "GhoulTeam",
     name: "ghouls",
-    hates: ["PlayerTeam"]
+    enemies: ["PlayerTeam"]
   });
 
 

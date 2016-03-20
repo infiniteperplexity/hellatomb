@@ -196,7 +196,8 @@ HTomb = (function(HTomb) {
     var g = HTomb.Tiles.getGlyph(x,y,z);
     var bg = HTomb.Tiles.getBackground(x,y,z);
     var sym = [g[0],g[1],bg];
-    sym = HTomb.World.dailyCycle.shade(sym);
+    //sym = HTomb.World.dailyCycle.shade(sym);
+    sym = HTomb.FOV.shade(sym,x,y,z);
     display.draw(
       x-xoffset,
       y-yoffset,
@@ -316,9 +317,11 @@ HTomb = (function(HTomb) {
         var p = HTomb.Player;
         if (x===p.x && y===p.y && z===p.z) {
           // don't dim the player's foreground at night
-          sym[2] = HTomb.World.dailyCycle.shade(sym)[2];
+          //sym[2] = HTomb.World.dailyCycle.shade(sym)[2];
+          sym[2] = HTomb.FOV.shade(sym,x,y,z)[2];
         } else {
-          sym = HTomb.World.dailyCycle.shade(sym);
+          //sym = HTomb.World.dailyCycle.shade(sym);
+          sym = HTomb.FOV.shade(sym,x,y,z);
         }
         display.draw(this.x0+x-xoffset,this.y0+y-yoffset, sym[0], sym[1], sym[2]);
       }
