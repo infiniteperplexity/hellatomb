@@ -614,7 +614,7 @@ timeIt("elevation", function() {
 
 
   HTomb.World.dailyCycle = {
-    hour: 8,
+    hour: 17,
     minute: 0,
     day: 0,
     turn: 0,
@@ -626,12 +626,20 @@ timeIt("elevation", function() {
         this.hour+=1;
         if (this.hour===this.times.dawn) {
           HTomb.GUI.pushMessage("The sun is coming up.");
+          HTomb.World.validate.lighting();
         } else if (this.hour===this.times.dusk) {
           HTomb.GUI.pushMessage("Night is falling.");
+          HTomb.World.validate.lighting();
         }
         if (this.hour>=24) {
           this.hour = 0;
           this.day+=1;
+        }
+      }
+      if ((this.hour>=this.times.dawn && this.hour<this.times.dawn+1)
+        || (this.hour>=this.times.dusk && this.hour<this.times.dusk+1)) {
+        if (this.turn%5===0) {
+          HTomb.World.validate.lighting();
         }
       }
     },

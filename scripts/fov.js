@@ -66,8 +66,7 @@ HTomb = (function(HTomb) {
         for (var z=NLEVELS-2; z>0; z--) {
           z0 = z;
           grid = HTomb.World.tiles[z];
-          // visit every square, illuminating it fully if unblocked
-          if (blocked===false && passlight(x,y)) {
+          if (blocked===false) {
             HTomb.World.lit[z][x][y] = -light;
             for (var i=0; i<4; i++) {
               // illuminate neighboring squares if unblocked
@@ -76,17 +75,22 @@ HTomb = (function(HTomb) {
               var dy = d[1];
               if (passlight(x+dx,y+dy)) {
                 // illuminate it halfway unless
-                HTomb.World.lit[z][x][y] = Math.min(HTomb.World.lit[z][x][y],-light/2);
+                if (HTomb.World.lit[z][x+dx][y+dy]===undefined) {
+                  HTomb.World.lit[z][x+dx][y+dy] = 0;
+                }
+                HTomb.World.lit[z][x+dx][y+dy] = Math.min(HTomb.World.lit[z][x+dx][y+dy],-0.75*light);
               }
             }
-            //
             if (HTomb.World.tiles[z][x][y].zview!==-1) {
               blocked = true;
             }
           } else {
             // maybe not have zero as the lowest light level?
-            var darkest = 96;
-            HTomb.World.lit[z][x][y] = (HTomb.World.lit[z][x][y]>=0) ? -darkest : HTomb.World.lit[z][x][y];
+            var darkest = 64;
+            if (HTomb.World.lit[z][x][y]===undefined) {
+              HTomb.World.lit[z][x][y] = 0;
+            }
+            HTomb.World.lit[z][x][y] = Math.min(HTomb.World.lit[z][x][y],-darkest);
           }
         }
       }
@@ -139,13 +143,13 @@ HTomb = (function(HTomb) {
   };
 
   HTomb.World.validate.lighting = function() {
-    console.log("validating lighting on turn "+HTomb.World.dailyCycle.turn);
     HTomb.FOV.ambientLight(HTomb.World.dailyCycle.lightLevel());
     //HTomb.FOV.pointLights();
     HTomb.FOV.resolveLights();
   };
 
   HTomb.FOV.shade = function(arr,x,y,z) {
+    var r = [arr[0],arr[1],arr[2]];
     var light = HTomb.World.lit[z][x][y];
     var c = ROT.Color.fromString(arr[1]);
     var bg = ROT.Color.fromString(arr[2]);
@@ -159,9 +163,9 @@ HTomb = (function(HTomb) {
     bg[1] = (isNaN(bg[1])) ? 0 : bg[1];
     bg[2] = (isNaN(bg[2])) ? 0 : bg[2];
     bg = ROT.Color.toHex(bg);
-    arr[1] = c;
-    arr[2] = bg;
-    return arr;
+    r[1] = c;
+    r[2] = bg;
+    return r;
   };
 
 

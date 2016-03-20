@@ -196,8 +196,7 @@ HTomb = (function(HTomb) {
     var g = HTomb.Tiles.getGlyph(x,y,z);
     var bg = HTomb.Tiles.getBackground(x,y,z);
     var sym = [g[0],g[1],bg];
-    //sym = HTomb.World.dailyCycle.shade(sym);
-    sym = HTomb.FOV.shade(sym,x,y,z);
+    sym[1] = HTomb.FOV.shade(sym,x,y,z)[1];
     display.draw(
       x-xoffset,
       y-yoffset,
@@ -300,10 +299,6 @@ HTomb = (function(HTomb) {
   // Keep track of which Z level it is on
   gameScreen.z = 1;
   gameScreen.render = function() {
-    // if (HTomb.Debug.renderTally===undefined) {
-    //   HTomb.Debug.renderTally = 0;
-    // }
-    // HTomb.Debug.renderTally+=1;
     var z = gameScreen.z;
     var xoffset = gameScreen.xoffset;
     var yoffset = gameScreen.yoffset;
@@ -314,15 +309,7 @@ HTomb = (function(HTomb) {
         }
         // Draw every symbol in the right place
         var sym = HTomb.Tiles.getSymbol(x,y,z);
-        var p = HTomb.Player;
-        if (x===p.x && y===p.y && z===p.z) {
-          // don't dim the player's foreground at night
-          //sym[2] = HTomb.World.dailyCycle.shade(sym)[2];
-          sym[2] = HTomb.FOV.shade(sym,x,y,z)[2];
-        } else {
-          //sym = HTomb.World.dailyCycle.shade(sym);
-          sym = HTomb.FOV.shade(sym,x,y,z);
-        }
+        sym[1] = HTomb.FOV.shade(sym,x,y,z)[1];
         display.draw(this.x0+x-xoffset,this.y0+y-yoffset, sym[0], sym[1], sym[2]);
       }
     }
@@ -470,11 +457,15 @@ HTomb = (function(HTomb) {
       if (square.zone) {
         next+=square.zone.describe();
       }
-      text.push(next);
+      text.
+      push(next);
       next = "Turf/Liquid: ";
       if (square.turf) {
         next+=square.turf.describe();
       }
+      text.push(next);
+      next = "Lighting: ";
+      next+=Math.round(HTomb.World.lit[z][x][y]);
       text.push(next);
       text.push(" ");
     }
@@ -509,6 +500,9 @@ HTomb = (function(HTomb) {
         next+=above.turf.describe();
       }
       text.push(next);
+      next = "Lighting: ";
+      next+=Math.round(HTomb.World.lit[z+1][x][y]);
+      text.push(next);
       text.push(" ");
     }
     if (square.exploredBelow) {
@@ -541,6 +535,9 @@ HTomb = (function(HTomb) {
       if (below.turf) {
         next+=below.turf.describe();
       }
+      text.push(next);
+      next = "Lighting: ";
+      next+=Math.round(HTomb.World.lit[z][x][y]);
       text.push(next);
     }
     return text;
