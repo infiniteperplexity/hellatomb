@@ -193,10 +193,7 @@ HTomb = (function(HTomb) {
     var xoffset = gameScreen.xoffset || 0;
     var yoffset = gameScreen.yoffset || 0;
     var z = gameScreen.z;
-    var g = HTomb.Tiles.getGlyph(x,y,z);
-    var bg = HTomb.Tiles.getBackground(x,y,z);
-    var sym = [g[0],g[1],bg];
-    sym[1] = HTomb.FOV.shade(sym,x,y,z)[1];
+    var sym = HTomb.Tiles.getSymbol(x,y,z);
     display.draw(
       x-xoffset,
       y-yoffset,
@@ -307,9 +304,8 @@ HTomb = (function(HTomb) {
         if (gameScreen.z===undefined) {
           alert("wtf!");
         }
-        // Draw every symbol in the right place
+        // Draw every symbol in the right
         var sym = HTomb.Tiles.getSymbol(x,y,z);
-        sym[1] = HTomb.FOV.shade(sym,x,y,z)[1];
         display.draw(this.x0+x-xoffset,this.y0+y-yoffset, sym[0], sym[1], sym[2]);
       }
     }

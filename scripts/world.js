@@ -614,7 +614,7 @@ timeIt("elevation", function() {
 
 
   HTomb.World.dailyCycle = {
-    hour: 17,
+    hour: 8,
     minute: 0,
     day: 0,
     turn: 0,
@@ -636,8 +636,8 @@ timeIt("elevation", function() {
           this.day+=1;
         }
       }
-      if ((this.hour>=this.times.dawn && this.hour<this.times.dawn+1)
-        || (this.hour>=this.times.dusk && this.hour<this.times.dusk+1)) {
+      if ((this.hour>=this.times.dawn && this.hour<this.times.dawn+2)
+        || (this.hour>=this.times.dusk && this.hour<this.times.dusk+2)) {
         if (this.turn%5===0) {
           HTomb.World.validate.lighting();
         }
@@ -684,7 +684,8 @@ timeIt("elevation", function() {
       var darkest = 64;
       var light, moonlight;
       if (this.hour < dawn || this.hour >= dusk+1) {
-        return darkest;
+        moonlight = this.getMoon().light;
+        return darkest+moonlight;
       } else if (this.hour < dawn+1) {
         moonlight = this.getMoon().light;
         light = Math.min(255,(this.minute/60)*(255-darkest)+darkest+moonlight);
@@ -701,6 +702,7 @@ timeIt("elevation", function() {
       var c = ROT.Color.fromString(arr[1]);
       var bg = ROT.Color.fromString(arr[2]);
       c = ROT.Color.multiply(c,[this.lightLevel(),this.lightLevel(),this.lightLevel()]);
+      //c = ROT.Color.multiply(c,[this.lightLevel(),this.lightLevel(),this.lightLevel()]);
       bg = ROT.Color.multiply(bg,[this.lightLevel(),this.lightLevel(),this.lightLevel()]);
       c[0] = (isNaN(c[0])) ? 0 : c[0];
       c[1] = (isNaN(c[1])) ? 0 : c[1];

@@ -127,7 +127,7 @@ HTomb = (function(HTomb) {
   Tiles.getSymbol = function(x,y,z) {
     var glyph = Tiles.getGlyph(x,y,z);
     var bg = Tiles.getBackground(x,y,z);
-    return [glyph[0],glyph[1],bg];
+    return [glyph[0],glyph[2],bg];
   }
   Tiles.getBackground = function(x,y,z) {
     var crd = HTomb.coord(x,y,z);
@@ -199,18 +199,19 @@ HTomb = (function(HTomb) {
     var vis = (visible[crd]===true || HTomb.Debug.visible===true);
     var visa = (visible[cabove]===true);
     var visb = (visible[cbelow]===true);
-    var sym, fg;
+    var sym, fg, shade;
     if (!explored[z][x][y] && HTomb.Debug.explored!==true) {
       // unexplored tiles with an explored floor tile above are rendered as non-visible wall tiles
       if (tiles[z+1][x][y]===Tiles.FloorTile && explored[z+1][x][y]) {
-        return [Tiles.WallTile.symbol,SHADOWFG];
+        return [Tiles.WallTile.symbol,SHADOWFG,SHADOWFG];
       } else {
         // otherwise paint the tile black
-        return [" ","black"];
+        return [" ","black","black"];
       }
     }
     if (vis===false) {
       fg = SHADOWFG;
+      shade = SHADOWFG;
     }
     //*** Symbol and foreground color
     if (creatures[crd] && vis) {
@@ -293,7 +294,8 @@ HTomb = (function(HTomb) {
     }
     sym = sym || "X";
     fg = fg || "white";
-    return [sym,fg];
+    shade = shade || HTomb.FOV.shade(fg,x,y,z);
+    return [sym,fg,shade];
   };
 
   HTomb.Tiles.getSquare = function(x,y,z) {

@@ -148,26 +148,27 @@ HTomb = (function(HTomb) {
     HTomb.FOV.resolveLights();
   };
 
-  HTomb.FOV.shade = function(arr,x,y,z) {
-    var r = [arr[0],arr[1],arr[2]];
+  // HTomb.FOV.shade = function(color,x,y,z) {
+  //   var light = HTomb.World.lit[z][x][y];
+  //   var c = ROT.Color.fromString(color);
+  //   c = ROT.Color.multiply(c,[light,light,light]);
+  //   c[0] = (isNaN(c[0])) ? 0 : c[0];
+  //   c[1] = (isNaN(c[1])) ? 0 : c[1];
+  //   c[2] = (isNaN(c[2])) ? 0 : c[2];
+  //   c = ROT.Color.toHex(c);
+  //   return c;
+  // };
+
+  HTomb.FOV.shade = function(color,x,y,z) {
     var light = HTomb.World.lit[z][x][y];
-    var c = ROT.Color.fromString(arr[1]);
-    var bg = ROT.Color.fromString(arr[2]);
-    c = ROT.Color.multiply(c,[light,light,light]);
-    bg = ROT.Color.multiply(bg,[light,light,light]);
-    c[0] = (isNaN(c[0])) ? 0 : c[0];
-    c[1] = (isNaN(c[1])) ? 0 : c[1];
-    c[2] = (isNaN(c[2])) ? 0 : c[2];
+    var c = ROT.Color.fromString(color);
+    c[0] = Math.max(0,Math.round(c[0]-255+light));
+    c[1] = Math.max(0,Math.round(c[1]-255+light));
+    c[2] = Math.max(0,Math.round(c[2]-255+light));
     c = ROT.Color.toHex(c);
-    bg[0] = (isNaN(bg[0])) ? 0 : bg[0];
-    bg[1] = (isNaN(bg[1])) ? 0 : bg[1];
-    bg[2] = (isNaN(bg[2])) ? 0 : bg[2];
-    bg = ROT.Color.toHex(bg);
-    r[1] = c;
-    r[2] = bg;
-    return r;
+    return c;
   };
 
-
   return HTomb;
-})(HTomb);
+})(HTomb
+);
