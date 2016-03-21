@@ -1,6 +1,6 @@
 HTomb = (function(HTomb) {
   "use strict";
-  var coord = HTomb.coord;
+  var coord = HTomb.Utils.coord;
   // Define a generic entity that occupies a tile space
   HTomb.Things.define({
     template: "Entity",
@@ -10,6 +10,7 @@ HTomb = (function(HTomb) {
     y: null,
     z: null,
     behaviors: {},
+    myBehaviors: [],
     each: ["x","y","z"],
     place: function(x,y,z) {
       this.remove();
@@ -34,6 +35,11 @@ HTomb = (function(HTomb) {
       if (this.onPlace) {
         this.onPlace(x,y,z);
       }
+      for (var b in this.myBehaviors) {
+        if (this.myBehaviors[b].onPlace) {
+          this.myBehaviors[b].onPlace();
+        }
+      }
       return this;
     },
     remove: function() {
@@ -51,6 +57,11 @@ HTomb = (function(HTomb) {
       }
       if (this.turf) {
         this.turf.remove();
+      }
+      for (var b in this.myBehaviors) {
+        if (this.myBehaviors[b].onRemove) {
+          this.myBehaviors[b].onRemove();
+        }
       }
       this.x = null;
       this.y = null;
@@ -119,6 +130,7 @@ HTomb = (function(HTomb) {
       HTomb.GUI.render();
     },
     onCreate: function() {
+      this.myBehaviors = [];
       // Add behaviors to entity
       for (var b in this.behaviors) {
         var beh = HTomb.Things[b](this.behaviors[b] || {});
@@ -164,6 +176,7 @@ HTomb = (function(HTomb) {
       if (this.onAdd) {
         this.onAdd(this.options);
       }
+      ent.myBehaviors.push(this);
     },
     each: ["entity"]
   });
@@ -230,7 +243,7 @@ HTomb = (function(HTomb) {
     },
     makeStack: function() {
       if (this.entity.stackSize && this.stackable && this.n===null) {
-        this.n = Math.max(1,HTomb.poisson(this.entity.stackSize));
+        this.n = 1+HTomb.Utils.diceUntil(3,3);
       }
     }
   });
@@ -261,7 +274,7 @@ HTomb = (function(HTomb) {
         var y = this.entity.y;
         var z = this.entity.z;
         for (var template in this.yields) {
-          var n = HTomb.poisson(this.yields[template].n);
+          var n = HTomb.Utils.diceUntil(2,2);
           if (this.yields[template].nozero) {
             n = Math.max(n,1);
           }
@@ -431,7 +444,7 @@ HTomb = (function(HTomb) {
       if (parent===HTomb.World.items) {
         for (key in HTomb.World.items) {
           if (HTomb.World.items[key]===this) {
-            return c = HTomb.decoord(key);
+            return c = HTomb.Utils.decoord(key);
           }
         }
       } else {

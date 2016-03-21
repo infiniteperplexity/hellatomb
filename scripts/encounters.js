@@ -3,7 +3,7 @@ HTomb = (function(HTomb) {
   var LEVELW = HTomb.Constants.LEVELW;
   var LEVELH = HTomb.Constants.LEVELH;
   var NLEVELS = HTomb.Constants.NLEVELS;
-  var coord = HTomb.coord;
+  var coord = HTomb.Utils.coord;
 
   HTomb.Types.define({
   	template: "Encounter",

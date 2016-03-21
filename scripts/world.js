@@ -3,7 +3,7 @@ HTomb = (function(HTomb) {
   var LEVELW = HTomb.Constants.LEVELW;
   var LEVELH = HTomb.Constants.LEVELH;
   var NLEVELS = HTomb.Constants.NLEVELS;
-  var coord = HTomb.coord;
+  var coord = HTomb.Utils.coord;
 
   function grid3d() {
     var grid = [];
@@ -20,7 +20,7 @@ HTomb = (function(HTomb) {
   HTomb.World.tiles = grid3d();
   HTomb.World.explored = grid3d();
   HTomb.World.lit = grid3d();
-  HTomb.World.lights = {};
+  HTomb.World.lights = [];
   HTomb.World.visible = {};
   HTomb.World.creatures = {};
   HTomb.World.items = {};
@@ -62,7 +62,7 @@ HTomb = (function(HTomb) {
       if (this.cleaned[crd]) {
         continue;
       }
-      var d = HTomb.decoord(crd);
+      var d = HTomb.Utils.decoord(crd);
       var x = d[0];
       var y = d[1];
       var z = d[2];
@@ -183,9 +183,9 @@ HTomb = (function(HTomb) {
       }
       stack = this.creatures[crd];
       if (stack.length>1) {
-        HTomb.shuffle(stack);
+        HTomb.Utils.shuffle(stack);
       }
-      d = HTomb.decoord(crd);
+      d = HTomb.Utils.decoord(crd);
       stack[0].place(d[0],d[1],d[2]);
     }
     for (crd in this.features) {
@@ -194,9 +194,9 @@ HTomb = (function(HTomb) {
       }
       stack = this.features[crd];
       if (stack.length>1) {
-        HTomb.shuffle(stack);
+        HTomb.Utils.shuffle(stack);
       }
-      d = HTomb.decoord(crd);
+      d = HTomb.Utils.decoord(crd);
       stack[0].place(d[0],d[1],d[2]);
     }
     for (crd in this.items) {
@@ -205,9 +205,9 @@ HTomb = (function(HTomb) {
       }
       stack = this.items[crd];
       if (stack.length>1) {
-        HTomb.shuffle(stack);
+        HTomb.Utils.shuffle(stack);
       }
-      d = HTomb.decoord(crd);
+      d = HTomb.Utils.decoord(crd);
       stack[0].place(d[0],d[1],d[2]);
     }
   };
@@ -600,9 +600,9 @@ timeIt("elevation", function() {
           var z = HTomb.Tiles.groundLevel(x,y);
           var t = HTomb.World.turfs[coord(x,y,z)]
           if (t && t.liquid) {
-            template = HTomb.shuffle(waterCritters)[0];
+            template = HTomb.Utils.shuffle(waterCritters)[0];
           } else {
-            template = HTomb.shuffle(landCritters)[0];
+            template = HTomb.Utils.shuffle(landCritters)[0];
           }
           var critter = HTomb.Things[template]();
           placement.stack(critter,x,y,z);
@@ -614,7 +614,8 @@ timeIt("elevation", function() {
 
 
   HTomb.World.dailyCycle = {
-    hour: 8,
+    //hour: 8,
+    hour: 16,
     minute: 0,
     day: 0,
     turn: 0,
@@ -685,36 +686,18 @@ timeIt("elevation", function() {
       var light, moonlight;
       if (this.hour < dawn || this.hour >= dusk+1) {
         moonlight = this.getMoon().light;
-        return darkest+moonlight;
+        return Math.round(darkest+moonlight);
       } else if (this.hour < dawn+1) {
         moonlight = this.getMoon().light;
         light = Math.min(255,(this.minute/60)*(255-darkest)+darkest+moonlight);
-        return light;
+        return Math.round(light);
       } else if (this.hour >= dusk) {
         moonlight = this.getMoon().light;
         light = Math.min(255,((60-this.minute)/60)*(255-darkest)+darkest+moonlight);
-        return light;
+        return Math.round(light);
       } else {
         return 255;
       }
-    },
-    shade: function(arr) {
-      var c = ROT.Color.fromString(arr[1]);
-      var bg = ROT.Color.fromString(arr[2]);
-      c = ROT.Color.multiply(c,[this.lightLevel(),this.lightLevel(),this.lightLevel()]);
-      //c = ROT.Color.multiply(c,[this.lightLevel(),this.lightLevel(),this.lightLevel()]);
-      bg = ROT.Color.multiply(bg,[this.lightLevel(),this.lightLevel(),this.lightLevel()]);
-      c[0] = (isNaN(c[0])) ? 0 : c[0];
-      c[1] = (isNaN(c[1])) ? 0 : c[1];
-      c[2] = (isNaN(c[2])) ? 0 : c[2];
-      c = ROT.Color.toHex(c);
-      bg[0] = (isNaN(bg[0])) ? 0 : bg[0];
-      bg[1] = (isNaN(bg[1])) ? 0 : bg[1];
-      bg[2] = (isNaN(bg[2])) ? 0 : bg[2];
-      bg = ROT.Color.toHex(bg);
-      arr[1] = c;
-      arr[2] = bg;
-      return arr;
     }
   };
 

@@ -5,7 +5,7 @@ Tomb = (function(HTomb) {
   var NLEVELS = HTomb.Constants.NLEVELS;
   var World = HTomb.World;
   var features = World.features;
-  var coord = HTomb.coord;
+  var coord = HTomb.Utils.coord;
   var tiles = World.tiles;
   var levels = World.levels;
   var portals = World.portals;
@@ -72,7 +72,7 @@ Tomb = (function(HTomb) {
       crd = coord(current[0],current[1],current[2]);
       // check if we have found the target square (or maybe distance==1?)
       if ((current[0]===x1 && current[1]===y1 && current[2]===z1) || (useLast===false &&
-          HTomb.coordInArray([x1,y1,z1],HTomb.Tiles.touchableFrom(current[0],current[1],current[2]))>-1)) {
+          HTomb.Utils.arrayInArray([x1,y1,z1],HTomb.Tiles.touchableFrom(current[0],current[1],current[2]))>-1)) {
       // if (current[6]===1) {
         // start with the goal square
         path = [[current[0],current[1],current[2]]];

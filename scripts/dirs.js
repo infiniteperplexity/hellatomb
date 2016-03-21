@@ -102,7 +102,7 @@ HTomb = (function(HTomb) {
       var b = this.backoffs[dz+1][dx+1][dy+1];
       var order = [];
       for (var i=0; i<b.length; i++) {
-        HTomb.shuffle(b[i]);
+        HTomb.Utils.shuffle(b[i]);
         for (var j=0; j<b[i].length; j++) {
           order.push(b[i][j]);
         }

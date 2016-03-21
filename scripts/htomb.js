@@ -9,84 +9,6 @@ var HTomb = (function() {
   // Frequently-used colors and characters...not sure this should be here
   var UNIBLOCK = Constants.UNIBLOCK = '\u2588';
 
-  // Used throughout the project
-  function coord(x,y,z) {
-    return z*LEVELH*LEVELW + x*LEVELH + y;
-  }
-  //useful for parsing
-  function decoord(c) {
-    var x=0, y=0, z=0;
-    while(c-LEVELH*LEVELW>=0) {
-      c-=LEVELH*LEVELW;
-      z+=1;
-    }
-    while(c-LEVELH>=0) {
-      c-=LEVELH;
-      x+=1;
-    }
-    y = c;
-    return [x,y,z];
-  }
-  function shuffle(arr) {
-    //Fisher-Yates
-    var i = arr.length;
-    if ( i == 0 ) return false;
-    while ( --i ) {
-       var j = Math.floor( Math.random() * ( i + 1 ) );
-       var tempi = arr[i];
-       var tempj = arr[j];
-       arr[i] = tempj;
-       arr[j] = tempi;
-     }
-     return arr;
-  }
-
-  function coordInArray(c, a) {
-    var match;
-    var mis;
-    for (var i=0; i<a.length; i++) {
-      match = true;
-      for (var j=0; j<c.length; j++) {
-        if (c[j]!==a[i][j]) {
-          match = false;
-        }
-      }
-      if (match===true) {
-        return i;
-      }
-    }
-    return -1;
-  }
-  function poisson(mean) {
-    var L = Math.exp(-mean);
-    var p = 1.0;
-    var k = 0;
-    do {
-        k++;
-        p *= Math.random();
-    } while (p > L);
-    return k-1;
-  }
-
-  function alphaHex(newc,oldc,alpha) {
-    var combined = [];
-    for (var i=0; i<3; i++) {
-      combined[i] = alpha*newc[i]+(1-alpha)*oldc[i];
-    }
-    return combined;
-  }
-
-  function alphatize(newc,oldc,alpha) {
-    var oldc = ROT.Color.fromString(oldc);
-    var newc = ROT.Color.fromString(newc);
-    var combined = [];
-    for (var i=0; i<3; i++) {
-      combined[i] = alpha*newc[i]+(1-alpha)*oldc[i];
-    }
-    combined = ROT.Color.toHex(combined);
-    return combined;
-  }
-
   // Begin the game
   var init = function() {
     // Initialize the world...could be generate()?
@@ -142,7 +64,7 @@ var HTomb = (function() {
     var Player = HTomb.Player;
     // Assign tasks to minions
     if (Player.master) {
-      HTomb.shuffle(Player.master.taskList);
+      HTomb.Utils.shuffle(Player.master.taskList);
       Player.master.assignTasks();
     }
     // Run the AI for each creature...should I deal with action points here?
@@ -150,7 +72,7 @@ var HTomb = (function() {
     for (var creature in World.creatures) {
       creatureDeck.push(World.creatures[creature]);
     }
-    HTomb.shuffle(creatureDeck);
+    HTomb.Utils.shuffle(creatureDeck);
     for (var c=0; c<creatureDeck.length; c++) {
       if (creatureDeck[c].ai) {
         creatureDeck[c].ai.act();
@@ -206,17 +128,11 @@ var HTomb = (function() {
   var Things = {};
   var Types = {};
   var Particles = {};
+  var Utils = {};
   // Allow public access to the submodules
   return {
     Constants: Constants,
     init: init,
-    coord: coord,
-    decoord: decoord,
-    shuffle: shuffle,
-    coordInArray: coordInArray,
-    poisson: poisson,
-    alphatize: alphatize,
-    alphaHex: alphaHex,
     Controls: Controls,
     Commands: Commands,
     turn: turn,
@@ -238,7 +154,8 @@ var HTomb = (function() {
     stopParticles: stopParticles,
     getSpeed: getSpeed,
     setSpeed: setSpeed,
-    Particles: Particles
+    Particles: Particles,
+    Utils: Utils
   };
 })();
 // Start the game when the window loads

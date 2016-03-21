@@ -11,6 +11,9 @@ HTomb = (function(HTomb) {
     Events[etype].push(listener);
   };
   Events.publish = function(event) {
+    if (typeof(event)==="string") {
+      event = {type: event};
+    }
     if (Events[event.type] === undefined) {
       Events[event.type] = [];
     }

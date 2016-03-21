@@ -1,6 +1,6 @@
 HTomb = (function(HTomb) {
   "use strict";
-  var coord = HTomb.coord;
+  var coord = HTomb.Utils.coord;
 
   HTomb.Particles.emitters = [];
   var emitter = {

@@ -11,7 +11,7 @@ HTomb = (function(HTomb) {
   var FLOORBG = HTomb.Constants.FLOORBG;
   var BELOWBG = HTomb.Constants.BELOWBG;
   var TWOBELOWFG = HTomb.Constants.TWOBELOWFG;
-  var coord = HTomb.coord;
+  var coord = HTomb.Utils.coord;
 
   var Tiles = HTomb.Tiles;
   // Define a generic tile
@@ -130,8 +130,8 @@ HTomb = (function(HTomb) {
     return [glyph[0],glyph[2],bg];
   }
   Tiles.getBackground = function(x,y,z) {
-    var crd = HTomb.coord(x,y,z);
-    var cbelow = HTomb.coord(x,y,z-1);
+    var crd = HTomb.Utils.coord(x,y,z);
+    var cbelow = HTomb.Utils.coord(x,y,z-1);
     var turfs = HTomb.World.turfs;
     var zones = HTomb.World.zones;
     var visible = HTomb.World.visible;
@@ -183,9 +183,9 @@ HTomb = (function(HTomb) {
   };
 
   Tiles.getGlyph = function(x,y,z) {
-    var crd = HTomb.coord(x,y,z);
-    var cabove = HTomb.coord(x,y,z+1);
-    var cbelow = HTomb.coord(x,y,z-1);
+    var crd = HTomb.Utils.coord(x,y,z);
+    var cabove = HTomb.Utils.coord(x,y,z+1);
+    var cbelow = HTomb.Utils.coord(x,y,z-1);
     var tiles = HTomb.World.tiles;
     var creatures = HTomb.World.creatures;
     var items = HTomb.World.items;
@@ -300,7 +300,7 @@ HTomb = (function(HTomb) {
 
   HTomb.Tiles.getSquare = function(x,y,z) {
     var square = {};
-    var crd = HTomb.coord(x,y,z);
+    var crd = HTomb.Utils.coord(x,y,z);
     square.terrain = HTomb.World.tiles[z][x][y];
     square.creature = HTomb.World.creatures[crd];
     square.items = HTomb.World.items[crd];
@@ -468,7 +468,7 @@ HTomb = (function(HTomb) {
     if(x1===x0 && y1===y0 && z1===z0) {
       return true;
     }
-    if (HTomb.coordInArray([x1,y1,z1],HTomb.Tiles.touchableFrom(x0,y0,z0))>-1) {
+    if (HTomb.Utils.arrayInArray([x1,y1,z1],HTomb.Tiles.touchableFrom(x0,y0,z0))>-1) {
       return true;
     } else {
       return false;

@@ -3,7 +3,7 @@ HTomb = (function(HTomb) {
   "use strict";
   var LEVELW = HTomb.Constants.LEVELW;
   var LEVELH = HTomb.Constants.LEVELH;
-  var coord = HTomb.coord;
+  var coord = HTomb.Utils.coord;
 
   HTomb.Types.define({
     template: "Routine",
@@ -53,7 +53,7 @@ HTomb = (function(HTomb) {
         }
         hostiles = hostiles.filter(function(e,i,a){return (HTomb.Tiles.distance(ai.entity.x,ai.entity.y,e.x,e.y)<=10 && Math.abs(ai.entity.z-e.z)<-1);});
         if (hostiles.length>0) {
-          HTomb.shuffle(hostiles);
+          HTomb.Utils.shuffle(hostiles);
           ai.target = hostiles[0];
         }
       }
@@ -77,12 +77,10 @@ HTomb = (function(HTomb) {
     act: function(ai) {
       // should this hunt in sight range first?
       if (ai.target===null) {
-        var zombies = [];
-        for (var c in HTomb.World.creatures) {
-          var cr = HTomb.World.creatures[c];
-          if (c.template==="Zombie") {
-
-          }
+        var zombies = HTomb.Utils.where(HTomb.World.creatures,function(v,k,o) {return (v.template==="Zombie");});
+        if (zombies.length>0) {
+          HTomb.Utils.shuffle(zombies);
+          ai.target = zombies[0];
         }
       }
     }

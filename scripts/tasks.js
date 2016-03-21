@@ -2,7 +2,7 @@ HTomb = (function(HTomb) {
   "use strict";
   var LEVELW = HTomb.Constants.LEVELW;
   var LEVELH = HTomb.Constants.LEVELH;
-  var coord = HTomb.coord;
+  var coord = HTomb.Utils.coord;
   // should we maybe allow a queue of zones???  probably not
 
   // Define a generic task that gets workers assigned
@@ -811,7 +811,7 @@ HTomb = (function(HTomb) {
       steps: 10,
       fg: "#BB9922"
     },
-    features: ["Door","Throne","ScryingGlass"],
+    features: ["Door","Throne","ScryingGlass","Torch"],
     clearsFeature: true,
     finish: function() {
       var c = this.incompleteFeature;

@@ -3,7 +3,7 @@ HTomb = (function(HTomb) {
   "use strict";
   var LEVELW = HTomb.Constants.LEVELW;
   var LEVELH = HTomb.Constants.LEVELH;
-  var coord = HTomb.coord;
+  var coord = HTomb.Utils.coord;
 
   HTomb.Things.defineFeature({
     template: "Tombstone",
@@ -99,6 +99,14 @@ HTomb = (function(HTomb) {
     name: "scrying glass",
     symbol: "\u25CB",
     fg: "cyan"
+  });
+
+  HTomb.Things.defineFeature({
+    template: "Torch",
+    name: "torch",
+    symbol: "\u2AEF",
+    fg: "yellow",
+    behaviors: {PointLight: {}}
   });
 
   HTomb.Things.defineFeature({

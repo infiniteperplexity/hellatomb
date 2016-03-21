@@ -3,7 +3,7 @@ HTomb = (function(HTomb) {
   "use strict";
   var LEVELW = HTomb.Constants.LEVELW;
   var LEVELH = HTomb.Constants.LEVELH;
-  var coord = HTomb.coord;
+  var coord = HTomb.Utils.coord;
 
   HTomb.Things.defineBehavior({
     template: "Player",
@@ -12,6 +12,30 @@ HTomb = (function(HTomb) {
       HTomb.Player = this.entity;
     }
   });
+
+  HTomb.Things.defineBehavior({
+    template: "PointLight",
+    name: "pointlight",
+    point: null,
+    level: 255,
+    range: 8,
+    each: ["point","level","range"],
+    onAdd: function() {
+      this.point = this.entity;
+    },
+    onPlace: function() {
+      if (HTomb.World.lights.indexOf(this)===-1) {
+        HTomb.World.lights.push(this);
+      }
+      HTomb.World.validate.lighting();
+    },
+    onRemove: function() {
+      if (HTomb.World.lights.indexOf(this)!==-1) {
+        HTomb.World.lights.splice(HTomb.World.lights.indexOf(this),1);
+        HTomb.World.validate.lighting();
+      }
+    }
+  })
 
   HTomb.Things.defineBehavior({
     template: "Senses",

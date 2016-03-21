@@ -26,7 +26,7 @@ HTomb = (function(HTomb) {
   var YSKEW = HTomb.Constants.YSKEW;
   var TEXTSPACING = HTomb.Constants.TEXTSPACING;
   var TEXTWIDTH = HTomb.Constants.TEXTWIDTH;
-  var coord = HTomb.coord;
+  var coord = HTomb.Utils.coord;
   // set up GUI and display
   var GUI = HTomb.GUI;
   GUI.panels = {};
@@ -166,7 +166,7 @@ HTomb = (function(HTomb) {
 
   // set up message buffer
   GUI.sensoryEvent = function(strng,x,y,z) {
-    if (HTomb.World.visible[HTomb.coord(x,y,z)]) {
+    if (HTomb.World.visible[HTomb.Utils.coord(x,y,z)]) {
       GUI.pushMessage(strng);
     }
   };
@@ -954,12 +954,12 @@ HTomb = (function(HTomb) {
       if (oldSquares[s]) {
         delete oldSquares[s];
       }
-      c = HTomb.decoord(s);
+      c = HTomb.Utils.decoord(s);
       x = c[0];
       y = c[1];
       z = c[2];
       var particles = squares[s];
-      HTomb.shuffle(particles);
+      HTomb.Utils.shuffle(particles);
       var ch, fg;
       // if there are ever invisible particles we may need to handle this differently
       fg = HTomb.Tiles.getGlyph(x,y,z)[1];
@@ -969,8 +969,8 @@ HTomb = (function(HTomb) {
         pfg[0] = Math.min(255,Math.max(pfg[0],0));
         pfg[1] = Math.min(255,Math.max(pfg[1],0));
         pfg[2] = Math.min(255,Math.max(pfg[2],0));
-        //fg = HTomb.alphaHex(pfg, fg, particles[k].alpha);
-        fg = HTomb.alphaHex(pfg, fg, particles[k].alpha);
+        //fg = HTomb.Utils.alphaHex(pfg, fg, particles[k].alpha);
+        fg = HTomb.Utils.alphaHex(pfg, fg, particles[k].alpha);
       }
       fg[0] = Math.round(fg[0]);
       fg[1] = Math.round(fg[1]);
@@ -981,7 +981,7 @@ HTomb = (function(HTomb) {
     }
     // clean up expired particles
     for (var o in oldSquares) {
-      c = HTomb.decoord(o);
+      c = HTomb.Utils.decoord(o);
       x = c[0];
       y = c[1];
       HTomb.GUI.refreshTile(x,y);

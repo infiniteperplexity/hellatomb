@@ -3,7 +3,7 @@ HTomb = (function(HTomb) {
   "use strict";
   var LEVELW = HTomb.Constants.LEVELW;
   var LEVELH = HTomb.Constants.LEVELH;
-  var coord = HTomb.coord;
+  var coord = HTomb.Utils.coord;
 
   // The Movement behavior allows the creature to move
   HTomb.Things.defineBehavior({

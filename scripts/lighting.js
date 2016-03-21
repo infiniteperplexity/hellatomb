@@ -1,6 +1,6 @@
 HTomb = (function(HTomb) {
   "use strict";
-  var coord = HTomb.coord;
+  var coord = HTomb.Utils.coord;
   //validate for lighting?
   //okay...lights and lighting...
   //if we really wanted to we could use their inverse shadowcasting thing
