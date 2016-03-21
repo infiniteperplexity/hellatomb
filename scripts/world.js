@@ -614,8 +614,8 @@ timeIt("elevation", function() {
 
 
   HTomb.World.dailyCycle = {
-    //hour: 8,
-    hour: 16,
+    hour: 8,
+    //hour: 16,
     minute: 0,
     day: 0,
     turn: 0,
