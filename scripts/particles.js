@@ -154,7 +154,7 @@ HTomb = (function(HTomb) {
     e.particles = [];
     e.emit();
     HTomb.Particles.emitters.push(e);
-    HTomb.startParticles();
+    HTomb.Time.startParticles();
   }
 
 

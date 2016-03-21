@@ -32,7 +32,7 @@ HTomb = (function(HTomb) {
                 caster.entity.master.addMinion(zombie);
                 zombie.ai.acted = true;
                 HTomb.GUI.sensoryEvent("The corpse stirs and rises...",x,y,z);
-                HTomb.turn();
+                HTomb.Time.turn();
                 return;
               }
             }
@@ -58,7 +58,7 @@ HTomb = (function(HTomb) {
               zone.task = task;
               zone.assigner = caster.entity;
               task.zone = zone;
-              HTomb.turn();
+              HTomb.Time.turn();
               return;
             }
           }

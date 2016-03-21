@@ -86,7 +86,7 @@ HTomb = (function(HTomb) {
   var shiftArrow = null;
   var keydown = function(key) {
     key.preventDefault();
-    HTomb.stopTime();
+    HTomb.Time.stopTime();
     // Pass the keystroke to the current control context
     var diagonal = null;
     if (key.shiftKey && [ROT.VK_UP,ROT.VK_DOWN,ROT.VK_LEFT,ROT.VK_RIGHT].indexOf(key.keyCode)>-1) {
@@ -249,8 +249,8 @@ HTomb = (function(HTomb) {
 
   var splashActive = false;
   GUI.splash = function(arr) {
-    HTomb.stopTime();
-    HTomb.stopParticles();
+    HTomb.Time.stopTime();
+    HTomb.Time.stopParticles();
     // we may not want to force the player to reset the GUI...but let's try it out
     for (var i=0; i<SCREENH+SCROLLH; i++) {
       splashDisplay.drawText(1,1+i,"%c{black}"+(UNIBLOCK.repeat(SCREENW*(CHARWIDTH/TEXTWIDTH)+MENUW-2)));
@@ -600,15 +600,15 @@ HTomb = (function(HTomb) {
     VK_TAB: GUI.surveyMode,
 //    VK_SHIFT: //this now handles diagonal movement
     VK_SPACE: Commands.wait,
-    VK_ESCAPE: HTomb.stopTime,
+    VK_ESCAPE: HTomb.Time.stopTime,
     VK_PAGE_UP: function() {
-      HTomb.setSpeed(HTomb.getSpeed()/1.25);
-      HTomb.GUI.pushMessage("Speed set to " + parseInt(HTomb.getSpeed()) + ".");
-      HTomb.startTime();
+      HTomb.Time.setSpeed(HTomb.Time.getSpeed()/1.25);
+      HTomb.GUI.pushMessage("Speed set to " + parseInt(HTomb.Time.getSpeed()) + ".");
+      HTomb.Time.startTime();
     },
     VK_PAGE_DOWN: function() {
-      HTomb.setSpeed(HTomb.getSpeed()*1.25);
-      HTomb.GUI.pushMessage("Speed set to " + parseInt(HTomb.getSpeed()) + ".");
+      HTomb.Time.setSpeed(HTomb.Time.getSpeed()*1.25);
+      HTomb.GUI.pushMessage("Speed set to " + parseInt(HTomb.Time.getSpeed()) + ".");
     }
   });
 

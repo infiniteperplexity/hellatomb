@@ -1,3 +1,4 @@
+// This is the object whose scope will enclose all the tools used by the game
 var HTomb = (function() {
 "use strict";
   // Set a number of useful constants
@@ -11,107 +12,18 @@ var HTomb = (function() {
 
   // Begin the game
   var init = function() {
-    // Initialize the world...could be generate()?
+    // Initialize the DOM
     GUI.domInit();
     console.time("worldInit");
+    // Initialize the world
     World.init();
     console.timeEnd("worldInit");
+    // Prepare the GUI and throw up an intro screen
     GUI.reset();
     GUI.splash(["Welcome to HellaTomb!"]);
     HTomb.GUI.render();
     HTomb.GUI.recenter();
-    //Events.subscribe(World.dailyCycle,"TurnBegin");
   };
-
-  var timePassing;
-  var speed = 1000;
-  function setSpeed(spd) {
-    speed = Math.min(Math.max(100,spd),5000);
-  }
-  function getSpeed() {
-    return speed;
-  }
-  function startTime() {
-    timePassing = setInterval(passTime,speed);
-  }
-  function stopTime() {
-    clearInterval(timePassing);
-  }
-  function passTime() {
-    HTomb.turn();
-  }
-  var particleTime = undefined;
-  var particleSpeed = 50;
-  function startParticles() {
-    if (particleTime===undefined) {
-      particleTime = setInterval(function() {
-        //console.log("updating particles");
-        Particles.update(particleSpeed);
-        GUI.renderParticles();
-      },particleSpeed);
-    }
-  }
-  function stopParticles() {
-    clearInterval(particleTime);
-    particleTime = undefined;
-  }
-
-  // Process a turn of play
-  var turn = function() {
-    startParticles();
-    Events.publish({type: "TurnBegin"});
-    stopTime();
-    var Player = HTomb.Player;
-    // Assign tasks to minions
-    if (Player.master) {
-      HTomb.Utils.shuffle(Player.master.taskList);
-      Player.master.assignTasks();
-    }
-    // Run the AI for each creature...should I deal with action points here?
-    var creatureDeck = [];
-    for (var creature in World.creatures) {
-      creatureDeck.push(World.creatures[creature]);
-    }
-    HTomb.Utils.shuffle(creatureDeck);
-    for (var c=0; c<creatureDeck.length; c++) {
-      if (creatureDeck[c].ai) {
-        creatureDeck[c].ai.act();
-      }
-    }
-    // Calculate visibility
-    FOV.resetVisible();
-    if (Player.sight) {
-      FOV.findVisible(Player.x, Player.y, Player.z, Player.sight.range);
-    }
-    if (Player.master) {
-      for (var i=0; i<Player.master.minions.length; i++) {
-        var cr = Player.master.minions[i];
-        if (cr.sight) {
-          FOV.findVisible(cr.x,cr.y,cr.z, cr.sight.range);
-        }
-      }
-    }
-    // Recenter the GUI on the player
-    GUI.recenter();
-    // Render the GUI
-    GUI.render();
-    if (HTomb.Debug.paused!==true) {
-      startTime();
-    }
-    //make sure a ghoul appears at 50, and once every hundred turns otherwise
-    //if (Math.random()<0.01 || World.dailyCycle.turn===50) {
-    if (World.dailyCycle.turn===1) {
-        HTomb.Encounters.roll();
-    }
-    World.dailyCycle.onTurnBegin();
-    Events.publish({type: "TurnEnd"});
-    // if (HTomb.Debug.renderTally===undefined) {
-    //   HTomb.Debug.renderTally = 0;
-    // }
-    // console.log("rendered screen " + HTomb.Debug.renderTally + " times this turn.");
-    // HTomb.Debug.renderTally = 0;
-  };
-
   // Set up the various submodules that will be used
   var World = {};
   var Player = {};
@@ -129,13 +41,13 @@ var HTomb = (function() {
   var Types = {};
   var Particles = {};
   var Utils = {};
+  var Time = {};
   // Allow public access to the submodules
   return {
     Constants: Constants,
     init: init,
     Controls: Controls,
     Commands: Commands,
-    turn: turn,
     World: World,
     FOV: FOV,
     Path: Path,
@@ -148,14 +60,9 @@ var HTomb = (function() {
     Save: Save,
     Types: Types,
     Things: Things,
-    stopTime: stopTime,
-    startTime: startTime,
-    startParticles: startParticles,
-    stopParticles: stopParticles,
-    getSpeed: getSpeed,
-    setSpeed: setSpeed,
     Particles: Particles,
-    Utils: Utils
+    Utils: Utils,
+    Time: Time
   };
 })();
 // Start the game when the window loads
