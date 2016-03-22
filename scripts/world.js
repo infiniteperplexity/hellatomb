@@ -710,12 +710,24 @@ timeIt("elevation", function() {
     if (HTomb.World.dailyCycle.turn%50!==0) {
       return;
     }
-    for (var x=1; x<LEVELW-1; x++) {
-      for (var y=1; y<LEVELH-1; y++) {
+    var x,y,z;
+    var grasses = HTomb.Utils.where(HTomb.World.turfs,function(v,k,o) {return (v.template==="Grass");});
+    for (var g=0; g<grasses.length; g++) {
+      x = grasses[g].x;
+      y = grasses[g].y;
+      z = grasses[g].z;
+      if (z<HTomb.Tiles.groundLevel(x,y)) {
+        if (Math.random()<0.1) {
+          grasses[g].destroy();
+        }
+      }
+    }
+    for (x=1; x<LEVELW-1; x++) {
+      for (y=1; y<LEVELH-1; y++) {
         if (Math.random()>=0.1) {
           continue;
         }
-        var z = HTomb.Tiles.groundLevel(x,y);
+        z = HTomb.Tiles.groundLevel(x,y);
         if (HTomb.World.tiles[z][x][y]!==HTomb.Tiles.FloorTile || HTomb.World.turfs[coord(x,y,z)]) {
           continue;
         }

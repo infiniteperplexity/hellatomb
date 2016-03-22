@@ -389,8 +389,8 @@ HTomb = (function(HTomb) {
   Tiles.groundLevel = function(x,y,zoption) {
     zoption = NLEVELS-2 || zoption;
     for (var z=zoption; z>0; z--) {
-      if (HTomb.World.tiles[z][x][y].solid===true) {
-        return z+1;
+      if (HTomb.World.tiles[z][x][y].fallable!==true && HTomb.World.tiles[z][x][y].zmove!==-1) {
+        return z;
       }
     }
   };

@@ -6,6 +6,10 @@ Small:
 + particle system
 + particles for spells
 + fold Exhume into Dig, make sure their can be non-player masters
++ make sure refreshTile accounts for light level
++ make sure moon phase light levels work right
++ details view
++ add lighting
 
 - add "paused" tag
 
@@ -13,8 +17,7 @@ Small:
 - drain life spell
 - zombies attack stuff too
 - ghouls attack zombies
-- details view
-- add lighting
+
 
 - randomize growing times
 - visibility of items and/or creatures under water
@@ -28,8 +31,7 @@ Small:
 - prerequisite items for tasks
 - queueing of zones?
 - items have bulk
-- make sure refreshTile accounts for light level
-- make sure moon phase light levels work right
+
 
 
 - something to make it so particle rendering isn't interrupted by normal rendering?

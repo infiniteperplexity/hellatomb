@@ -39,6 +39,9 @@ HTomb = (function(HTomb) {
       },particleSpeed);
     }
   }
+  HTomb.Time.isPaused = function() {
+    return timePassing===null;
+  }
   HTomb.Time.stopParticles = function() {
     clearInterval(particleTime);
     particleTime = undefined;
