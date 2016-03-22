@@ -13,10 +13,12 @@ HTomb = (function(HTomb) {
   };
   HTomb.Time.startTime = function() {
     timePassing = setInterval(HTomb.Time.passTime,speed);
+    HTomb.GUI.renderStatus();
   };
   HTomb.Time.stopTime = function() {
     clearInterval(timePassing);
     timePassing = null;
+    HTomb.GUI.renderStatus();
   };
   HTomb.Time.toggleTime = function() {
     if (timePassing===null) {
@@ -40,7 +42,7 @@ HTomb = (function(HTomb) {
     }
   }
   HTomb.Time.isPaused = function() {
-    return timePassing===null;
+    return (timePassing===null);
   }
   HTomb.Time.stopParticles = function() {
     clearInterval(particleTime);

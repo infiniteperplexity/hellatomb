@@ -331,10 +331,13 @@ HTomb = (function(HTomb) {
   };
   // Show status, currently including hit points and coordinates
   var status = new Panel(1,0);
+  HTomb.GUI.renderStatus = function() {
+    status.render();
+  };
   status.render = function() {
     //black out the entire line with solid blocks
     var cursor = 0;
-    scrollDisplay.drawText(this.x0+cursor,this.y0+1,"%c{black}"+(UNIBLOCK.repeat(SCREENW-2)));
+    scrollDisplay.drawText(this.x0+cursor,this.y0+1,"%c{black}"+(UNIBLOCK.repeat(SCROLLW-2)));
     scrollDisplay.drawText(this.x0+cursor,this.y0+1,"HP:" + 5 + "/" + 5);
     cursor+=9;
     scrollDisplay.drawText(this.x0+cursor,this.y0+1,"X:" + HTomb.Player.x);
@@ -348,6 +351,10 @@ HTomb = (function(HTomb) {
       + HTomb.World.dailyCycle.day + ":"
       + HTomb.World.dailyCycle.hour + ":"
       + HTomb.World.dailyCycle.minute);
+    cursor+=12;
+    if (HTomb.Time.isPaused()===true) {
+      scrollDisplay.drawText(this.x0+cursor,this.y0+1,"Paused");
+    }
   };
   // Show messages
   var scroll = new Panel(1,STATUSH);
@@ -367,7 +374,9 @@ HTomb = (function(HTomb) {
     "J: Assign Job, Z: Cast Spell.",
     "G: Pick Up, D: Drop, I: Inventory.",
     "Space: Wait, Tab: Survey Mode.",
+    "PageUp / PageDown to change speed.",
     "Hover mouse to examine a square.",
+    "Click to pause or unpause.",
     "Right click for detailed view.",
     "Escape for summary view."
   ];
