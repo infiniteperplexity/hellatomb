@@ -19,7 +19,7 @@ HTomb = (function(HTomb) {
   });
   HTomb.Encounters.roll = function(callb) {
     //for now we don't use this
-    return;
+    //return;
     callb = callb || function() {return true;};
     var cumulative = 0;
     var table = [];
@@ -106,7 +106,8 @@ HTomb = (function(HTomb) {
   HTomb.Types.defineEncounter({
     template: "SpiderTest",
     name: "spidertest",
-    frequency: 2,
+    // frequency: 2,
+    frequency: 0,
     hostile: false,
     spawn: function() {
       var c = HTomb.Tiles.getEdgeSquare();

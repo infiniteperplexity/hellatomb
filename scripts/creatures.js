@@ -38,7 +38,9 @@ HTomb = (function(HTomb) {
     symbol: "z",
     fg: "#99FF66",
     behaviors: {
-      AI: {hostile: false},
+      AI: {
+        goals: ["ServeMaster"]
+      },
       Movement: {swims: true},
       Sight: {},
       Worker: {},
@@ -68,7 +70,10 @@ HTomb = (function(HTomb) {
     symbol: "z",
     fg: "#FF5522",
     behaviors: {
-      AI: {hostile: true},
+      AI: {
+        team: "GhoulTeam",
+        goals: ["HuntDeadThings"]
+      },
       Movement: {swims: true},
       Sight: {},
       Worker: {},

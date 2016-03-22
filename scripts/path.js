@@ -188,6 +188,10 @@ Tomb = (function(HTomb) {
     return line.length-1;
   };
 
+  HTomb.Path.quickDistance = function(x0,y0,z0,x1,y1,z1) {
+    return Math.sqrt((x1-x0)*(x1-x0)+(y1-y0)*(y1-y0)+(z1-z0)+(z1-z0));
+  };
+
   HTomb.Path.FloodFill = function(callb) {
     this._callback = callb;
     this.filled = {};

@@ -51,9 +51,11 @@ HTomb = (function(HTomb) {
             hostiles = hostiles.concat(teams[i].members);
           }
         }
-        hostiles = hostiles.filter(function(e,i,a){return (HTomb.Tiles.distance(ai.entity.x,ai.entity.y,e.x,e.y)<=10 && Math.abs(ai.entity.z-e.z)<-1);});
+        hostiles = hostiles.filter(function(e,i,a) {
+          return (HTomb.Path.quickDistance(ai.entity.x,ai.entity.y,ai.entity.z,e.x,e.y,e.z)<=10);
+        });
         if (hostiles.length>0) {
-          HTomb.Utils.shuffle(hostiles);
+          //HTomb.Utils.shuffle(hostiles);
           ai.target = hostiles[0];
         }
       }
@@ -77,9 +79,14 @@ HTomb = (function(HTomb) {
     act: function(ai) {
       // should this hunt in sight range first?
       if (ai.target===null) {
-        var zombies = HTomb.Utils.where(HTomb.World.creatures,function(v,k,o) {return (v.template==="Zombie");});
+        var zombies = HTomb.Utils.where(HTomb.World.creatures,function(v,k,o) {
+          return (v.template==="Zombie");
+        });
         if (zombies.length>0) {
-          HTomb.Utils.shuffle(zombies);
+          var e = ai.entity;
+          zombies.sort(function(a,b) {
+            return HTomb.Path.quickDistance(e.x,e.y,e.z,a.x,a.y,a.z) - HTomb.Path.quickDistance(e.x,e.y,e.z,b.x,b.y,b.z);
+          });
           ai.target = zombies[0];
         }
       }
@@ -111,14 +118,17 @@ HTomb = (function(HTomb) {
     onAdd: function(){
       this.path = [];
       this.alert = HTomb.Routines.CheckForHostile;
+      var goals = this.goals || [];
       this.goals = [];
-      this.goals.push(HTomb.Routines.ServeMaster);
+      for (var i=0; i<goals.length; i++) {
+        this.goals.push(HTomb.Routines[goals[i]]);
+      }
       this.fallback = HTomb.Routines.WanderAimlessly;
       if (this.team===null) {
         this.setTeam(HTomb.Teams.AnimalTeam);
       } else {
         // make sure this gets set properly
-        this.setTeam(this.team);
+        this.setTeam(HTomb.Teams[this.team]);
       }
     },
     setTeam: function(team) {
