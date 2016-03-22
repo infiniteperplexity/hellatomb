@@ -3,7 +3,7 @@ HTomb = (function(HTomb) {
 
   var Time = HTomb.Time;
 
-  var timePassing;
+  var timePassing = null;
   var speed = 1000;
   HTomb.Time.setSpeed = function(spd) {
     speed = Math.min(Math.max(100,spd),5000);
@@ -16,6 +16,14 @@ HTomb = (function(HTomb) {
   };
   HTomb.Time.stopTime = function() {
     clearInterval(timePassing);
+    timePassing = null;
+  };
+  HTomb.Time.toggleTime = function() {
+    if (timePassing===null) {
+      HTomb.Time.startTime();
+    } else {
+      HTomb.Time.stopTime();
+    }
   };
   HTomb.Time.passTime = function() {
     HTomb.Time.turn();

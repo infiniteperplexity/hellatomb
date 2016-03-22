@@ -52,7 +52,7 @@ HTomb = (function(HTomb) {
     fontFamily: TEXTFONT,
     spacing: TEXTSPACING
   });
-  var splashDisplay = new ROT.Display({
+  var overlayDisplay = new ROT.Display({
     width: SCREENW*(CHARWIDTH/TEXTWIDTH)+MENUW,
     height: MENUH,
     fontSize: TEXTSIZE,
@@ -69,17 +69,17 @@ HTomb = (function(HTomb) {
     menu.id = "menu";
     var scroll = document.createElement("div");
     scroll.id = "scroll";
-    var splash = document.createElement("div");
-    splash.id = "splash";
+    var overlay = document.createElement("div");
+    overlay.id = "overlay";
     body.appendChild(div);
     div.appendChild(game);
     div.appendChild(menu);
     div.appendChild(scroll);
-    div.appendChild(splash);
+    div.appendChild(overlay);
     game.appendChild(display.getContainer());
     menu.appendChild(menuDisplay.getContainer());
     scroll.appendChild(scrollDisplay.getContainer());
-    splash.appendChild(splashDisplay.getContainer());
+    overlay.appendChild(overlayDisplay.getContainer());
   };
 
   // Attach input events
@@ -139,10 +139,15 @@ HTomb = (function(HTomb) {
   }
   // this may change a bit if I add click functionality to other canvases
   var mousedown = function(click) {
+    click.preventDefault();
     // Convert X and Y from pixels to characters
     var x = Math.floor((click.clientX+XSKEW)/CHARWIDTH-1);
     var y = Math.floor((click.clientY+YSKEW)/CHARHEIGHT-1);
-    Controls.context.clickTile(x+gameScreen.xoffset,y+gameScreen.yoffset);
+    if (click.button===2) {
+      Controls.context.rightClickTile(x+gameScreen.xoffset,y+gameScreen.yoffset);
+    } else {
+      Controls.context.clickTile(x+gameScreen.xoffset,y+gameScreen.yoffset);
+    }
   };
   var mousemove = function(move) {
     // Convert X and Y from pixels to characters
@@ -160,9 +165,10 @@ HTomb = (function(HTomb) {
   window.addEventListener("keyup",keyup);
   display.getContainer().addEventListener("mousedown",mousedown);
   display.getContainer().addEventListener("mousemove",mousemove);
+  window.oncontextmenu = function(e) {if (e && e.stopPropagation) {e.stopPropagation();} return false;};
   menuDisplay.getContainer().addEventListener("mousemove",function() {HTomb.Controls.context.mouseOver();});
   scrollDisplay.getContainer().addEventListener("mousemove",function() {HTomb.Controls.context.mouseOver();});
-  splashDisplay.getContainer().addEventListener("mousedown",function() {GUI.reset();});
+  overlayDisplay.getContainer().addEventListener("mousedown",function() {GUI.reset();});
 
   // set up message buffer
   GUI.sensoryEvent = function(strng,x,y,z) {
@@ -247,27 +253,39 @@ HTomb = (function(HTomb) {
     );
   };
 
-  var splashActive = false;
-  GUI.splash = function(arr) {
+  var overlayActive = false;
+  function updateOverlay(arr) {
     HTomb.Time.stopTime();
     HTomb.Time.stopParticles();
     // we may not want to force the player to reset the GUI...but let's try it out
     for (var i=0; i<SCREENH+SCROLLH; i++) {
-      splashDisplay.drawText(1,1+i,"%c{black}"+(UNIBLOCK.repeat(SCREENW*(CHARWIDTH/TEXTWIDTH)+MENUW-2)));
+      overlayDisplay.drawText(1,1+i,"%c{black}"+(UNIBLOCK.repeat(SCREENW*(CHARWIDTH/TEXTWIDTH)+MENUW-2)));
     }
     for (var j=0; j<arr.length; j++) {
-      splashDisplay.drawText(4, 3+j, arr[j]);
+      var x=0;
+      if (arr[j].charAt(0)===" ") {
+        for (x=1; x<arr[j].length; x++) {
+          if (arr[j].charAt(x)!==" ") {
+            break;
+          }
+        }
+      }
+      overlayDisplay.drawText(4+x, 3+j, arr[j]);
     }
-    splashActive = true;
+    overlayActive = true;
+    var overlay = document.getElementById("overlay");
+    overlay.style.display = "initial";
+  }
+
+  GUI.splash = function(arr) {
     Controls.context = new ControlContext();
-    var splash = document.getElementById("splash");
-    splash.style.display = "initial";
+    updateOverlay(arr);
   };
   // Reset the GUI
   GUI.reset = function() {
-    if (splashActive===true) {
-      document.getElementById("splash").style.display = "none";
-      splashActive = false;
+    if (overlayActive===true) {
+      document.getElementById("overlay").style.display = "none";
+      overlayActive = false;
     }
     GUI.panels = {
       main: gameScreen,
@@ -349,7 +367,9 @@ HTomb = (function(HTomb) {
     "J: Assign Job, Z: Cast Spell.",
     "G: Pick Up, D: Drop, I: Inventory.",
     "Space: Wait, Tab: Survey Mode.",
-    "Hover mouse to examine a square."
+    "Hover mouse to examine a square.",
+    "Right click for detailed view.",
+    "Escape for summary view."
   ];
   menu.render = function() {
     for (var i=0; i<SCREENH+SCROLLH; i++) {
@@ -391,6 +411,9 @@ HTomb = (function(HTomb) {
   // By default, clicking resets the GUI
   ControlContext.prototype.clickAt = function() {
     GUI.reset();
+  };
+  ControlContext.prototype.rightClickTile = function(x,y) {
+    this.clickTile(x,y);
   };
   ControlContext.prototype.clickTile = function() {
     GUI.reset();
@@ -598,9 +621,10 @@ HTomb = (function(HTomb) {
     VK_J: Commands.showJobs,
     VK_Z: Commands.showSpells,
     VK_TAB: GUI.surveyMode,
-//    VK_SHIFT: //this now handles diagonal movement
     VK_SPACE: Commands.wait,
-    VK_ESCAPE: HTomb.Time.stopTime,
+    VK_ENTER: HTomb.Time.toggleTime,
+    //VK_ESCAPE: HTomb.Time.stopTime,
+    VK_ESCAPE: summaryView,
     VK_PAGE_UP: function() {
       HTomb.Time.setSpeed(HTomb.Time.getSpeed()/1.25);
       HTomb.GUI.pushMessage("Speed set to " + parseInt(HTomb.Time.getSpeed()) + ".");
@@ -614,25 +638,225 @@ HTomb = (function(HTomb) {
 
   // Clicking outside the game screen does nothing
   main.clickAt = function(x,y) {
-    //do nothing
+    HTomb.Time.toggleTime();
   };
-  // Clicking a tile looks...this may be obsolete
+  main.rightClickTile = function(x,y) {
+    detailsView(x,y,gameScreen.z);
+  }
   main.clickTile = function(x,y) {
-    viewDetails(x,y,gameScreen.z);
+    HTomb.Time.toggleTime();
   };
+
 
   function viewDetails(x,y,z) {
     var square = HTomb.Tiles.getSquare(x,y,z);
-    var details = [];
+    var c = coord(x,y,z);
+    var details = ["PageUp or PageDown to scroll through minions; Tab to view summary; Escape to exit."]
+    details.push(" ");
+    details.push("Square at "+x+", "+y+", "+z+".");
+    details.push(" ");
+    var b, s, i;
+    var thing;
+    thing = HTomb.World.creatures[c];
+    if (thing) {
+      if (HTomb.Player.master.minions.indexOf(thing)>-1) {
+        currentMinion = thing;
+      }
+      details.push("There is " + thing.describe() + " here.");
+      details.push(" ");
+      if (thing.ai && thing.ai.target) {
+        b = thing.ai.target;
+        details.push("Its attention is focused on " + b.describe() + " at "+b.x+", "+y+", "+z+".");
+        details.push(" ");
+      }
+      if (thing.minion) {
+        b = thing.minion;
+        if (b.task) {
+          s = "It is assigned to " + b.task.describe();
+          if (b.task.zone) {
+            var zone = b.task.zone;
+            s+=" at " + zone.x + ", "+zone.y+", "+zone.z;
+          }
+          s+=".";
+          details.push(s);
+        }
+        details.push(" ");
+      }
+      if (thing.inventory && thing.inventory.items.length>0) {
+        b = thing.inventory.items;
+        details.push("It is carrying: ");
+        s = "  ";
+        for (i=0; i<b.length; i++) {
+          s+=b[i].describe();
+          details.push(s);
+          s = "  ";
+        }
+        details.push(" ");
+      }
+      if (thing.body && thing.body.materials) {
+        b = thing.body.materials;
+        details.push("Its body is made of: ");
+        s = "  ";
+        for (i in b) {
+          s+=HTomb.Materials[i].describe() + " (" + b[i].has + " out of " + b[i].max + ")";
+          details.push(s);
+          s = "  ";
+        }
+        details.push(" ");
+      }
+    }
+    thing = HTomb.World.zones[c];
+    if (thing) {
+      details.push("There is " + thing.describe() + " zone here.");
+      if (thing.task && thing.task.assignee) {
+        b = thing.task.assignee;
+        s = "It is assigned to " + b.describe() + " at " + b.x +", "+b.y+", "+b.z+".";
+        details.push(s);
+      }
+      details.push(" ");
+    }
     details = details.concat(square.terrain.details.description);
     details = details.concat(square.terrain.details.notes);
-    GUI.splash(details);
+    return details;
   }
   main.mouseOver = function() {
     // The main control context always wants to show the instructions
     GUI.displayMenu(defaultText);
     gameScreen.render();
   };
+
+
+  // These are the default controls
+  var details = new ControlContext({
+    VK_ESCAPE: HTomb.GUI.reset,
+    VK_PAGE_UP: nextMinion,
+    VK_PAGE_DOWN: previousMinion,
+    VK_TAB: summaryView
+  });
+  var summary = new ControlContext({
+    VK_ESCAPE: HTomb.GUI.reset,
+    VK_PAGE_UP: detailsView,
+    VK_PAGE_DOWN: detailsView,
+    VK_TAB: detailsView
+  });
+  var currentMinion = null;
+  function nextMinion() {
+    var p = HTomb.Player;
+    if (currentMinion===null && p.master.minions.length>0) {
+      p = p.master.minions[0];
+      currentMinion = p;
+      updateOverlay(viewDetails(p.x,p.y,p.z));
+    } else if (p.master.minions.indexOf(currentMinion)===-1) {
+      currentMinion = null;
+      updateOverlay(viewDetails(p.x,p.y,p.z));
+    } else {
+      var i = p.master.minions.indexOf(currentMinion);
+      if (i===p.master.minions.length-1) {
+        i = 0;
+      } else {
+        i+=1;
+      }
+      p = p.master.minions[i];
+      currentMinion = p;
+      updateOverlay(viewDetails(p.x,p.y,p.z));
+    }
+    HTomb.Controls.context = details;
+  }
+  function previousMinion() {
+    var p = HTomb.Player;
+    if (currentMinion===null && p.master.minions.length>0) {
+      p = p.master.minions[p.master.minions.length-1];
+      currentMinion = p;
+      updateOverlay(viewDetails(p.x,p.y,p.z));
+    } else if (p.master.minions.indexOf(currentMinion)===-1) {
+      currentMinion = null;
+      updateOverlay(viewDetails(p.x,p.y,p.z));
+    } else {
+      var i = p.master.minions.indexOf(currentMinion);
+      if (i===0) {
+        i = p.master.minions.length-1;
+      } else {
+        i-=1;
+      }
+      p = p.master.minions[i];
+      currentMinion = p;
+      updateOverlay(viewDetails(p.x,p.y,p.z));
+    }
+    HTomb.Controls.context = details;
+  }
+  function summaryView() {
+    HTomb.Controls.context = summary;
+    var text = ["Tab/PageUp/PageDown to scroll through minions; Escape to exit."];
+    text.push(" ");
+    var s;
+    text.push("Minions:");
+    for (var i=0; i<HTomb.Player.master.minions.length; i++) {
+      var cr = HTomb.Player.master.minions[i];
+      s = "  "+cr.describe() + " at "+cr.x+", "+cr.y+", "+cr.z;
+      if (cr.minion.task) {
+        s+=" working on " + cr.minion.task.describe();
+        if (cr.minion.task.zone) {
+          var zone = cr.minion.task.zone;
+          s+=" at "+zone.x+", "+zone.y+", "+zone.z;
+        }
+      }
+      text.push(s);
+    }
+    text.push(" ");
+    text.push("Unassigned Tasks:");
+    for (var k=0; k<HTomb.Player.master.taskList.length; k++) {
+      var task = HTomb.Player.master.taskList[k];
+      if (task.assignee===null) {
+        s = "  "+task.describe();
+        if (task.zone) {
+          s+=" at "+task.zone.x+", "+task.zone.y+", "+task.zone.z;
+        }
+        s+=".";
+        text.push(s);
+      }
+    }
+    text.push(" ");
+    text.push("Hoards:");
+    var hoards = HTomb.ItemContainer();
+    var zones = HTomb.Utils.where(HTomb.World.zones,function(v,k,o) {return (v.template==="HoardZone");});
+    for (var j=0; j<zones.length; j++) {
+      var x = zones[j].x;
+      var y = zones[j].y;
+      var z = zones[j].z;
+      var items = HTomb.World.items[coord(x,y,z)] || [];
+      for (var k=0; k<items.length; k++) {
+        //really should be able to clone
+        text.push("  "+items[k].describe());
+      }
+    }
+    updateOverlay(text);
+  }
+  function detailsView(x,y,z) {
+    if (x===undefined || y===undefined || z===undefined) {
+      var p = HTomb.Player;
+      if (p.master.minions.indexOf(currentMinion)===-1) {
+        updateOverlay(viewDetails(p.x,p.y,p.z));
+      } else {
+        p = currentMinion;
+        updateOverlay(viewDetails(p.x,p.y,p.z));
+      }
+    } else {
+      updateOverlay(viewDetails(x,y,z));
+    }
+    HTomb.Controls.context = details;
+  }
+
+  // main.clickAt = function(x,y) {
+  // };
+  // main.rightClickTile = function(x,y) {
+  //   viewDetails(x,y,gameScreen.z);
+  // }
+  // main.clickTile = function(x,y) {
+  // };
+  // main.mouseOver = function() {
+  //   GUI.displayMenu(defaultText);
+  //   gameScreen.render();
+  // };
 
   // Update the right-hand menu instructions
   GUI.displayMenu = function(arr) {
