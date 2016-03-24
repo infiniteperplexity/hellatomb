@@ -65,39 +65,30 @@ HTomb.Things.defineBehavior({
     return tasks;
   },
   // one common way of designating tasks
-  designateSquare: function(taskt, options) {
+  designateSquare: function(taskt, callb, options) {
+    callb = callb || taskt.placeZone;
     options = options || {};
+    var that = this;
     function placeZone(x,y,z) {
-      task.placeZone(tastk,x,y,z);
+      callb.call(taskt,x,y,z,{master: that.entity});
     }
     HTomb.GUI.selectSquare(this.entity.z,placeZone);
   },
   // one common way of designating tasks
-  designateSquares: function(taskt, options) {
+  designateSquares: function(taskt, callb, options) {
+    callb = callb || task.placeZone;
     options = options || {};
     options.outline = options.outline || false;
+    var that = this;
     var taskSquares = function(squares) {
       for (var i=0; i<squares.length; i++) {
         var crd = squares[i];
-        task.placeZone(taskt,crd[0],crd[1],crd[2]);
+        callb.call(taskt,crd[0],crd[1],crd[2],{master: that.entity});
       }
       HTomb.GUI.reset();
     };
     HTomb.GUI.selectSquareZone(this.entity.z,taskSquares,{outline: options.outline, bg: this.zoneTemplate.bg});
-  },
-  placeZone: function(task,x,y,z) {
-    var zone, t;
-    if (taskt.canDesignateTile(x,y,z) || HTomb.World.explored[z][x][y]!==true) {
-      zone = HTomb.Things[taskt.zoneTemplate.template]();
-      zone.place(x,y,z);
-      t = HTomb.Things[taskt.template]();
-      zone.task = t;
-      zone.assigner = this.entity;
-      t.zone = zone;
-      t.assigner = this.entity.;
-      this.taskList.push(t);
-    }
-    return zone;
+  }
 });
 
 HTomb.Things.defineBehavior({
@@ -120,6 +111,7 @@ HTomb.Things.defineBehavior({
       return false;
     }
   },
+  ///ugh...if it's partially constructed, you no longer need the materials!
   construct: function(x,y,z) {
     var f = HTomb.World.features[coord(x,y,z)];
     if (f===undefined) {
@@ -239,7 +231,7 @@ HTomb.Things.define({
   featureTemplate: null,
   clearsFeature: false,
   each: ["assigner","assignee","zone","feature"],
-  requires: {},
+  ingredients: {},
   onCreate: function() {
     HTomb.Events.subscribe(this,"Destroy");
   },
@@ -330,13 +322,29 @@ HTomb.Things.define({
   },
 
   ai: function() {
-    this.assignee.worker.requires(this,this.requires);
+    this.assignee.worker.requires(this,this.ingredients);
     this.assignee.worker.gotoWork();
   },
 
   finish: function() {
     // used the default finish method
     HTomb.Debug.pushMessage("Maybe don't use default finish method");
+  },
+  placeZone: function(x,y,z,options) {
+    options = options || {};
+    var master = options.master || HTomb.Player;
+    var zone, t;
+    if (this.canDesignateTile(x,y,z) || HTomb.World.explored[z][x][y]!==true) {
+      zone = HTomb.Things[this.zoneTemplate.template]();
+      zone.place(x,y,z);
+      t = HTomb.Things[this.template]();
+      zone.task = t;
+      zone.assigner = this.entity;
+      t.zone = zone;
+      t.assigner = this.entity.;
+      this.taskList.push(t);
+    }
+    return zone;
   }
 });
 
