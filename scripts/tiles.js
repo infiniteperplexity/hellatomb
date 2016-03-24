@@ -475,6 +475,24 @@ HTomb = (function(HTomb) {
     }
   };
 
+  HTomb.Tiles.isEnclosed = function(x,y,z) {
+    var dirs = ROT.DIRS[8];
+    for (var i=0; i<dirs.length; dirs++) {
+      var dx = x+dirs[i][0];
+      var dy = y+dirs[i][1];
+      if (HTomb.World.tiles[z][dx][dy].solid!==true && HTomb.World.tiles[z][dx][dy].fallable!==true) {
+        return false;
+      }
+    }
+    if (HTomb.World.tiles[z+1][x][y].zmove===-1) {
+      return false;
+    }
+    if (HTomb.World.tiles[z-1][x][y].zmove===+1) {
+      return false;
+    }
+    return true;
+  };
+
   //
   HTomb.Tiles.squaresWithinSquare = function(x,y,z,n) {
     var squares = [];

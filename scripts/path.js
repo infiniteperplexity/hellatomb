@@ -38,6 +38,7 @@ Tomb = (function(HTomb) {
     if (x0+y0+z0+x1+y1+z1===undefined || x1===null || y1===null || z1===null) {
       alert("bad path arguments!");
     }
+    //perhaps run a quick check to make sure neither end of the path is enclosed?
     //_fastgrid = HTomb.World._fastgrid;
     options = options || {};
     var useFirst = options.useFirst || false;
@@ -134,6 +135,9 @@ Tomb = (function(HTomb) {
         }
         h_score = this_score + h(next[0],next[1],next[2],x1,y1,z1);
         if (isNaN(h_score)) {
+          console.log(this_score);
+          console.log(next);
+          console.log([x1,y1,z1]);
           alert("scoring failed!");
         }
         //HTomb.GUI.drawAt(next[0],next[1],"X","green","black");
@@ -190,6 +194,18 @@ Tomb = (function(HTomb) {
 
   HTomb.Path.quickDistance = function(x0,y0,z0,x1,y1,z1) {
     return Math.sqrt((x1-x0)*(x1-x0)+(y1-y0)*(y1-y0)+(z1-z0)+(z1-z0));
+  };
+
+  HTomb.Path.closest = function(e,arr) {
+    arr.sort(function(a,b) {
+      return HTomb.Path.quickDistance(e.x,e.y,e.z,a.x,a.y,a.z) - HTomb.Path.quickDistance(e.x,e.y,e.z,b.x,b.y,b.z);
+    });
+    return arr;
+  };
+  HTomb.Path.closestCallback = function(e) {
+    return function(a,b) {
+      return HTomb.Path.quickDistance(e.x,e.y,e.z,a.x,a.y,a.z) - HTomb.Path.quickDistance(e.x,e.y,e.z,b.x,b.y,b.z);
+    };
   };
 
   HTomb.Path.FloodFill = function(callb) {

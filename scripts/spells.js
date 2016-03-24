@@ -29,6 +29,7 @@ HTomb = (function(HTomb) {
                 zombie.place(x,y,z);
                 HTomb.Things.Minion().addToEntity(zombie);
                 zombie.minion.setMaster(caster.entity);
+                zombie.ai.setTeam(caster.entity.ai.team);
                 caster.entity.master.addMinion(zombie);
                 zombie.ai.acted = true;
                 HTomb.GUI.sensoryEvent("The corpse stirs and rises...",x,y,z);
@@ -48,6 +49,7 @@ HTomb = (function(HTomb) {
               HTomb.GUI.sensoryEvent("You hear an ominous stirring below the earth...",x,y,z);
               zombie = HTomb.Things.Zombie();
               zombie.place(x,y,z-1);
+              zombie.ai.setTeam(caster.entity.ai.team);
               HTomb.Things.Minion().addToEntity(zombie);
               zombie.minion.setMaster(caster.entity);
               caster.entity.master.addMinion(zombie);

@@ -13,7 +13,9 @@ HTomb = (function(HTomb) {
         Movement: {swims: true},
         Inventory: {},
         Sight: {},
-        AI: {},
+        AI: {
+          team: "PlayerTeam"
+        },
         Master: {tasks: ["DigTask","BuildTask","CraftTask","DismantleTask","PatrolTask","FarmTask","ForbidTask","HoardTask","Undesignate"]},
         SpellCaster: {spells: ["RaiseZombie"]},
         Body: {

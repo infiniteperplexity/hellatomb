@@ -142,6 +142,13 @@ HTomb = (function(HTomb) {
     each: ["master","task"],
     setMaster: function(cr) {
       this.master = cr;
+      HTomb.Events.subscribe(this,"Destroy");
+    },
+    onDestroy: function(event) {
+      if (event.entity===this.master) {
+        this.master = null;
+        alert("My master died, haven't set how to handle this yet.");
+      }
     },
     onAssign: function(tsk) {
       this.task = tsk;
@@ -169,6 +176,13 @@ HTomb = (function(HTomb) {
       this.tasks = options.tasks;
       this.minions = [];
       this.taskList = [];
+      HTomb.Events.subscribe(this, "Destroy");
+    },
+    onDestroy: function(event) {
+      if (this.minions.indexOf(event.entity)>-1) {
+        HTomb.GUI.sensoryEvent(this.entity.describe() + " mourns the death of " + event.entity.describe()+".",this.entity.x,this.entity.y,this.entity.z);
+        this.minions.splice(this.minions.indexOf(event.entity),1);
+      }
     },
     addMinion: function(cr) {
       this.minions.push(cr);
@@ -183,7 +197,12 @@ HTomb = (function(HTomb) {
       for(var i=0; i<this.taskList.length; i++) {
         var tsk = this.taskList[i];
         if (tsk.assignee!==null) {
-          continue;
+          if (tsk.assignee.reference!==undefined && tsk.assignee.reference!==null) {
+            console.log("task lost a reference");
+            tsk.assignee = tsk.assignee.reference;
+          } else {
+            continue;
+          }
         }
         var master = this.entity;
         var minions = this.minions;

@@ -55,7 +55,7 @@ HTomb = (function(HTomb) {
           return (HTomb.Path.quickDistance(ai.entity.x,ai.entity.y,ai.entity.z,e.x,e.y,e.z)<=10);
         });
         if (hostiles.length>0) {
-          //HTomb.Utils.shuffle(hostiles);
+          hostiles = HTomb.Path.closest(ai.entity,hostiles);
           ai.target = hostiles[0];
         }
       }
@@ -64,7 +64,7 @@ HTomb = (function(HTomb) {
           ai.entity.combat.attack(ai.target);
           ai.acted = true;
         } else {
-          ai.walkToward(ai.target);
+          ai.walkToward(ai.target.x,ai.target.y,ai.target.z);
         }
       }
     }
@@ -80,7 +80,7 @@ HTomb = (function(HTomb) {
       // should this hunt in sight range first?
       if (ai.target===null) {
         var zombies = HTomb.Utils.where(HTomb.World.creatures,function(v,k,o) {
-          return (v.template==="Zombie");
+          return (v.template==="Zombie" && ai.isHostile(v));
         });
         if (zombies.length>0) {
           var e = ai.entity;
@@ -88,6 +88,8 @@ HTomb = (function(HTomb) {
             return HTomb.Path.quickDistance(e.x,e.y,e.z,a.x,a.y,a.z) - HTomb.Path.quickDistance(e.x,e.y,e.z,b.x,b.y,b.z);
           });
           ai.target = zombies[0];
+          console.log("hunting a zombie");
+          HTomb.Routines.CheckForHostile.act(ai);
         }
       }
     }
@@ -136,6 +138,11 @@ HTomb = (function(HTomb) {
       this.team = team;
       HTomb.Types.templates[team.template].members.push(this.entity);
     },
+    onDestroy: function(event) {
+      if (event.entity===this.target) {
+        this.target = null;
+      }
+    },
     act: function() {
       // If the entity is the player, don't choose for it...maybe this should be a Behavior?
       if (this.entity===HTomb.Player) {
@@ -145,6 +152,10 @@ HTomb = (function(HTomb) {
       if (this.acted===true) {
         this.acted = false;
         return false;
+      }
+      // handle dead or polymorphed targets
+      if (this.target!==null && this.target.reference!==undefined && this.target.reference!==this.target) {
+        this.target = this.target.reference;
       }
       if (this.acted===false) {
         this.alert.act(this);
@@ -199,6 +210,9 @@ HTomb = (function(HTomb) {
       var x0 = this.entity.x;
       var y0 = this.entity.y;
       var z0 = this.entity.z;
+      if (HTomb.Tiles.isEnclosed(x,y,z)) {
+        return false;
+      }
       var path = HTomb.Path.aStar(x0,y0,z0,x,y,z,{useLast: false});
       if (path!==false) {
         var square = path[0];
@@ -266,6 +280,12 @@ HTomb = (function(HTomb) {
       this.members = this.members || [];
       this.enemies = this.enemies || [];
       this.allies = this.allies || [];
+      HTomb.Events.subscribe(this,"Destroy");
+    },
+    onDestroy: function(event) {
+      if (this.members.indexOf(event.entity)>-1) {
+        this.members.splice(this.members.indexOf(event.entity),1);
+      }
     },
     isHostile: function(team) {
       if (team.enemies.indexOf(this.template)>=0 || this.enemies.indexOf(team.template)>=0) {

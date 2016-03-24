@@ -18,6 +18,9 @@ HTomb = (function(HTomb) {
     featureTemplate: null,
     clearsFeature: false,
     each: ["assigner","assignee","zone","feature"],
+    onCreate: function() {
+      HTomb.Events.subscribe(this,"Destroy");
+    },
     dismantle: function(x,y,z) {
       var f = HTomb.World.features[coord(x,y,z)];
       f.feature.hp-=1;
@@ -74,6 +77,14 @@ HTomb = (function(HTomb) {
         cr.minion.onAssign(this);
       }
     },
+    onDestroy: function(event) {
+      var cr = event.entity;
+      if (cr===this.assignee) {
+        this.unassign();
+      } else if (cr===this.assigner) {
+        this.cancel();
+      }
+    },
     unassign: function() {
       var cr = this.assignee;
       if (cr.minion===undefined) {
@@ -99,7 +110,9 @@ HTomb = (function(HTomb) {
         var z = this.zone;
         this.zone = null;
         z.remove();
+        HTomb.Events.unsubscribeAll(z);
       }
+      HTomb.Events.unsubscribeAll(this);
     },
     complete: function() {
       var master = this.assigner;

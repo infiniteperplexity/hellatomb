@@ -11,7 +11,7 @@ HTomb = (function(HTomb) {
     z: null,
     behaviors: {},
     myBehaviors: [],
-    each: ["x","y","z"],
+    each: ["x","y","z","reference"],
     place: function(x,y,z) {
       this.remove();
       if (this.creature) {
@@ -83,6 +83,13 @@ HTomb = (function(HTomb) {
       if (this.turf && this.turf.destroy) {
         this.turf.destroy();
       }
+      this.reference = null;
+      HTomb.Events.publish({type: "Destroy", entity: this});
+      for (var i=0; i<this.myBehaviors.length; i++) {
+        var b = this.myBehaviors[i];
+        HTomb.Events.unsubscribeAll(b);
+      }
+      HTomb.Events.unsubscribeAll(this);
       this.remove();
     },
     onDespawn: function() {
@@ -133,6 +140,9 @@ HTomb = (function(HTomb) {
       this.myBehaviors = [];
       // Add behaviors to entity
       for (var b in this.behaviors) {
+        if (typeof(HTomb.Things[b])!=="function") {
+            console.log("Problem with behavior " + b + " for " + this.describe());
+        }
         var beh = HTomb.Things[b](this.behaviors[b] || {});
         beh.addToEntity(this);
       }
@@ -422,6 +432,9 @@ HTomb = (function(HTomb) {
   };
 
 
+  function EntityWrapper(entity) {
+    this.entity = entity;
+  }
 
   function ItemContainer(args) {
     var container = Object.create(Array.prototype);

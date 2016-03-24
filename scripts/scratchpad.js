@@ -13,3 +13,9 @@
 
 //some ideas...flood find until...flood search...
 //...could "sight" become "sense"
+
+/// Several ways we can go about this...
+//..."CreatureWrapper or AliveWrapper or something each time we need it
+// or a "reference tracker"
+//extensive use of deathEvent...but this requires subscribing everything to everything
+// the old way I did it...selfPointer...

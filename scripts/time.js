@@ -7,7 +7,7 @@ HTomb = (function(HTomb) {
   var speed = 1000;
   HTomb.Time.setSpeed = function(spd) {
     speed = Math.min(Math.max(100,spd),5000);
-  }
+  };
   HTomb.Time.getSpeed = function() {
     return speed;
   };
@@ -30,7 +30,7 @@ HTomb = (function(HTomb) {
   HTomb.Time.passTime = function() {
     HTomb.Time.turn();
   };
-  var particleTime = undefined;
+  var particleTime;
   var particleSpeed = 50;
   HTomb.Time.startParticles = function() {
     if (particleTime===undefined) {
@@ -40,14 +40,14 @@ HTomb = (function(HTomb) {
         HTomb.GUI.renderParticles();
       },particleSpeed);
     }
-  }
+  };
   HTomb.Time.isPaused = function() {
     return (timePassing===null);
-  }
+  };
   HTomb.Time.stopParticles = function() {
     clearInterval(particleTime);
     particleTime = undefined;
-  }
+  };
 
   // Process a turn of play
   HTomb.Time.turn = function() {
