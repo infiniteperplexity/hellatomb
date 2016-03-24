@@ -519,6 +519,15 @@ HTomb = (function(HTomb) {
       }
       return false;
     },
+    countAll: function(template) {
+      var tally = 0;
+      for (var i=0; i<this.length; i++) {
+        if (this[i].template===template) {
+          tally+=this[i].item.n;
+        }
+      }
+      return tally;
+    },
     getFirst: function(template) {
       for (var i=0; i<this.length; i++) {
         if (this[i].template===template) {
@@ -540,7 +549,7 @@ HTomb = (function(HTomb) {
         i_or_t = i_or_t.template;
       }
       if (HTomb.Things.templates[i_or_t].stackable!==true) {
-        return this.getFirst(i_or_t)
+        return this.getFirst(i_or_t);
       } else {
         var last = this.getLast(i_or_t);
         if (last.item.n===1) {
@@ -550,6 +559,25 @@ HTomb = (function(HTomb) {
           var single = HTomb.Things[last.template]();
           single.item.n = 1;
           return single;
+        }
+      }
+    },
+    take: function(i_or_t, n) {
+      n = n || 1;
+      if (typeof(i_or_t)!=="string" && i_or_t.template) {
+        i_or_t = i_or_t.template;
+      }
+      if (HTomb.Things.templates[i_or_t].stackable!==true) {
+        return this.getFirst(i_or_t);
+      } else {
+        var last = this.getLast(i_or_t);
+        if (last.item.n<=n) {
+          return last;
+        } else {
+          last.item.n-=n;
+          var taken = HTomb.Things[last.template]();
+          taken.item.n = n;
+          return taken;
         }
       }
     },

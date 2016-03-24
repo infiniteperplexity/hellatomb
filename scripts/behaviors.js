@@ -112,6 +112,14 @@ HTomb = (function(HTomb) {
         this.pickup(item);
       }
     },
+    pickupSome: function(i_or_t,n) {
+      var e = this.entity;
+      var items = HTomb.World.items[coord(e.x,e.y,e.z)];
+      var item = items.take(i_or_t,n);
+      if (item) {
+        this.pickup(item);
+      }
+    },
     drop: function(item) {
       var e = this.entity;
       this.items.remove(item);

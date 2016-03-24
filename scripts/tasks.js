@@ -219,7 +219,8 @@ HTomb = (function(HTomb) {
       }
       cr.ai.acted = true;
     },
-    fetch: function(template) {
+    fetch: function(template, n) {
+      n = n || 1;
       var cr = this.assignee;
       var t = cr.ai.target;
       // sometimes someone moves the seeds at an inopportune time
@@ -227,13 +228,13 @@ HTomb = (function(HTomb) {
         cr.ai.target = null;
       }
       // if I already have one, return false
-      if (cr && cr.inventory && cr.inventory.items.containsAny(template)) {
+      if (cr && cr.inventory && cr.inventory.items.countAll(template)>=n) {
         return false;
       }
       var items = HTomb.World.items[coord(cr.x,cr.y,cr.z)];
       // if we're standing on one
       if (items && items.containsAny(template)) {
-        cr.inventory.pickupOne(template);
+        cr.inventory.pickupSome(template, n);
         cr.ai.target = null;
         return true;
       }
@@ -408,6 +409,9 @@ HTomb = (function(HTomb) {
       symbol: "\u2692",
       fg: HTomb.Constants.ABOVE,
       steps: 5
+    },
+    expends: {
+      Rock: 1
     },
     clearsFeature: true,
     canDesignateTile: function(x,y,z) {

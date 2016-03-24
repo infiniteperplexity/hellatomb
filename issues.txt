@@ -10,13 +10,18 @@ Small:
 + make sure moon phase light levels work right
 + details view
 + add lighting
++ add "paused" tag
++ ghouls attack zombies
++ zombies attack stuff too
 
-- add "paused" tag
+- make it so fetch can require variable numbers?
+
+
 
 - will of wisps
 - drain life spell
-- zombies attack stuff too
-- ghouls attack zombies
+
+
 
 
 - randomize growing times
