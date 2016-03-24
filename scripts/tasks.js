@@ -898,5 +898,41 @@ HTomb = (function(HTomb) {
     }
   });
 
+  ai: function() {
+    var cr = this.assignee;
+    if (cr.movement) {
+      var zone = this.zone;
+      var x = zone.x;
+      var y = zone.y;
+      var z = zone.z;
+      var f = HTomb.World.features[coord(x,y,z)];
+      var needsSeed = this.fetch(this.assignedCrop+"Seed");
+      if (needsSeed===false) {
+        this.seekZoneAI();
+      }
+    }
+    cr.ai.acted = true;
+  },
+  work: function(x,y,z) {
+    if (HTomb.World.turfs[coord(x,y,z)] && HTomb.World.turfs[coord(x,y,z)].template!=="Soil") {
+      HTomb.World.turfs[coord(x,y,z)].destroy();
+      HTomb.Things.Soil().place(x,y,z);
+    }
+    var f = HTomb.World.features[coord(x,y,z)];
+    var seed = null;
+    for (var i=0; i<this.assignee.inventory.items.length; i++) {
+      var item = this.assignee.inventory.items[i];
+      if (item.template===this.assignedCrop+"Seed") {
+        //plant the whole stack at once for now
+        item.crop.plantAt(x,y,z);
+        this.assignee.inventory.items.remove(item);
+        this.finish();
+        this.complete();
+        return;
+      }
+    }
+  }
+});
+
   return HTomb;
 })(HTomb);
