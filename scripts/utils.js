@@ -15,6 +15,19 @@ HTomb = (function(HTomb) {
     return result;
   };
 
+  HTomb.Utils.findItems = function(callb) {
+    var selected = [];
+    for (var k in HTomb.World.items) {
+      var items = HTomb.World.items[k] || [];
+      for (var i=0; i<items.length; i++) {
+        var v = items[i];
+        if (callb===undefined || callb(v,k,i)===true) {
+          selected.push(v);
+        }
+      }
+    }
+  };
+
   HTomb.Utils.shuffle = function(arr) {
     //Fisher-Yates
     var i = arr.length;

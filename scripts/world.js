@@ -775,5 +775,7 @@ timeIt("elevation", function() {
      return creatures;
    };
 
+   
+
   return HTomb;
 })(HTomb);
