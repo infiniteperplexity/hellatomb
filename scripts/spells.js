@@ -54,12 +54,8 @@ HTomb = (function(HTomb) {
               zombie.minion.setMaster(caster.entity);
               caster.entity.master.addMinion(zombie);
               zombie.ai.acted = true;
-              var zone = HTomb.Things.DigZone().place(x,y,z);
-              var task = HTomb.Things.DigTask();
-              task.assignTo(zombie);
-              zone.task = task;
-              zone.assigner = caster.entity;
-              task.zone = zone;
+              var zone = HTomb.Things.templates.DigTask.placeZone(x,y,z,caster.entity);
+              zone.task.assignTo(zombie);
               HTomb.Time.turn();
               return;
             }

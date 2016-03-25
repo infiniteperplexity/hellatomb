@@ -26,6 +26,7 @@ HTomb = (function(HTomb) {
         }
       }
     }
+    return selected;
   };
 
   HTomb.Utils.shuffle = function(arr) {

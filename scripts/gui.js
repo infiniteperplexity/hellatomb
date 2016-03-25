@@ -931,7 +931,7 @@ HTomb = (function(HTomb) {
     survey.saveY = gameScreen.yoffset;
     survey.saveZ = gameScreen.z;
     context.clickTile = function(x,y) {
-      callb(x,y,gameScreen.z);
+      callb(x,y,gameScreen.z,options);
       GUI.reset();
     };
     if (options.line!==undefined) {
@@ -1063,7 +1063,7 @@ HTomb = (function(HTomb) {
           }
         }
         // Invoke the callback function on the squares selected
-        callb(squares);
+        callb(squares, options);
         if (options.reset!==false) {
           GUI.reset();
         }
@@ -1133,7 +1133,8 @@ HTomb = (function(HTomb) {
   });
   survey.menuText = ["You are now in survey mode.","Use movement keys to navigate.","Comma go down.","Period to go up.","Escape to exit."];
   survey.clickTile = main.clickTile;
-
+  survey.rightClickTile = main.rightClickTile;
+  
   // Currently implemented, seems slow and I don't know where to put it
   var minimap = {};
   minimap.render = function() {

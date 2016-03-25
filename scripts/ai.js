@@ -22,8 +22,8 @@ HTomb = (function(HTomb) {
       if (ai.entity.minion===undefined) {
         return;
       }
-      if (ai.entity.minion.task) {
-        ai.entity.minion.task.ai();
+      if (ai.entity.worker && ai.entity.worker.task) {
+        ai.entity.worker.task.ai();
       } else {
         // Otherwise, patrol around the creature's master
         // or maybe check for tasks now?
@@ -169,8 +169,8 @@ HTomb = (function(HTomb) {
         this.fallback.act(this);
       }
       if (this.acted===false) {
-        console.log(this.entity);
-        HTomb.Debug.pushMessage("creature failed to act!");
+        // console.log(this.entity);
+        // HTomb.Debug.pushMessage("creature failed to act!");
       }
       // Reset activity for next turn
       this.acted = false;
@@ -263,8 +263,6 @@ HTomb = (function(HTomb) {
           return true;
         }
       }
-      console.log(this.entity);
-      console.log("creature couldn't move.");
       return false;
     },
   });
