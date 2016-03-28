@@ -318,6 +318,7 @@ HTomb = (function(HTomb) {
       t = cr.ai.target;
       // if the creature is targeting something else, stop tracking it
       if (t && args[t.template]===undefined) {
+        console.log("other target unacquired");
         cr.ai.target = null;
       }
       t = cr.ai.target;
@@ -326,6 +327,8 @@ HTomb = (function(HTomb) {
         for (var arg in args) {
           n = args[arg];
           if (cr.inventory.items.countAll(arg)<n) {
+            console.log("seeking items");
+            needy = true;
             var items = HTomb.Utils.findItems(function(v,k,i) {
               if (v.item.owned!==true) {
                 return false;
@@ -336,6 +339,7 @@ HTomb = (function(HTomb) {
             if (items.length>0) {
               items = HTomb.Path.closest(cr,items);
               cr.ai.target = items[0];
+              console.log("found item");
               break;
             }
           }
@@ -348,6 +352,7 @@ HTomb = (function(HTomb) {
         cr.ai.walkRandom();
         // does it have everything it needs?
       } else if (needy===false) {
+        console.log("has it all");
         return false;
         // if we're there, pick up as many as needed
       } else if (t.x===cr.x && t.y===cr.y && t.z===cr.z) {
