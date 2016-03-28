@@ -193,7 +193,7 @@ HTomb = (function(HTomb) {
     },
     placeZone: function(x,y,z,assigner) {
       var zone, t;
-      if (this.canDesignateTile(x,y,z) || HTomb.World.explored[z][x][y]!==true) {
+      if (this.canDesignateTile(x,y,z)) {
         zone = HTomb.Things[this.zoneTemplate.template]();
         zone.place(x,y,z);
         t = HTomb.Things[this.template]();
@@ -224,15 +224,6 @@ HTomb = (function(HTomb) {
       }
     },
     canDesignateTile: function(x,y,z) {
-      return true;
-    },
-    checkAssignment: function(x,y,z) {
-      if (this.canDesignateTile(x,y,z)===false) {
-        HTomb.World.explored[z][x][y] = true;
-        HTomb.GUI.pushMessage("Designation invalid");
-        this.cancel();
-        return false;
-      }
       return true;
     },
     assignTo: function(cr) {
@@ -310,10 +301,6 @@ HTomb = (function(HTomb) {
       HTomb.Routines.GoToWork(this.assignee.ai);
     },
     work: function(x,y,z) {
-      //if the zone was placed illegally in unexplored territory, delete it
-      if (this.checkAssignment===false) {
-        return;
-      }
       var f = HTomb.World.features[coord(x,y,z)];
       if (f===undefined) {
         // begin construction
@@ -327,7 +314,7 @@ HTomb = (function(HTomb) {
           var taken = this.assignee.inventory.items.take(ingredient,n);
           taken.remove();
         }
-        f = HTomb.Things[this.makes]();
+        f = HTomb.Things.IncompleteFeature({makes: this.makes});
         f.task = this;
         f.place(x,y,z);
         this.target = f;
@@ -354,6 +341,10 @@ HTomb = (function(HTomb) {
     canDesignateTile: function(x,y,z) {
       var t = HTomb.World.tiles[z][x][y];
       var tb = HTomb.World.tiles[z-1][x][y];
+      // this is the special part for DigTask
+      if (HTomb.World.explored[z][x][y]!==true) {
+        return true;
+      }
       if (t===HTomb.Tiles.VoidTile) {
         return false;
       } else if (HTomb.World.features[coord(x,y,z)] && HTomb.World.features[coord(x,y,z)].owned!==false) {
@@ -366,8 +357,17 @@ HTomb = (function(HTomb) {
       return true;
     },
     work: function(x,y,z) {
-      if (this.checkAssignment===false) {
-        return;
+      // If this was initially placed illegally in unexplored territory, remove it now
+      var t = (HTomb.World.tiles[z][x][y]);
+      var tb = HTomb.World.tiles[z-1][x][y];
+      if (t===HTomb.Tiles.VoidTile) {
+        this.cancel();
+      } else if (HTomb.World.features[coord(x,y,z)] && HTomb.World.features[coord(x,y,z)].owned!==false) {
+        this.cancel();
+      } else if (t===HTomb.Tiles.FloorTile && tb===HTomb.Tiles.VoidTile) {
+        this.cancel();
+      } else if (t===HTomb.Tiles.EmptyTile && (tb===HTomb.Tiles.EmptyTile || tb===HTomb.Tiles.FloorTile)) {
+        this.cancel();
       }
       var f = HTomb.World.features[coord(x,y,z)];
       if (f && f.template==="Tombstone") {
@@ -624,7 +624,7 @@ HTomb = (function(HTomb) {
           function createZone(x,y,z) {
             var zone = that.placeZone(x,y,z);
             if (zone) {
-              zone.task.choice = feature.template;
+              zone.task.makes = feature.template;
           }
           HTomb.GUI.selectSquare(assigner.z,this.designateSquare,{
             assigner: assigner,
@@ -657,9 +657,30 @@ HTomb = (function(HTomb) {
       name: "farm",
       bg: "#008800"
     },
-    choice: null,
-    //crops: ["Amanita","Bloodwort","Mandrake","Wolfsbane","Wormwood"],
-    assignedCrop: null,
+    designate: function(assigner) {
+      HTomb.GUI.selectSquareZone(assigner.z,this.designateSquares,{
+        context: this,
+        assigner: assigner,
+        callback: this.placeZone,
+        outline: false,
+        bg: this.zoneTemplate.bg
+      });
+    },
+    designateSquares: function(squares, options) {
+      var anyf = false;
+      for (var j=0; j<squares.length; j++) {
+        var s = squares[j];
+        if (HTomb.World.features[coord(s[0],s[1],s[2])]) {
+          anyf = true;
+        }
+      }
+      if (anyf===true) {
+        squares = squares.filter(function(e,i,a) {
+          return (HTomb.World.features[coord(e[0],e[1],e[2])]!==undefined);
+        });
+      }
+      HTomb.Things.templates.Task.designateSquares.call(this, squares, options);
+    },
     findSeeds: function() {
       var crops = [];
       for (var it in HTomb.World.items) {
@@ -737,80 +758,15 @@ HTomb = (function(HTomb) {
         });
       };
       HTomb.GUI.selectSquareZone(master.z,taskSquares,{reset: false});
-    },
-    ai: function() {
-      var cr = this.assignee;
-      if (cr.movement) {
-        var zone = this.zone;
-        var x = zone.x;
-        var y = zone.y;
-        var z = zone.z;
-        var f = HTomb.World.features[coord(x,y,z)];
-        var needsSeed = this.fetch(this.assignedCrop+"Seed");
-        if (needsSeed===false) {
-          this.seekZoneAI();
-        }
-      }
-      cr.ai.acted = true;
-    },
-    work: function(x,y,z) {
-      if (HTomb.World.turfs[coord(x,y,z)] && HTomb.World.turfs[coord(x,y,z)].template!=="Soil") {
-        HTomb.World.turfs[coord(x,y,z)].destroy();
-        HTomb.Things.Soil().place(x,y,z);
-      }
-      var f = HTomb.World.features[coord(x,y,z)];
-      var seed = null;
-      for (var i=0; i<this.assignee.inventory.items.length; i++) {
-        var item = this.assignee.inventory.items[i];
-        if (item.template===this.assignedCrop+"Seed") {
-          //plant the whole stack at once for now
-          item.crop.plantAt(x,y,z);
-          this.assignee.inventory.items.remove(item);
-          this.finish();
-          this.complete();
-          return;
-        }
-      }
-    }
-  });
-
-
-  HTomb.Things.defineTask({
-    template: "DummyTask",
-    fakeTemplate: null,
-    zoneTemplate: {
-      template: "DummyZone"
-    },
-    tryAssign: function(cr) {
-      var zone = this.zone;
-      if (HTomb.World.explored[zone.z][zone.x][zone.y]) {
-        HTomb.GUI.pushMessage("Designation invalid");
-        this.cancel();
-        return false;
-      } else if (this.canReachZone(cr)) {
-        this.assignTo(cr);
-        return true;
-      } else {
-        return false;
-      }
-    },
-    canDesignateTile: function(x,y,z) {
-      return true;
-    },
-    work: function(x,y,z) {
-      HTomb.World.explored[z][x][y] = true;
-      HTomb.GUI.pushMessage("Designation invalid");
-      this.cancel();
     }
   });
 
   HTomb.Things.defineFeature({
     template: "Excavation",
-    name: "incomplete excavation",
-    task: null,
-    symbol: "\u2717",
-    fg: HTomb.Constants.BELOW,
-    finish: function(f) {
+    name: "excavation",
+    incompleteSymbol: "\u2717",
+    incompleteFg: HTomb.Constants.BELOW,
+    onPlace: function(f) {
       var tiles = HTomb.World.tiles;
       var EmptyTile = HTomb.Tiles.EmptyTile;
       var FloorTile = HTomb.Tiles.FloorTile;
@@ -858,9 +814,6 @@ HTomb = (function(HTomb) {
         rock.place(x,y,z);
       }
       HTomb.World.validate.cleanNeighbors(x,y,z);
-      if (this.task) {
-        this.task.complete();
-      }
       this.remove();
     }
   });
@@ -868,20 +821,10 @@ HTomb = (function(HTomb) {
 
   HTomb.Things.defineFeature({
     template: "Construction",
-    name: "incomplete construction",
-    symbol: "\u2692",
-    fg: HTomb.Constants.ABOVE,
-    task: null,
-    work: function() {
-      if (this.integrity===null) {
-        this.integrity = -5;
-      }
-      this.integrity+=1;
-      if (this.integrity>=0) {
-        this.finish();
-      }
-    },
-    finish: function() {
+    name: "construction",
+    incompleteSymbol: "\u2692",
+    incompleteFg: HTomb.Constants.ABOVE,
+    onPlace: function() {
       var tiles = HTomb.World.tiles;
       var EmptyTile = HTomb.Tiles.EmptyTile;
       var FloorTile = HTomb.Tiles.FloorTile;
@@ -913,9 +856,6 @@ HTomb = (function(HTomb) {
         tiles[z][x][y] = FloorTile;
       }
       HTomb.World.validate.cleanNeighbors(x,y,z);
-      if (this.task) {
-        this.task.complete();
-      }
       this.remove();
     }
   });
@@ -928,6 +868,10 @@ HTomb = (function(HTomb) {
     makes: null,
     fg: HTomb.Constants.ABOVE,
     task: null,
+    onPlace: function() {
+      this.symbol = this.makes.incompleteSymbol || this.symbol;
+      this.fg = this.makes.incompleteFg || this.fg;
+    }
     work: function() {
       if (this.integrity===null) {
         this.integrity = -5;
@@ -941,133 +885,97 @@ HTomb = (function(HTomb) {
       var x = this.x;
       var y = this.y;
       var z = this.z;
+      this.task.complete();
       this.remove();
       var f = HTomb.Things[makes]();
       f.place(x,y,z);
     }
   });
 
-  HTomb.Things.defineBehavior({
-    template: "CropBehavior",
-    name: "crop",
-    maxHerbs: 2,
-    maxSeeds: 4,
-    growTurns: 512,
-    each: ["growTurns"],
-    onTurnBegin: function() {
-      if (this.growTurns>0) {
-        this.growTurns-=1;
-      } else {
-        this.mature();
-      }
-    },
-    plantAt: function(x,y,z) {
-      this.entity.remove();
-      var plant = HTomb.Things[this.entity.baseTemplate+"Plant"]().place(x,y,z);
-      HTomb.Events.subscribe(plant.crop,"TurnBegin");
-    },
-    mature: function() {
-      this.growTurns = 0;
-      this.entity.symbol = this.entity.matureSymbol || this.entity.symbol;
-      this.entity.fg = this.entity.matureFg || this.entity.fg;
-      HTomb.Events.unsubscribe(this,"TurnBegin");
-    },
-    plow: function() {
-      var x = this.entity.x;
-      var y = this.entity.y;
-      var z = this.entity.z;
-      this.entity.remove();
-      // 50% chance of yielding a seed
-      if (Math.random<=0.5) {
-        var seed = HTomb.Things[this.entity.baseTemplate+"Seed"]().place(x,y,z);
-      }
-    },
-    harvestBy: function(cr) {
-      var x = this.entity.x;
-      var y = this.entity.y;
-      var z = this.entity.z;
-      this.entity.remove();
-      var herbs = Math.floor(Math.random()*(this.maxHerbs-1))+1;
-      var seeds = Math.floor(Math.random()*(this.maxSeeds+1));
-      var t = HTomb.Things.templates[this.entity.baseTemplate+"Seed"];
-      var f = HTomb.Things[this.entity.baseTemplate+"Seed"];
-      if (seeds>0) {
-        if (t.stackable) {
-          item = f();
-          item.item.n = seeds;
-          item.place(x,y,z);
-        } else {
-          for (i=0; i<seeds; i++) {
-            item = f();
-            item.place(x,y,z);
-          }
-        }
-      }
-      t = HTomb.Things.templates[this.entity.baseTemplate+"Herb"];
-      f = HTomb.Things[this.entity.baseTemplate+"Herb"];
-      var item, i;
-      if (t.stackable) {
-        item = f();
-        item.item.n = herbs;
-        item.place(x,y,z);
-      } else {
-        for (i=0; i<herbs; i++) {
-          item = f();
-          item.place(x,y,z);
-        }
-      }
+HTomb.Things.defineItem({
+  template: "Seed",
+  name: "seed",
+  symbol: "\u2026",
+  base: null,
+  stackable: true
+});
+HTomb.Things.defineItem({
+  template: "Herb",
+  name: "herb",
+  symbol: "\u273F",
+  base: null,
+  stackable: true
+});
+HTomb.Things.defineFeature({
+  template: "Sprout",
+  name: "sprout",
+  symbol: "\u0662",
+  base: null,
+  yields: null,
+  growTurns: 512,
+  each: ["growTurns"],
+  onPlace: function() {
+    HTomb.Events.subscribe(this,"TurnBegin");
+  },
+  onTurnBegin: function() {
+    this.growTurns-=1;
+    if (this.growTurns<=0) {
+      var plant = HTomb.Things[this.base+"Plant"]();
+      var x = this.x;
+      var y = this.y;
+      var z = this.z;
+      this.remove();
+      plant.place(x,y,z);
     }
-  });
+  }
+});
+HTomb.Things.defineFeature({
+  template: "Plant",
+  name: "plant",
+  base: null,
+  symbol: "\u2698",
+  yields: null
+});
 
-  HTomb.Things.defineCrop = function(args) {
+
+HTomb.Types.define({
+  template: "Crop",
+  name: "crop",
+  onDefine: function(args) {
     if (args===undefined || args.template===undefined || args.name===undefined) {
       HTomb.Debug.pushMessage("invalid template definition");
       return;
     }
-    var plant = args.plant || {};
-    var herb = args.herb || {};
-    var seed = args.seed || {};
-    var behavior = args.behavior || {};
-    plant.template = args.template + "Plant";
-    plant.baseTemplate = args.template;
-    plant.name = plant.name || args.name + " plant";
-    plant.matureSymbol = plant.matureSymbol || "\u2698";
-    plant.symbol = plant.symbol || '\u0662';
-    plant.fg = plant.fg || args.fg || "white";
-    plant.behaviors = {CropBehavior: behavior};
-    plant.behaviors.CropBehavior.stage = "plant";
-    plant.activate = function() {
-      if (this.crop.growTurns<=0) {
-        this.crop.harvestBy();
-      } else {
-        this.crop.plow();
+    var stages = ["Seed","Sprout","Herb","Plant"];
+    var specials = ["parent","base","template","name"]
+    for (var i=0; i<4; i++) {
+      args[stages[i]] = args[stages[i]] || {};
+      var parent = HTomb.Things[stages[i]];
+      args[stages[i]].parent = parent.template;
+      args[stages[i]].base = args.template;
+      args[stages[i]].template = args.template+stages[i];
+      args[stages[i]].name = args[stages[i]].name || args.name+" "+parent.name;
+      if (stages[i]==="Sprout") {
+        var seed = {};
+        seed[args.Seed.template] = 1;
+        args[stages[i]].yields = args[stages[i]].yields || seed;
+      } else if (stages[i]==="Plant") {
+        var harvest = {};
+        harvest[args.Seed.template] = 2;
+        harvest[args.Herb.template] = 2;
+        args[stages[i]].yields = args[stages[i]].yields || harvest;
       }
-    };
-    herb.template = args.template + "Herb";
-    herb.baseTemplate = args.template;
-    herb.name = herb.name || args.name + " herb";
-    herb.symbol = herb.symbol || "\u273F";
-    herb.fg = herb.fg || args.fg || "white";
-    herb.behaviors = {CropBehavior: behavior};
-    herb.behaviors.CropBehavior.stage = "herb";
-    herb.stackable = true;
-    seed.template = args.template + "Seed";
-    seed.baseTemplate = args.template;
-    seed.name = seed.name || args.name + " seed";
-    seed.symbol = seed.symbol || "\u2026";
-    seed.fg = seed.fg || args.fg || "white";
-    seed.behaviors = {CropBehavior: behavior};
-    seed.behaviors.CropBehavior.stage = "seed";
-    seed.stackable = true;
-    if (args.randomColor) {
-      plant.randomColor = plant.randomColor || args.randomColor;
-      herb.randomColor = herb.randomColor || args.randomColor;
-      seed.randomColor = seed.randomColor || args.randomColor;
+      for (var arg in args) {
+        if (stages.indexOf(arg)===-1 && specials.indexOf(arg)===-1) {
+          args[stages[i]][arg] = args[stages[i]][arg] || args[arg];
+        }
+      }
+      HTomb.Things.defineItem(args.Seed);
+      HTomb.Things.defineFeature(args.Sprout);
+      HTomb.Things.defineFeature(args.Plant);
+      HTomb.Things.defineItem(args.Herb);
     }
-    HTomb.Things.defineFeature(plant);
-    HTomb.Things.defineItem(herb);
-    HTomb.Things.defineItem(seed);
-  };
+  });
 
   return HTomb;
 })(HTomb);
