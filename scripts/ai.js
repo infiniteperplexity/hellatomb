@@ -8,7 +8,7 @@ HTomb = (function(HTomb) {
   HTomb.Types.define({
     template: "Routine",
     name: "routine",
-    act: function(ai) {
+    act: function(ai, args) {
       if (false) {
         ai.acted = true;
       }

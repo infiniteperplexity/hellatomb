@@ -257,13 +257,13 @@ HTomb = (function(HTomb) {
       }
     }
   });
+
   HTomb.Things.defineBehavior({
     template: "Feature",
     name: "feature",
-    hp: 10,
-    maxhp: 10,
-    each: ["hp"],
     yields: null,
+    integrity: null,
+    each: ["integrity"],
     place: function(x,y,z) {
       var c = coord(x,y,z);
       var features = HTomb.World.features;
@@ -277,6 +277,18 @@ HTomb = (function(HTomb) {
       var c = coord(f.x,f.y,f.z);
       var features = HTomb.World.features;
       delete features[c];
+    },
+    dismantle: function(optionalTask) {
+      if (this.integrity===null) {
+        this.integrity=5;
+      }
+      this.integrity-=1;
+      if (this.integrity<=0) {
+        this.harvest();
+        if (optionalTask) {
+          optionalTask.complete();
+        }
+      }
     },
     harvest: function() {
       if (this.yields!==null) {

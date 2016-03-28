@@ -3,6 +3,140 @@ HTomb = (function(HTomb) {
   var LEVELW = HTomb.Constants.LEVELW;
   var LEVELH = HTomb.Constants.LEVELH;
   var coord = HTomb.Utils.coord;
+
+  HTomb.Things.defineBehavior({
+    template: "Worker",
+    name: "worker",
+    task: null,
+    allowedTasks: ["DigTask","BuildTask","PatrolTask","CraftTask","HoardTask","FarmTask","DismantleTask"],
+    each: ["task","allowedTasks"],
+    onAssign: function(tsk) {
+      this.task = tsk;
+      HTomb.Debug.pushMessage(this.entity.describe() + " was assigned " + tsk.describe());
+    },
+    unassign: function() {
+      if (this.task===null) {
+        return;
+      }
+      HTomb.Debug.pushMessage(this.entity.describe() + " was unassigned from " + this.task.describe());
+      this.task = null;
+    }
+  });
+
+  HTomb.Types.define({
+    template: "Routine",
+    name: "routine",
+    act: function(ai) {
+      if (false) {
+        ai.acted = true;
+      }
+    }
+  });
+
+  HTomb.Types.defineRoutine({
+    template: "ShoppingList",
+    name: "shopping list",
+    act: function(ai, args) {
+      var cr = ai.entity;
+      var task = cr.worker.task;
+      var ingredients = args || task.ingredients;
+      // if no ingredients are required, skip the rest
+      if (Object.keys(ingredients).length===0) {
+        return false;
+      }
+      var x = task.zone.x;
+      var y = task.zone.y;
+      var z = task.zone.z;
+      var f = HTomb.World.features[coord(x,y,z)];
+      // no need for ingredients if construction has begun
+      if (f && f.template===task.makes) {
+        return false;
+      }
+      // check to see if we are already targeting an ingredient
+      var t = cr.ai.target;
+      // if target has been shaken
+      if (t && (t.reference===null || t.x===null)) {
+        cr.ai.target = null;
+      }
+      t = cr.ai.target;
+      // if the target is not an ingredient
+      if (t && ingredients[t.template]===undefined) {
+        cr.ai.target = null;
+      }
+      t = cr.ai.target;
+      var needy = false;
+      // cycle through ingredients to see if we have enough
+      if (t===null) {
+        for (var ing in ingredients) {
+          n = ingredients[ing];
+          // if we lack what we need, search for items
+          if (cr.inventory.items.countAll(ing)<n) {
+            needy = true;
+            var items = HTomb.Utils.findItems(function(v,k,i) {
+              if (v.item.owned!==true) {
+                return false;
+              } else if (v.template===ing) {
+                return true;
+              }
+            });
+            // if we find an item we need, target it
+            if (items.length>0) {
+              items = HTomb.Path.closest(cr,items);
+              cr.ai.target = items[0];
+              break;
+            }
+          }
+        }
+      }
+      // we have everything we need so skip the rest
+      if (needy===false) {
+        console.log("has all ingredients");
+        return false;
+      // failed to find what we needed
+      } else if (needy===true && t===null) {
+        console.log("couldn't find the ingredient!");
+        this.task.unassign();
+        cr.ai.walkRandom();
+      } else if (needy===true && t!==null) {
+        if (t.x===cr.x && t.y===cr.y && t.z===cr.z) {
+          console.log("picking up ingredient");
+          cr.inventory.pickupSome(t.template,args[t.template]);
+          ai.target = null;
+        } else {
+          console.log("walking toward ingredients");
+          cr.ai.walkToward(t.x,t.y,t.z);
+        }
+      }
+    }
+  });
+
+  HTomb.Types.defineRoutine({
+    template: "GoToWork",
+    name: "go to work",
+    act: function(ai) {
+      var cr = ai.entity;
+      var task = cr.worker.task;
+      if (cr.movement) {
+        var zone = task.zone;
+        var x = zone.x;
+        var y = zone.y;
+        var z = zone.z;
+        var dist = HTomb.Path.distance(cr.x,cr.y,x,y);
+        if (HTomb.Tiles.isTouchableFrom(x,y,z,cr.x,cr.y,cr.z)) {
+          task.work(x,y,z);
+        } else if (dist>0 || cr.z!==z) {
+          cr.ai.walkToward(x,y,z);
+        } else if (dist===0) {
+          cr.ai.walkRandom();
+        } else {
+          task.unassign();
+          cr.ai.walkRandom();
+        }
+      }
+    }
+  });
+
+
   // should we maybe allow a queue of zones???  probably not
   HTomb.Things.define({
     template: "Task",
@@ -12,9 +146,8 @@ HTomb = (function(HTomb) {
     assignee: null,
     zone: null,
     zoneTemplate: null,
-    incompleteFeature: null,
-    featureTemplate: null,
-    clearsFeature: false,
+    makes: null,
+    target: null,
     each: ["assigner","assignee","zone","feature"],
     ingredients: {},
     // note that this passes the behavior, not the entity
@@ -170,23 +303,44 @@ HTomb = (function(HTomb) {
       if (this.assignee.ai.acted===true) {
         return;
       }
-      this.assignee.worker.requires(this.ingredients);
+      HTomb.Routines.ShoppingList(this.assignee.ai);
       if (this.assignee.ai.acted===true) {
         return;
       }
-      this.assignee.worker.gotoWork();
+      HTomb.Routines.GoToWork(this.assignee.ai);
     },
     work: function(x,y,z) {
+      //if the zone was placed illegally in unexplored territory, delete it
       if (this.checkAssignment===false) {
         return;
       }
-      this.assignee.worker.construct(x,y,z);
-    },
-    finish: function() {
-      // used the default finish method
-      HTomb.Debug.pushMessage("Maybe don't use default finish method");
+      var f = HTomb.World.features[coord(x,y,z)];
+      if (f===undefined) {
+        // begin construction
+        for (var ingredient in this.ingredients) {
+          var n = this.ingredients[ingredient];
+          //remove n ingredients from the entity's inventory
+          if (this.assignee.inventory.items.containsAny(ingredient)===false) {
+            console.log("didn't have any " + ingredient);
+            return false;
+          }
+          var taken = this.assignee.inventory.items.take(ingredient,n);
+          taken.remove();
+        }
+        f = HTomb.Things[this.makes]();
+        f.task = this;
+        f.place(x,y,z);
+        this.target = f;
+      } else if (f.template===this.makes) {
+        this.target = f;
+        f.task = this;
+        f.work();
+      } else if (f.owned!==true) {
+        f.dismantle();
+      }
     }
   });
+
 
   HTomb.Things.defineTask({
     template: "DigTask",
@@ -196,13 +350,7 @@ HTomb = (function(HTomb) {
       name: "dig",
       bg: "#884400"
     },
-    featureTemplate: {
-      name: "incomplete excavation",
-      //symbol: "\u2022",
-      symbol: "\u2717",
-      steps: 5,
-      fg: HTomb.Constants.BELOW
-    },
+    makes: "Excavation",
     canDesignateTile: function(x,y,z) {
       var t = HTomb.World.tiles[z][x][y];
       var tb = HTomb.World.tiles[z-1][x][y];
@@ -217,75 +365,24 @@ HTomb = (function(HTomb) {
       }
       return true;
     },
-    finish: function(f) {
-      var tiles = HTomb.World.tiles;
-      var EmptyTile = HTomb.Tiles.EmptyTile;
-      var FloorTile = HTomb.Tiles.FloorTile;
-      var WallTile = HTomb.Tiles.WallTile;
-      var UpSlopeTile = HTomb.Tiles.UpSlopeTile;
-      var DownSlopeTile = HTomb.Tiles.DownSlopeTile;
-      var x = f.x;
-      var y = f.y;
-      var z = f.z;
-      var t = tiles[z][x][y];
-      // If there is a slope below, dig out the floor
-      if (tiles[z-1][x][y]===UpSlopeTile && HTomb.World.explored[z-1][x][y] && (t===WallTile || t===FloorTile)) {
-        tiles[z][x][y] = DownSlopeTile;
-      // If it's a wall, dig a tunnel
-      } else if (t===WallTile) {
-        tiles[z][x][y] = FloorTile;
-      } else if (t===FloorTile) {
-        // If it's a floor with a wall underneath dig a trench
-        if (tiles[z-1][x][y]===WallTile) {
-          tiles[z][x][y] = DownSlopeTile;
-          tiles[z-1][x][y] = UpSlopeTile;
-        // Otherwise just remove the floor
-        } else {
-          tiles[z][x][y] = EmptyTile;
-        }
-      // If it's a down slope tile, remove the slopes
-      } else if (t===DownSlopeTile) {
-        tiles[z][x][y] = EmptyTile;
-        tiles[z-1][x][y] = FloorTile;
-      // if it's an upward slope, remove the slope
-      } else if (t===UpSlopeTile) {
-        tiles[z][x][y] = FloorTile;
-        if (tiles[z+1][x][y]===DownSlopeTile) {
-          tiles[z+1][x][y] = EmptyTile;
-        }
-      } else if (t===EmptyTile) {
-        tiles[z-1][x][y] = FloorTile;
-      }
-      if(HTomb.World.turfs[coord(x,y,z)]) {
-        HTomb.World.turfs[coord(x,y,z)].destroy();
-      }
-      if (Math.random()<0.25) {
-        var rock = HTomb.Things.Rock();
-        rock.item.n = 1;
-        rock.place(x,y,z);
-      }
-      f.remove();
-      HTomb.World.validate.cleanNeighbors(x,y,z);
-      this.complete();
-    },
     work: function(x,y,z) {
       if (this.checkAssignment===false) {
         return;
       }
       var f = HTomb.World.features[coord(x,y,z)];
       if (f && f.template==="Tombstone") {
-        if (f.steps===undefined) {
-          f.steps=10;
+        if (f.integrity===null) {
+          f.integrity=10;
         }
-        f.steps-=1;
-        if (f.steps===0) {
+        f.integrity-=1;
+        if (f.integrity<=0) {
           f.explode();
           HTomb.World.tiles[z][x][y] = HTomb.Tiles.DownSlopeTile;
           this.complete();
           HTomb.World.validate.cleanNeighbors(x,y,z);
         }
       } else {
-        this.assignee.worker.construct(x,y,z);
+        HTomb.Things.templates.Task.work.call(this,x,y,z);
       }
     }
   });
@@ -299,12 +396,7 @@ HTomb = (function(HTomb) {
       //magenta
       bg: "#440088"
     },
-    featureTemplate: {
-      name: "incomplete construction",
-      symbol: "\u2692",
-      fg: HTomb.Constants.ABOVE,
-      steps: 5
-    },
+    makes: "Construction",
     ingredients: {Rock: 1},
     canDesignateTile: function(x,y,z) {
       //shouldn't be able to build surrounded by emptiness
@@ -316,41 +408,6 @@ HTomb = (function(HTomb) {
       } else {
         return true;
       }
-    },
-    finish: function(f) {
-      var tiles = HTomb.World.tiles;
-      var EmptyTile = HTomb.Tiles.EmptyTile;
-      var FloorTile = HTomb.Tiles.FloorTile;
-      var WallTile = HTomb.Tiles.WallTile;
-      var UpSlopeTile = HTomb.Tiles.UpSlopeTile;
-      var DownSlopeTile = HTomb.Tiles.DownSlopeTile;
-      var x = f.x;
-      var y = f.y;
-      var z = f.z;
-      var t = tiles[z][x][y];
-      var turf = HTomb.World.turfs[coord(x,y,z)];
-      if (turf) {
-        turf.remove();
-      }
-      // If it's a floor, build a slope
-      if (t===FloorTile) {
-        tiles[z][x][y] = UpSlopeTile;
-        if (tiles[z+1][x][y]===EmptyTile) {
-          tiles[z+1][x][y] = DownSlopeTile;
-        }
-      // If it's a slope, make it into a wall
-    } else if (t===UpSlopeTile) {
-        tiles[z][x][y] = WallTile;
-        if (tiles[z+1][x][y] === DownSlopeTile) {
-          tiles[z+1][x][y] = FloorTile;
-        }
-      // If it's empty, add a floor
-      } else if (t===DownSlopeTile || t===EmptyTile) {
-        tiles[z][x][y] = FloorTile;
-      }
-      HTomb.World.validate.cleanNeighbors(x,y,z);
-      f.remove();
-      this.complete();
     },
     designate: function(assigner) {
       HTomb.GUI.selectSquareZone(assigner.z,this.designateSquares,{
@@ -529,7 +586,10 @@ HTomb = (function(HTomb) {
       HTomb.Things.templates.Task.designateSquares.call(this, squares, options);
     },
     work: function(x,y,z) {
-      this.assignee.worker.dismantle(x,y,z);
+      var f = HTomb.World.features[coord(x,y,z)];
+      if (f) {
+        f.dismantle(this);
+      }
     }
   });
 
@@ -541,20 +601,9 @@ HTomb = (function(HTomb) {
       name: "craft",
       bg: "#553300"
     },
-    featureTemplate: {
-      name: "incomplete ",
-      symbol: "\u25AB",
-      steps: 10,
-      fg: "#BB9922"
-    },
+    makes: "IncompleteFeature",
+    choice: null,
     features: ["Door","Throne","ScryingGlass","Torch"],
-    finish: function(f) {
-      var x = this.zone.x;
-      var y = this.zone.y;
-      var z = this.zone.z;
-      f.remove();
-      this.zone.completeFeature.place(x,y,z);
-    },
     canDesignateTile: function(x,y,z) {
       var square = HTomb.Tiles.getSquare(x,y,z);
       if (square.terrain===HTomb.Tiles.FloorTile && HTomb.World.features[coord(x,y,z)]===undefined) {
@@ -575,8 +624,7 @@ HTomb = (function(HTomb) {
           function createZone(x,y,z) {
             var zone = that.placeZone(x,y,z);
             if (zone) {
-              zone.completeFeature = HTomb.Things[feature.template]();
-            }
+              zone.task.choice = feature.template;
           }
           HTomb.GUI.selectSquare(assigner.z,this.designateSquare,{
             assigner: assigner,
@@ -585,6 +633,19 @@ HTomb = (function(HTomb) {
           });
         };
       });
+    },
+    work: function(x,y,z) {
+      var f = HTomb.World.features[coord(x,y,z)];
+      if (f.template===this.makes && f.makes!==this.choice) {
+        f.dismantle();
+      } else {
+        HTomb.Things.Task.work.call(this,x,y,z);
+        // kind of a weird way to do it...
+        f = HTomb.World.features[coord(x,y,z)];
+        if (f.template===this.makes) {
+          f.makes = this.choice;
+        }
+      }
     }
   });
 
@@ -596,6 +657,7 @@ HTomb = (function(HTomb) {
       name: "farm",
       bg: "#008800"
     },
+    choice: null,
     //crops: ["Amanita","Bloodwort","Mandrake","Wolfsbane","Wormwood"],
     assignedCrop: null,
     findSeeds: function() {
@@ -742,6 +804,270 @@ HTomb = (function(HTomb) {
     }
   });
 
+  HTomb.Things.defineFeature({
+    template: "Excavation",
+    name: "incomplete excavation",
+    task: null,
+    symbol: "\u2717",
+    fg: HTomb.Constants.BELOW,
+    finish: function(f) {
+      var tiles = HTomb.World.tiles;
+      var EmptyTile = HTomb.Tiles.EmptyTile;
+      var FloorTile = HTomb.Tiles.FloorTile;
+      var WallTile = HTomb.Tiles.WallTile;
+      var UpSlopeTile = HTomb.Tiles.UpSlopeTile;
+      var DownSlopeTile = HTomb.Tiles.DownSlopeTile;
+      var x = this.x;
+      var y = this.y;
+      var z = this.z;
+      var t = tiles[z][x][y];
+      // If there is a slope below, dig out the floor
+      if (tiles[z-1][x][y]===UpSlopeTile && HTomb.World.explored[z-1][x][y] && (t===WallTile || t===FloorTile)) {
+        tiles[z][x][y] = DownSlopeTile;
+      // If it's a wall, dig a tunnel
+      } else if (t===WallTile) {
+        tiles[z][x][y] = FloorTile;
+      } else if (t===FloorTile) {
+        // If it's a floor with a wall underneath dig a trench
+        if (tiles[z-1][x][y]===WallTile) {
+          tiles[z][x][y] = DownSlopeTile;
+          tiles[z-1][x][y] = UpSlopeTile;
+        // Otherwise just remove the floor
+        } else {
+          tiles[z][x][y] = EmptyTile;
+        }
+      // If it's a down slope tile, remove the slopes
+      } else if (t===DownSlopeTile) {
+        tiles[z][x][y] = EmptyTile;
+        tiles[z-1][x][y] = FloorTile;
+      // if it's an upward slope, remove the slope
+      } else if (t===UpSlopeTile) {
+        tiles[z][x][y] = FloorTile;
+        if (tiles[z+1][x][y]===DownSlopeTile) {
+          tiles[z+1][x][y] = EmptyTile;
+        }
+      } else if (t===EmptyTile) {
+        tiles[z-1][x][y] = FloorTile;
+      }
+      if(HTomb.World.turfs[coord(x,y,z)]) {
+        HTomb.World.turfs[coord(x,y,z)].destroy();
+      }
+      if (Math.random()<0.25) {
+        var rock = HTomb.Things.Rock();
+        rock.item.n = 1;
+        rock.place(x,y,z);
+      }
+      HTomb.World.validate.cleanNeighbors(x,y,z);
+      if (this.task) {
+        this.task.complete();
+      }
+      this.remove();
+    }
+  });
+
+
+  HTomb.Things.defineFeature({
+    template: "Construction",
+    name: "incomplete construction",
+    symbol: "\u2692",
+    fg: HTomb.Constants.ABOVE,
+    task: null,
+    work: function() {
+      if (this.integrity===null) {
+        this.integrity = -5;
+      }
+      this.integrity+=1;
+      if (this.integrity>=0) {
+        this.finish();
+      }
+    },
+    finish: function() {
+      var tiles = HTomb.World.tiles;
+      var EmptyTile = HTomb.Tiles.EmptyTile;
+      var FloorTile = HTomb.Tiles.FloorTile;
+      var WallTile = HTomb.Tiles.WallTile;
+      var UpSlopeTile = HTomb.Tiles.UpSlopeTile;
+      var DownSlopeTile = HTomb.Tiles.DownSlopeTile;
+      var x = this.x;
+      var y = this.y;
+      var z = this.z;
+      var t = tiles[z][x][y];
+      var turf = HTomb.World.turfs[coord(x,y,z)];
+      if (turf) {
+        turf.remove();
+      }
+      // If it's a floor, build a slope
+      if (t===FloorTile) {
+        tiles[z][x][y] = UpSlopeTile;
+        if (tiles[z+1][x][y]===EmptyTile) {
+          tiles[z+1][x][y] = DownSlopeTile;
+        }
+      // If it's a slope, make it into a wall
+    } else if (t===UpSlopeTile) {
+        tiles[z][x][y] = WallTile;
+        if (tiles[z+1][x][y] === DownSlopeTile) {
+          tiles[z+1][x][y] = FloorTile;
+        }
+      // If it's empty, add a floor
+      } else if (t===DownSlopeTile || t===EmptyTile) {
+        tiles[z][x][y] = FloorTile;
+      }
+      HTomb.World.validate.cleanNeighbors(x,y,z);
+      if (this.task) {
+        this.task.complete();
+      }
+      this.remove();
+    }
+  });
+
+  HTomb.Things.defineFeature({
+    template: "IncompleteFeature",
+    name: "incomplete ",
+    symbol: "\u25AB",
+    fg: "#BB9922"
+    makes: null,
+    fg: HTomb.Constants.ABOVE,
+    task: null,
+    work: function() {
+      if (this.integrity===null) {
+        this.integrity = -5;
+      }
+      this.integrity+=1;
+      if (this.integrity>=0) {
+        this.finish();
+      }
+    },
+    finish: function() {
+      var x = this.x;
+      var y = this.y;
+      var z = this.z;
+      this.remove();
+      var f = HTomb.Things[makes]();
+      f.place(x,y,z);
+    }
+  });
+
+  HTomb.Things.defineBehavior({
+    template: "CropBehavior",
+    name: "crop",
+    maxHerbs: 2,
+    maxSeeds: 4,
+    growTurns: 512,
+    each: ["growTurns"],
+    onTurnBegin: function() {
+      if (this.growTurns>0) {
+        this.growTurns-=1;
+      } else {
+        this.mature();
+      }
+    },
+    plantAt: function(x,y,z) {
+      this.entity.remove();
+      var plant = HTomb.Things[this.entity.baseTemplate+"Plant"]().place(x,y,z);
+      HTomb.Events.subscribe(plant.crop,"TurnBegin");
+    },
+    mature: function() {
+      this.growTurns = 0;
+      this.entity.symbol = this.entity.matureSymbol || this.entity.symbol;
+      this.entity.fg = this.entity.matureFg || this.entity.fg;
+      HTomb.Events.unsubscribe(this,"TurnBegin");
+    },
+    plow: function() {
+      var x = this.entity.x;
+      var y = this.entity.y;
+      var z = this.entity.z;
+      this.entity.remove();
+      // 50% chance of yielding a seed
+      if (Math.random<=0.5) {
+        var seed = HTomb.Things[this.entity.baseTemplate+"Seed"]().place(x,y,z);
+      }
+    },
+    harvestBy: function(cr) {
+      var x = this.entity.x;
+      var y = this.entity.y;
+      var z = this.entity.z;
+      this.entity.remove();
+      var herbs = Math.floor(Math.random()*(this.maxHerbs-1))+1;
+      var seeds = Math.floor(Math.random()*(this.maxSeeds+1));
+      var t = HTomb.Things.templates[this.entity.baseTemplate+"Seed"];
+      var f = HTomb.Things[this.entity.baseTemplate+"Seed"];
+      if (seeds>0) {
+        if (t.stackable) {
+          item = f();
+          item.item.n = seeds;
+          item.place(x,y,z);
+        } else {
+          for (i=0; i<seeds; i++) {
+            item = f();
+            item.place(x,y,z);
+          }
+        }
+      }
+      t = HTomb.Things.templates[this.entity.baseTemplate+"Herb"];
+      f = HTomb.Things[this.entity.baseTemplate+"Herb"];
+      var item, i;
+      if (t.stackable) {
+        item = f();
+        item.item.n = herbs;
+        item.place(x,y,z);
+      } else {
+        for (i=0; i<herbs; i++) {
+          item = f();
+          item.place(x,y,z);
+        }
+      }
+    }
+  });
+
+  HTomb.Things.defineCrop = function(args) {
+    if (args===undefined || args.template===undefined || args.name===undefined) {
+      HTomb.Debug.pushMessage("invalid template definition");
+      return;
+    }
+    var plant = args.plant || {};
+    var herb = args.herb || {};
+    var seed = args.seed || {};
+    var behavior = args.behavior || {};
+    plant.template = args.template + "Plant";
+    plant.baseTemplate = args.template;
+    plant.name = plant.name || args.name + " plant";
+    plant.matureSymbol = plant.matureSymbol || "\u2698";
+    plant.symbol = plant.symbol || '\u0662';
+    plant.fg = plant.fg || args.fg || "white";
+    plant.behaviors = {CropBehavior: behavior};
+    plant.behaviors.CropBehavior.stage = "plant";
+    plant.activate = function() {
+      if (this.crop.growTurns<=0) {
+        this.crop.harvestBy();
+      } else {
+        this.crop.plow();
+      }
+    };
+    herb.template = args.template + "Herb";
+    herb.baseTemplate = args.template;
+    herb.name = herb.name || args.name + " herb";
+    herb.symbol = herb.symbol || "\u273F";
+    herb.fg = herb.fg || args.fg || "white";
+    herb.behaviors = {CropBehavior: behavior};
+    herb.behaviors.CropBehavior.stage = "herb";
+    herb.stackable = true;
+    seed.template = args.template + "Seed";
+    seed.baseTemplate = args.template;
+    seed.name = seed.name || args.name + " seed";
+    seed.symbol = seed.symbol || "\u2026";
+    seed.fg = seed.fg || args.fg || "white";
+    seed.behaviors = {CropBehavior: behavior};
+    seed.behaviors.CropBehavior.stage = "seed";
+    seed.stackable = true;
+    if (args.randomColor) {
+      plant.randomColor = plant.randomColor || args.randomColor;
+      herb.randomColor = herb.randomColor || args.randomColor;
+      seed.randomColor = seed.randomColor || args.randomColor;
+    }
+    HTomb.Things.defineFeature(plant);
+    HTomb.Things.defineItem(herb);
+    HTomb.Things.defineItem(seed);
+  };
 
   return HTomb;
 })(HTomb);

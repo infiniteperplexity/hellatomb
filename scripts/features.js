@@ -83,7 +83,7 @@ HTomb = (function(HTomb) {
     steps: 10,
     task: null,
     symbol: "X",
-    each: ["steps","symbol","fg","task","name"]
+    each: ["steps","symbol","fg","task","name"],
   });
 
   HTomb.Things.defineFeature({
