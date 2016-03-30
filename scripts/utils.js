@@ -29,6 +29,29 @@ HTomb = (function(HTomb) {
     return selected;
   };
 
+  HTomb.Utils.clone = function(obj) {
+    if (typeof(obj)==="object") {
+      if (obj===null) {
+        return null;
+      }
+      // recursively copy arrays and objects
+      var nobj = Object.create(obj);
+      if (Array.isArray(obj)) {
+        for (var i=0; i<obj.length; i++) {
+          nobj[i].push(HTomb.Utils.clone(obj[i]));
+        }
+      } else {
+        for (var key in obj) {
+          nobj[key] = HTomb.Utils.clone(obj[key]);
+        }
+      }
+      return nobj;
+    // pass primitives by value and functions by reference
+    } else {
+      return obj;
+    }
+  };
+
   HTomb.Utils.shuffle = function(arr) {
     //Fisher-Yates
     var i = arr.length;

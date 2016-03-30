@@ -245,9 +245,9 @@ HTomb = (function(HTomb) {
       if (pile) {
         if (pile.contains(this.entity)) {
           pile.remove(this.entity);
-          if (pile.length===0) {
-            delete HTomb.World.items[c];
-          }
+        }
+        if (pile.length===0) {
+          delete HTomb.World.items[c];
         }
       }
     },
@@ -393,39 +393,15 @@ HTomb = (function(HTomb) {
 
   HTomb.Things.defineCreature = function(args) {
     args = args || {};
-    if (args.parent!==undefined) {
-      var parent = HTomb.Things.templates[args.parent];
-      for (var arg in parent) {
-        if (args[arg]===undefined) {
-          if (Object.keys(parent[arg]).length>0) {
-            console.log("need to handle inheritance of " + arg);
-            continue;
-          }
-          args[arg] = parent[arg];
-        }
-      }
-    }
     args.behaviors = args.behaviors || {};
     args.behaviors.Creature = {};
     HTomb.Things.defineEntity(args);
   };
   HTomb.Things.defineItem = function(args) {
     args = args || {};
+    var parent = HTomb.Things.templates[args.parent] || {};
     args.behaviors = args.behaviors || {};
-    if (args.parent!==undefined) {
-      var parent = HTomb.Things.templates[args.parent];
-      for (var arg in parent) {
-        if (args[arg]===undefined) {
-          if (Object.keys(parent[arg]).length>0) {
-            console.log("need to handle inheritance of " + arg);
-            continue;
-          }
-          args[arg] = parent[arg];
-        }
-      }
-    }
     var item = {};
-    // okay I see where the problem is...this won't capture the parents' arguments
     if (args.stackable) {
       item.stackable = args.stackable;
       if (args.n) {
@@ -434,64 +410,37 @@ HTomb = (function(HTomb) {
       if (args.maxn) {
         item.maxn = args.maxn;
       }
+    } else if (args.stackable===undefined || parent.stackable) {
+      item.stackable = parent.stackable;
+      if (parent.n) {
+        item.n = parent.n;
+      }
+      if (parent.maxn) {
+        item.maxn = parent.maxn;
+      }
     }
     args.behaviors.Item = item;
     HTomb.Things.defineEntity(args);
+
   };
   HTomb.Things.defineFeature = function(args) {
     args = args || {};
-    if (args.parent!==undefined) {
-      var parent = HTomb.Things.templates[args.parent];
-      for (var arg in parent) {
-        if (args[arg]===undefined) {
-          if (Object.keys(parent[arg]).length>0) {
-            console.log("need to handle inheritance of " + arg);
-            continue;
-          }
-          args[arg] = parent[arg];
-        }
-      }
-    }
+    // this should work since it uses inheritance
+    var parent = HTomb.Things.templates[args.parent]  || {};
     args.behaviors = args.behaviors || {};
     var feature = {};
-    if (args.yields) {
-      feature.yields = args.yields;
-    }
+    feature.yields = args.yields || HTomb.Utils.clone(parent.yields) || null;
     args.behaviors.Feature = feature;
     HTomb.Things.defineEntity(args);
   };
   HTomb.Things.defineZone = function(args) {
     args = args || {};
-    if (args.parent!==undefined) {
-      var parent = HTomb.Things.templates[args.parent];
-      for (var arg in parent) {
-        if (args[arg]===undefined) {
-          if (Object.keys(parent[arg]).length>0) {
-            console.log("need to handle inheritance of " + arg);
-            continue;
-          }
-          args[arg] = parent[arg];
-        }
-      }
-    }
     args.behaviors = args.behaviors || {};
     args.behaviors.Zone = {};
     HTomb.Things.defineEntity(args);
   };
   HTomb.Things.defineTurf = function(args) {
     args = args || {};
-    if (args.parent!==undefined) {
-      var parent = HTomb.Things.templates[args.parent];
-      for (var arg in parent) {
-        if (args[arg]===undefined) {
-          if (Object.keys(parent[arg]).length>0) {
-            console.log("need to handle inheritance of " + arg);
-            continue;
-          }
-          args[arg] = parent[arg];
-        }
-      }
-    }
     var turf = {};
     args.behaviors = args.behaviors || {};
     args.behaviors.Turf = {};
@@ -617,6 +566,7 @@ HTomb = (function(HTomb) {
       } else {
         var last = this.getLast(i_or_t);
         if (last.item.n===1) {
+          this.remove(last);
           return last;
         } else {
           last.item.n-=1;
@@ -636,6 +586,7 @@ HTomb = (function(HTomb) {
       } else {
         var last = this.getLast(i_or_t);
         if (last.item.n<=n) {
+          this.remove(last);
           return last;
         } else {
           last.item.n-=n;
@@ -659,7 +610,10 @@ HTomb = (function(HTomb) {
       var indx = this.indexOf(item);
       if (indx>-1) {
         item.item.container = null;
-        return this.splice(indx,1);
+        this.splice(indx,1);
+        // should this only happen if it's on the ground?
+        item.remove();
+        return item;
       }
     },
     list: function() {

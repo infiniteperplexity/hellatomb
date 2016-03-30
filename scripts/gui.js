@@ -1134,7 +1134,7 @@ HTomb = (function(HTomb) {
   survey.menuText = ["You are now in survey mode.","Use movement keys to navigate.","Comma go down.","Period to go up.","Escape to exit."];
   survey.clickTile = main.clickTile;
   survey.rightClickTile = main.rightClickTile;
-  
+
   // Currently implemented, seems slow and I don't know where to put it
   var minimap = {};
   minimap.render = function() {
