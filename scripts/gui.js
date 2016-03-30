@@ -678,8 +678,8 @@ HTomb = (function(HTomb) {
         details.push("Its attention is focused on " + b.describe() + " at "+b.x+", "+y+", "+z+".");
         details.push(" ");
       }
-      if (thing.minion) {
-        b = thing.minion;
+      if (thing.worker) {
+        b = thing.worker;
         if (b.task) {
           s = "It is assigned to " + b.task.describe();
           if (b.task.zone) {

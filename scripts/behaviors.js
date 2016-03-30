@@ -454,6 +454,10 @@ HTomb = (function(HTomb) {
           //how do we decide how to die first?  just do it in order I guess...
           if (this.materials[m].has < this.materials[m].needs) {
             this.entity.creature.die();
+            // this is an ad hoc solution...I think what was happening is some later AI script in the same turn used the target?
+            if (attack.entity.ai && attack.entity.ai.target===this.entity) {
+              attack.entity.ai.target = null;
+            }
           }
         }
       }

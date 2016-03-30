@@ -166,7 +166,7 @@ HTomb = (function(HTomb) {
       var z = this.zone.z;
       var f = HTomb.World.features[coord(x,y,z)];
       var cr = this.assignee;
-      if (f===undefined || f.makes!==this.makes) {
+      if (f===undefined || f.makes!==this.makes || this.ingredients!==null) {
         HTomb.Routines.ShoppingList.act(cr.ai);
       }
       if (cr.ai.acted===true) {
@@ -287,7 +287,7 @@ HTomb = (function(HTomb) {
       bg: "#440088"
     },
     makes: "Construction",
-    ingredients: {Rock: 1},
+    //ingredients: {Rock: 1},
     canDesignateTile: function(x,y,z) {
       //shouldn't be able to build surrounded by emptiness
       var t = HTomb.World.tiles[z][x][y];

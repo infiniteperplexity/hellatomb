@@ -13,9 +13,8 @@ Small:
 + add "paused" tag
 + ghouls attack zombies
 + zombies attack stuff too
-
-- make it so fetch can require variable numbers?
-
++ make it so fetch can require variable numbers?
++ prerequisite items for tasks
 
 
 - will of wisps
@@ -33,7 +32,6 @@ Small:
 - scroll backwards through message history
 - grass dies in shade?
 - figure out asynchronous loading of resources
-- prerequisite items for tasks
 - queueing of zones?
 - items have bulk
 

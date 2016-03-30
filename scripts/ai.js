@@ -115,7 +115,7 @@ HTomb = (function(HTomb) {
       }
     }
   });
-  
+
   HTomb.Types.defineRoutine({
     template: "ServeMaster",
     name: "serve master",
@@ -160,6 +160,7 @@ HTomb = (function(HTomb) {
           ai.target = hostiles[0];
         }
       }
+      // should this test for a valid target?
       if (ai.target && ai.isHostile(ai.target)) {
         if (HTomb.Tiles.isTouchableFrom(ai.target.x, ai.target.y,ai.target.z, ai.entity.x, ai.entity.y, ai.entity.z)) {
           ai.entity.combat.attack(ai.target);
@@ -171,9 +172,6 @@ HTomb = (function(HTomb) {
     }
   });
 
-
-
-
   HTomb.Types.defineRoutine({
     template: "HuntDeadThings",
     name: "hunt dead things",
@@ -181,7 +179,7 @@ HTomb = (function(HTomb) {
       // should this hunt in sight range first?
       if (ai.target===null) {
         var zombies = HTomb.Utils.where(HTomb.World.creatures,function(v,k,o) {
-          return (v.template==="Zombie" && ai.isHostile(v));
+          return (v.template==="Zombie" && ai.isHostile(v) && HTomb.Tiles.isEnclosed(v.x,v.y,v.z)===false);
         });
         if (zombies.length>0) {
           var e = ai.entity;
@@ -311,9 +309,6 @@ HTomb = (function(HTomb) {
       var x0 = this.entity.x;
       var y0 = this.entity.y;
       var z0 = this.entity.z;
-      if (HTomb.Tiles.isEnclosed(x,y,z)) {
-        return false;
-      }
       var path = HTomb.Path.aStar(x0,y0,z0,x,y,z,{useLast: false});
       if (path!==false) {
         var square = path[0];
