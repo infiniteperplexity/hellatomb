@@ -71,6 +71,7 @@ HTomb.Types.define({
         var seed = {};
         seed[args.Seed.template] = {n: 1, nonzero: true};
         args[stages[i]].yields = args[stages[i]].yields || seed;
+        args[stages[i]].incompleteFg = args[stages[i]].incompleteFg || args.fg;
       } else if (stages[i]==="Plant") {
         var harvest = {};
         harvest[args.Seed.template] = {n: 5, nozero: true};
