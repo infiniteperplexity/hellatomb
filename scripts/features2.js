@@ -78,15 +78,6 @@ HTomb = (function(HTomb) {
   });
 
   HTomb.Things.defineFeature({
-    template: "Construction",
-    name: "construction",
-    steps: 10,
-    task: null,
-    symbol: "X",
-    each: ["steps","symbol","fg","task","name"]
-  });
-
-  HTomb.Things.defineFeature({
     template: "Throne",
     name: "throne",
     //symbol: "\u2655",

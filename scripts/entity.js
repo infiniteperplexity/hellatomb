@@ -263,7 +263,7 @@ HTomb = (function(HTomb) {
     name: "feature",
     yields: null,
     integrity: null,
-    each: ["integrity"],
+    each: ["integrity","yields"],
     place: function(x,y,z) {
       var c = coord(x,y,z);
       var features = HTomb.World.features;
@@ -393,14 +393,39 @@ HTomb = (function(HTomb) {
 
   HTomb.Things.defineCreature = function(args) {
     args = args || {};
+    if (args.parent!==undefined) {
+      var parent = HTomb.Things.templates[args.parent];
+      for (var arg in parent) {
+        if (args[arg]===undefined) {
+          if (Object.keys(parent[arg]).length>0) {
+            console.log("need to handle inheritance of " + arg);
+            continue;
+          }
+          args[arg] = parent[arg];
+        }
+      }
+    }
     args.behaviors = args.behaviors || {};
-    args.behaviors.Creature = args.behaviors.Creature || {};
+    args.behaviors.Creature = {};
     HTomb.Things.defineEntity(args);
   };
   HTomb.Things.defineItem = function(args) {
     args = args || {};
     args.behaviors = args.behaviors || {};
+    if (args.parent!==undefined) {
+      var parent = HTomb.Things.templates[args.parent];
+      for (var arg in parent) {
+        if (args[arg]===undefined) {
+          if (Object.keys(parent[arg]).length>0) {
+            console.log("need to handle inheritance of " + arg);
+            continue;
+          }
+          args[arg] = parent[arg];
+        }
+      }
+    }
     var item = {};
+    // okay I see where the problem is...this won't capture the parents' arguments
     if (args.stackable) {
       item.stackable = args.stackable;
       if (args.n) {
@@ -412,41 +437,68 @@ HTomb = (function(HTomb) {
     }
     args.behaviors.Item = item;
     HTomb.Things.defineEntity(args);
-    //if (args.asFeature) {
-    //  var feature = {};
-    //  feature.template = args.asFeature.template || args.feature + "Feature";
-    //  feature.name = args.asFeature.name || args.name;
-    //}
   };
   HTomb.Things.defineFeature = function(args) {
     args = args || {};
+    if (args.parent!==undefined) {
+      var parent = HTomb.Things.templates[args.parent];
+      for (var arg in parent) {
+        if (args[arg]===undefined) {
+          if (Object.keys(parent[arg]).length>0) {
+            console.log("need to handle inheritance of " + arg);
+            continue;
+          }
+          args[arg] = parent[arg];
+        }
+      }
+    }
     args.behaviors = args.behaviors || {};
     var feature = {};
     if (args.yields) {
       feature.yields = args.yields;
     }
-    args.behaviors.Feature = args.behaviors.Feature || feature;
+    args.behaviors.Feature = feature;
     HTomb.Things.defineEntity(args);
   };
   HTomb.Things.defineZone = function(args) {
     args = args || {};
+    if (args.parent!==undefined) {
+      var parent = HTomb.Things.templates[args.parent];
+      for (var arg in parent) {
+        if (args[arg]===undefined) {
+          if (Object.keys(parent[arg]).length>0) {
+            console.log("need to handle inheritance of " + arg);
+            continue;
+          }
+          args[arg] = parent[arg];
+        }
+      }
+    }
     args.behaviors = args.behaviors || {};
-    args.behaviors.Zone = args.behaviors.Zone || {};
+    args.behaviors.Zone = {};
     HTomb.Things.defineEntity(args);
   };
   HTomb.Things.defineTurf = function(args) {
     args = args || {};
+    if (args.parent!==undefined) {
+      var parent = HTomb.Things.templates[args.parent];
+      for (var arg in parent) {
+        if (args[arg]===undefined) {
+          if (Object.keys(parent[arg]).length>0) {
+            console.log("need to handle inheritance of " + arg);
+            continue;
+          }
+          args[arg] = parent[arg];
+        }
+      }
+    }
     var turf = {};
     args.behaviors = args.behaviors || {};
-    args.behaviors.Turf = args.behaviors.Turf || {};
+    args.behaviors.Turf = {};
     args.plural = true;
     HTomb.Things.defineEntity(args);
   };
 
-
-  function EntityWrapper(entity) {
-    this.entity = entity;
-  }
 
   function ItemContainer(args) {
     var container = Object.create(Array.prototype);

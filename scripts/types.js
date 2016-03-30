@@ -70,7 +70,7 @@ HTomb = (function(HTomb) {
     }
   	// Don't fire onDefine for the top-level thing
   	if (t.onDefine && args.parent!=="Type") {
-  		t.onDefine();
+  		t.onDefine(args);
   	}
   };
 

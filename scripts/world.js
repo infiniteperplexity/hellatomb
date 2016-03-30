@@ -529,9 +529,6 @@ timeIt("elevation", function() {
           }
         } else {
           plant = HTomb.Things[template]();
-          if (plant.crop) {
-            plant.crop.mature();
-          }
           placement.stack(plant,x,y,z);
         }
       }
@@ -775,7 +772,7 @@ timeIt("elevation", function() {
      return creatures;
    };
 
-   
+
 
   return HTomb;
 })(HTomb);

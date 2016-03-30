@@ -58,11 +58,12 @@ HTomb = (function(HTomb) {
       t = Object.create(thing);
       // Create a new function...maybe not the best way to do this
       HTomb.Things["define" + args.template] = function(opts) {
-        opts.parent = args.template;
+        opts.parent = opts.parent || args.template;
         return HTomb.Things.define(opts);
       };
     } else {
       t = Object.create(HTomb.Things.templates[args.parent]);
+
       HTomb.Things[args.template] = function(opts) {
         // Create a shortcut function to create it
         return HTomb.Things.create(args.template, opts);
