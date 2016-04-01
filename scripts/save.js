@@ -5,6 +5,24 @@ HTomb = (function(HTomb) {
   var LEVELH = HTomb.Constants.LEVELH;
   var NLEVELS = HTomb.Constants.NLEVELS;
 
+
+  HTomb.Save.testing = function() {
+    var list = ['"['];
+    for (var i=0; i<HTomb.World.things.length; i++) {
+        console.log(i);
+        if (i>0) {
+          list.push(",");
+        }
+        list.push(HTomb.Save.stringify(HTomb.World.things[i],true));
+        //if (i>1000) {
+        //  break;
+        //}
+      }
+    list.push(']"');
+    var json = list.join('');
+    return json;
+  };
+
   HTomb.Save.saveGame = function() {
     var saveGame = {};
     console.log("testing");
@@ -17,15 +35,17 @@ HTomb = (function(HTomb) {
     saveGame.zones = HTomb.World.zones;
     saveGame.turfs = HTomb.World.turfs;
     saveGame.dailyCycle = HTomb.World.dailyCycle;
-    var json = HTomb.Save.stringify(saveGame);
-    localStorage.saveGame = json;
-    console.log(json.length);
+    localStorage.saveGame = saveGame;
+    //var json = HTomb.Save.stringify(saveGame);
+    //localStorage.saveGame = json;
+    //console.log(json.length);
   };
 
   var seen = [];
   HTomb.Save.duplicates = [];
   HTomb.Save.nThings = 0;
-  HTomb.Save.stringify = function(obj) {
+  //HTomb.Save.stringify = function(obj) {
+  HTomb.Save.stringify = function(obj, arg) {
     var json = JSON.stringify(obj, function(key, val) {
       if (val===undefined) {
         //console.log("why is val undefined?");
@@ -39,7 +59,9 @@ HTomb = (function(HTomb) {
         //console.log("special way to stringify");
         return val.stringify();
         // if it's from the global things table, stringify it normally
-      } else if (this===HTomb.World.things) {
+      //} else if (this===HTomb.World.things) {
+      } else if (arg===true) {
+        arg = false;
         HTomb.Save.nThings+=1;
         // stringify only those things on the "each" list
         for (var p in val) {
@@ -85,7 +107,7 @@ HTomb = (function(HTomb) {
         toList[f] = fromList[f];
       }
     }
-  }
+  };
 
   function fillGrid3dFrom(fromGrid, toGrid, callb) {
   // default callback is to return self
@@ -98,7 +120,7 @@ HTomb = (function(HTomb) {
         }
       }
     }
-  }
+  };
 
   HTomb.Save.restoreGame = function(j) {
     var json = localStorage.saveGame;
@@ -150,4 +172,5 @@ HTomb = (function(HTomb) {
   };
 
   return HTomb;
+
 })(HTomb);
