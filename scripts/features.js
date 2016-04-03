@@ -20,7 +20,7 @@ HTomb = (function(HTomb) {
       var y = this.y;
       var z = this.z;
       this.destroy();
-      var t = HTomb.World.turfs[coord(x,y,z)];
+      var t = HTomb.World.covers[coord(x,y,z)];
       if (t) {
         t.destroy();
       }
@@ -171,8 +171,9 @@ HTomb = (function(HTomb) {
       } else if (t===EmptyTile) {
         tiles[z-1][x][y] = FloorTile;
       }
-      if(HTomb.World.turfs[coord(x,y,z)]) {
-        HTomb.World.turfs[coord(x,y,z)].destroy();
+      if(HTomb.World.covers[coord(x,y,z)]) {
+        delete HTomb.World.covers[coord(x,y,z)];
+        //HTomb.World.covers[coord(x,y,z)].destroy();
       }
       if (Math.random()<0.25) {
         var rock = HTomb.Things.Rock();
@@ -201,9 +202,9 @@ HTomb = (function(HTomb) {
       var y = this.y;
       var z = this.z;
       var t = tiles[z][x][y];
-      var turf = HTomb.World.turfs[coord(x,y,z)];
-      if (turf) {
-        turf.remove();
+      var cover = HTomb.World.covers[coord(x,y,z)];
+      if (cover) {
+        delete HTomb.World.covers[coord(x,y,z)];
       }
       // If it's a floor, build a slope
       if (t===FloorTile) {
@@ -259,41 +260,6 @@ HTomb = (function(HTomb) {
       var f = HTomb.Things[this.makes]();
       f.place(x,y,z);
     }
-  });
-
-  HTomb.Things.defineTurf({
-    template: "Water",
-    name: "water",
-    symbol: "~",
-    flowSymbol: "\u2248",
-    fg: HTomb.Constants.WATERFG || "#3388FF",
-    bg: HTomb.Constants.WATERBG || "#1144BB",
-    behaviors: {Liquid: {}}
-  });
-  HTomb.Things.defineTurf({
-    template: "Lava",
-    name: "lava",
-    symbol: "~",
-    flowSymbol: "\u2248",
-    fg: "#FF8833",
-    bg: "#DD4411",
-    behaviors: {Liquid: {}}
-  });
-
-  HTomb.Things.defineTurf({
-    template: "Grass",
-    name: "grass",
-    symbol: '"',
-    fg: HTomb.Constants.GRASSFG ||"#668844",
-    bg: HTomb.Constants.GRASSBG || "#334422"
-  });
-
-  HTomb.Things.defineTurf({
-    template: "Soil",
-    name: "soil",
-    symbol: '"',
-    fg: "#886644",
-    bg: "#332211"
   });
 
   return HTomb;

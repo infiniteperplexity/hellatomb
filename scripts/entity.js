@@ -10,7 +10,6 @@ HTomb = (function(HTomb) {
     y: null,
     z: null,
     behaviors: {},
-    myBehaviors: [],
     each: ["x","y","z","reference"],
     place: function(x,y,z) {
       this.remove();
@@ -26,21 +25,26 @@ HTomb = (function(HTomb) {
       if (this.zone) {
         this.zone.place(x,y,z);
       }
-      if (this.turf) {
-        this.turf.place(x,y,z);
-      }
       this.x = x;
       this.y = y;
       this.z = z;
       if (this.onPlace) {
         this.onPlace(x,y,z);
       }
-      for (var b in this.myBehaviors) {
-        if (this.myBehaviors[b].onPlace) {
-          this.myBehaviors[b].onPlace();
+      var beh = this.getBehaviors();
+      for (var i=0; i<beh.length; i++) {
+        if (beh[i].onPlace) {
+          beh[i].onPlace();
         }
       }
       return this;
+    },
+    getBehaviors: function() {
+      var behaviors = [];
+      for (var b in HTomb.Things.behaviors) {
+        behaviors.push(this[b]);
+      }
+      return behaviors;
     },
     remove: function() {
       if (this.creature) {
@@ -55,12 +59,10 @@ HTomb = (function(HTomb) {
       if (this.zone) {
         this.zone.remove();
       }
-      if (this.turf) {
-        this.turf.remove();
-      }
-      for (var b in this.myBehaviors) {
-        if (this.myBehaviors[b].onRemove) {
-          this.myBehaviors[b].onRemove();
+      var beh = this.getBehaviors();
+      for (var i=0; i<beh.length; i++) {
+        if (beh[i].onRemove) {
+          beh[i].onRemove();
         }
       }
       this.x = null;
@@ -80,13 +82,11 @@ HTomb = (function(HTomb) {
       if (this.zone && this.zone.destroy) {
         this.zone.destroy();
       }
-      if (this.turf && this.turf.destroy) {
-        this.turf.destroy();
-      }
       this.reference = null;
       HTomb.Events.publish({type: "Destroy", entity: this});
-      for (var i=0; i<this.myBehaviors.length; i++) {
-        var b = this.myBehaviors[i];
+      var behaviors = this.getBehaviors();
+      for (var i=0; i<beh.length; i++) {
+        var b = beh[i];
         HTomb.Events.unsubscribeAll(b);
       }
       HTomb.Events.unsubscribeAll(this);
@@ -137,7 +137,6 @@ HTomb = (function(HTomb) {
       HTomb.GUI.render();
     },
     onCreate: function() {
-      this.myBehaviors = [];
       // Add behaviors to entity
       for (var b in this.behaviors) {
         if (typeof(HTomb.Things[b])!=="function") {
@@ -186,10 +185,13 @@ HTomb = (function(HTomb) {
       if (this.onAdd) {
         this.onAdd(this.options);
       }
-      ent.myBehaviors.push(this);
+    },
+    onDefine: function() {
+      HTomb.Things.behaviors.push(this.name);
     },
     each: ["entity"]
   });
+  HTomb.Things.behaviors = [];
 
   HTomb.Things.defineBehavior({
     template: "Creature",
@@ -329,67 +331,6 @@ HTomb = (function(HTomb) {
       delete zones[c];
     }
   });
-  HTomb.Things.defineBehavior({
-    template: "Turf",
-    name: "turf",
-    place: function(x,y,z) {
-      var c = coord(x,y,z);
-      var turfs = HTomb.World.turfs;
-      if (turfs[c]) {
-        turfs[c].remove();
-      }
-      turfs[c] = this.entity;
-    },
-    remove: function() {
-      var l = this.entity;
-      var c = coord(l.x,l.y,l.z);
-      var turfs = HTomb.World.turfs;
-      delete turfs[c];
-    }
-  });
-
-  HTomb.Things.defineBehavior({
-    template: "Liquid",
-    name: "liquid",
-    infinite: true,
-    each: ["infinite"],
-    shimmer: function() {
-      var bg = ROT.Color.fromString(this.entity.bg);
-      bg = ROT.Color.randomize(bg,[bg[0]/16, bg[1]/16, bg[2]/16]);
-      bg = ROT.Color.toHex(bg);
-      return bg;
-    },
-    darken: function() {
-      var bg = ROT.Color.fromString(this.entity.bg);
-      bg = ROT.Color.multiply(bg,[72,128,192]);
-      bg = ROT.Color.toHex(bg);
-      return bg;
-    },
-    flood: function() {
-      var x = this.entity.x;
-      var y = this.entity.y;
-      var z = this.entity.z;
-      var t = HTomb.World.turfs[coord(x,y,z-1)];
-      var water;
-      if (HTomb.World.tiles[z-1][x][y].solid!==true && t.liquid===undefined) {
-        water = HTomb.Things.Water().place(x,y,z);
-        water.liquid.flood();
-        // if we flood below, don't flood to the sides...should this happen each turn?
-        return;
-      }
-      var neighbors = HTomb.Tiles.neighbors(this.entity.x,this.entity.y,4);
-      for (var i=0; i<neighbors.length; i++) {
-        x = neighbors[i][0];
-        y = neighbors[i][1];
-        t = HTomb.World.turfs[coord(x,y,z)];
-        if (HTomb.World.tiles[z][x][y].solid===true || (t && t.liquid)) {
-          continue;
-        }
-        water = HTomb.Things.Water().place(x,y,z);
-        water.liquid.flood();
-      }
-    }
-  });
 
   HTomb.Things.defineCreature = function(args) {
     args = args || {};
@@ -439,15 +380,6 @@ HTomb = (function(HTomb) {
     args.behaviors.Zone = {};
     HTomb.Things.defineEntity(args);
   };
-  HTomb.Things.defineTurf = function(args) {
-    args = args || {};
-    var turf = {};
-    args.behaviors = args.behaviors || {};
-    args.behaviors.Turf = {};
-    args.plural = true;
-    HTomb.Things.defineEntity(args);
-  };
-
 
   function ItemContainer(args) {
     var container = Object.create(Array.prototype);

@@ -453,13 +453,13 @@ HTomb = (function(HTomb) {
       this.complete();
     },
     canDesignateTile: function(x,y,z) {
-      if (HTomb.World.features[coord(x,y,z)] || (HTomb.World.turfs[coord(x,y,z)] && HTomb.World.turfs[coord(x,y,z)].liquid===undefined)) {
+      if (HTomb.World.features[coord(x,y,z)] || (HTomb.World.covers[coord(x,y,z)] && HTomb.World.covers[coord(x,y,z)].liquid===undefined)) {
         return true;
       } else {
         return false;
       }
     },
-    // filter depending on whether we are removing features or turfs
+    // filter depending on whether we are removing features or covers
     designateSquares: function(squares, options) {
       var anyf = false;
       for (var j=0; j<squares.length; j++) {
@@ -604,7 +604,7 @@ HTomb = (function(HTomb) {
       if (f) {
         return false;
       }
-      if (HTomb.World.turfs[coord(x,y,z)] && HTomb.World.turfs[coord(x,y,z)].liquid) {
+      if (HTomb.World.covers[coord(x,y,z)] && HTomb.World.covers[coord(x,y,z)].liquid) {
         return false;
       }
       var t = HTomb.World.tiles[z][x][y];

@@ -351,8 +351,8 @@ HTomb = (function(HTomb) {
       if (terrain.fallable===true && this.flies!==true) {
         return false;
       }
-      var turf = HTomb.World.turfs[c];
-      if (turf && turf.liquid && this.swims!==true) {
+      var cover = HTomb.World.covers[c];
+      if (cover && cover.liquid && this.swims!==true) {
         return false;
       }
       // non-flyers can't climb diagonally
@@ -379,7 +379,7 @@ HTomb = (function(HTomb) {
       if (this.flies===true) {
         return true;
       }
-      if (this.swims===true && turf && turf.liquid) {
+      if (this.swims===true && cover && cover.liquid) {
         return true;
       }
       return false;
