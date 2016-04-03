@@ -146,7 +146,7 @@ HTomb = (function(HTomb) {
   HTomb.World.validate.liquids = function(x,y,z) {
     var t = HTomb.World.covers[coord(x,y,z)];
     if (t && t.liquid) {
-      t.liquid.flood();
+      t.liquid.flood(x,y,z);
     }
   };
 
@@ -348,7 +348,7 @@ timeIt("elevation", function() {
             break;
           } else if (rock._map[x][y]===0 || HTomb.World.tiles[z][x][y]!==HTomb.Tiles.WallTile
               || HTomb.Tiles.countNeighborsWhere(x,y,z,nonsolids)>0) {
-            HTomb.Things.create("Water").place(x,y,z);
+            HTomb.World.covers[coord(x,y,z)] = HTomb.Covers.Water;
           }
         }
       }
@@ -362,7 +362,7 @@ timeIt("elevation", function() {
           if (z<elev) {
             HTomb.World.tiles[z][x][y] = HTomb.Tiles.EmptyTile;
           }
-          HTomb.Things.create("Lava").place(x,y,z);
+          HTomb.World.covers[coord(x,y,z)] = HTomb.Covers.Lava;
         }
       }
     }
@@ -544,7 +544,7 @@ timeIt("elevation", function() {
       for (var y=0; y<LEVELH; y++) {
         var z = HTomb.Tiles.groundLevel(x,y);
         if (tiles[z][x][y]===HTomb.Tiles.FloorTile && HTomb.World.covers[coord(x,y,z)]===undefined) {
-          HTomb.Things.Grass().place(x,y,z);
+          HTomb.World.covers[coord(x,y,z)] = HTomb.Covers.Grass;
         }
       }
     }
@@ -734,8 +734,7 @@ timeIt("elevation", function() {
           return (HTomb.World.covers[coord(x,y,z)] && HTomb.World.covers[coord(x,y,z)].template==="Grass");
         });
         if (n>0) {
-          var grass = HTomb.Things.Grass();
-          grass.place(x,y,z);
+          HTomb.World.covers[coord(x,y,z)] = HTomb.Covers.Grass;
         }
       }
     }

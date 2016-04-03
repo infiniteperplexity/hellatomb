@@ -453,7 +453,7 @@ HTomb = (function(HTomb) {
       this.complete();
     },
     canDesignateTile: function(x,y,z) {
-      if (HTomb.World.features[coord(x,y,z)] || (HTomb.World.covers[coord(x,y,z)] && HTomb.World.covers[coord(x,y,z)].liquid===undefined)) {
+      if (HTomb.World.features[coord(x,y,z)] || (HTomb.World.covers[coord(x,y,z)] && HTomb.World.covers[coord(x,y,z)].liquid!==true)) {
         return true;
       } else {
         return false;
@@ -480,6 +480,12 @@ HTomb = (function(HTomb) {
       if (f) {
         f.feature.dismantle(this);
         this.assignee.ai.acted = true;
+      } else {
+        f = HTomb.World.covers[coord(x,y,z)];
+        if (f) {
+          delete HTomb.World.covers[coord(x,y,z)];
+          this.complete();
+        }
       }
     }
   });

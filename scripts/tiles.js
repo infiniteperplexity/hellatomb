@@ -157,19 +157,19 @@ HTomb = (function(HTomb) {
     // *********** Choose the background color *******************************
     if (covers[crd] && covers[crd].liquid && tile.solid!==true) {
       if (vis) {
-        bg = bg || covers[crd].liquid.shimmer();
+        bg = bg || covers[crd].shimmer();
       } else {
-        bg = bg || covers[crd].liquid.darken();
+        bg = bg || covers[crd].darken();
       }
     } else if (zview===-1 && covers[cbelow] && covers[cbelow].liquid && tiles[z-1][x][y].solid!==true) {
       if (vis) {
-        bg = bg || covers[cbelow].liquid.shimmer();
+        bg = bg || covers[cbelow].shimmer();
       } else {
-        bg = bg || covers[cbelow].liquid.darken();
+        bg = bg || covers[cbelow].darken();
       }
     } else if (zview===-1 && tiles[z-1][x][y].zview===-1 && tiles[z-2][x][y].solid!==true
         &&covers[coord(x,y,z-2)] && covers[coord(x,y,z-2)].liquid) {
-      bg = bg || covers[coord(x,y,z-2)].liquid.darken();
+      bg = bg || covers[coord(x,y,z-2)].darken();
     } else if (covers[crd]) {
       bg = bg || covers[crd].bg;
     }

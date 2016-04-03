@@ -42,7 +42,9 @@ HTomb = (function(HTomb) {
     getBehaviors: function() {
       var behaviors = [];
       for (var b in HTomb.Things.behaviors) {
-        behaviors.push(this[b]);
+        if (this[b]!==undefined) {
+          behaviors.push(this[b]);
+        }
       }
       return behaviors;
     },
@@ -84,7 +86,7 @@ HTomb = (function(HTomb) {
       }
       this.reference = null;
       HTomb.Events.publish({type: "Destroy", entity: this});
-      var behaviors = this.getBehaviors();
+      var beh = this.getBehaviors();
       for (var i=0; i<beh.length; i++) {
         var b = beh[i];
         HTomb.Events.unsubscribeAll(b);

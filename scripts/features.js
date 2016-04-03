@@ -22,7 +22,7 @@ HTomb = (function(HTomb) {
       this.destroy();
       var t = HTomb.World.covers[coord(x,y,z)];
       if (t) {
-        t.destroy();
+        delete HTomb.World.covers[coord(x,y,z)];
       }
       var cr = HTomb.World.creatures[coord(x,y,z-1)];
       if (cr) {
@@ -261,6 +261,74 @@ HTomb = (function(HTomb) {
       f.place(x,y,z);
     }
   });
+
+  HTomb.Types.define({
+    template: "Cover",
+    name: "cover",
+    liquid: false,
+    shimmer: function() {
+      var bg = ROT.Color.fromString(this.bg);
+      bg = ROT.Color.randomize(bg,[bg[0]/16, bg[1]/16, bg[2]/16]);
+      bg = ROT.Color.toHex(bg);
+      return bg;
+    },
+    darken: function() {
+      var bg = ROT.Color.fromString(this.bg);
+      bg = ROT.Color.multiply(bg,[72,128,192]);
+      bg = ROT.Color.toHex(bg);
+      return bg;
+    },
+    flood: function(x,y,z) {
+      var t = HTomb.World.covers[coord(x,y,z-1)];
+      var water;
+      if (HTomb.World.tiles[z-1][x][y].solid!==true && t.liquid===undefined) {
+        HTomb.World.covers[coord(x,y,z)] = this;
+        this.flood(x,y,z);
+        // if we flood below, don't flood to the sides...should this happen each turn?
+        return;
+      }
+      var neighbors = HTomb.Tiles.neighbors(x,y,4);
+      for (var i=0; i<neighbors.length; i++) {
+        x = neighbors[i][0];
+        y = neighbors[i][1];
+        t = HTomb.World.covers[coord(x,y,z)];
+        if (HTomb.World.tiles[z][x][y].solid===true || (t && t.liquid)) {
+          continue;
+        }
+        HTomb.World.covers = this;
+        this.flood(x,y,z);
+      }
+    }
+  });
+
+  HTomb.Types.defineCover({
+    template: "Water",
+    name: "water",
+    symbol: "~",
+    flowSymbol: "\u2248",
+    liquid: true,
+    fg: HTomb.Constants.WATERFG || "#3388FF",
+    bg: HTomb.Constants.WATERBG || "#1144BB"
+  });
+
+  HTomb.Types.defineCover({
+    template: "Lava",
+    name: "lava",
+    symbol: "~",
+    flowSymbol: "\u2248",
+    liquid: true,
+    fg: "#FF8833",
+    bg: "#DD4411"
+  });
+
+  HTomb.Types.defineCover({
+    template: "Grass",
+    name: "grass",
+    symbol: '"',
+    fg: HTomb.Constants.GRASSFG ||"#668844",
+    bg: HTomb.Constants.GRASSBG || "#334422"
+  });
+
 
   return HTomb;
 })(HTomb);
