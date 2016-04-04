@@ -181,7 +181,7 @@ HTomb = (function(HTomb) {
         rock.place(x,y,z);
       }
       HTomb.World.validate.cleanNeighbors(x,y,z);
-      this.remove();
+      this.despawn();
     }
   });
 
@@ -223,7 +223,7 @@ HTomb = (function(HTomb) {
         tiles[z][x][y] = FloorTile;
       }
       HTomb.World.validate.cleanNeighbors(x,y,z);
-      this.remove();
+      this.despawn();
     }
   });
 
@@ -256,7 +256,7 @@ HTomb = (function(HTomb) {
       var y = this.y;
       var z = this.z;
       this.task.complete();
-      this.remove();
+      this.despawn();
       var f = HTomb.Things[this.makes]();
       f.place(x,y,z);
     }

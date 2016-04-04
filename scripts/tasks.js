@@ -133,10 +133,9 @@ HTomb = (function(HTomb) {
         //prevent recursion traps
         var z = this.zone;
         this.zone = null;
-        z.remove();
-        HTomb.Events.unsubscribeAll(z);
+        z.despawn();
       }
-      HTomb.Events.unsubscribeAll(this);
+      this.despawn();
     },
     complete: function() {
       // this generally should not get overridden
@@ -151,11 +150,12 @@ HTomb = (function(HTomb) {
         this.assignee.worker.unassign();
       }
       if (this.zone) {
-        this.zone.remove();
+        this.zone.despawn();
       }
       if (this.onComplete) {
         this.onComplete();
       }
+      this.despawn();
     },
     ai: function() {
       if (this.assignee.ai.acted===true) {

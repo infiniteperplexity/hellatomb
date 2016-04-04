@@ -345,7 +345,7 @@ HTomb = (function(HTomb) {
   Tiles.fill = function(x,y,z) {
     // check for more stuff in a while
     if (HTomb.World.features[coord(x,y,z)]) {
-      HTomb.World.features[coord(x,y,z)].remove();
+      HTomb.World.features[coord(x,y,z)].despawn();
     }
     HTomb.World.tiles[z][x][y] = HTomb.Tiles.WallTile;
     if (HTomb.World.tiles[z+1][x][y]===HTomb.Tiles.EmptyTile) {

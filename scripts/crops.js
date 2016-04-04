@@ -36,7 +36,7 @@ HTomb = (function(HTomb) {
         var x = this.x;
         var y = this.y;
         var z = this.z;
-        this.remove();
+        this.despawn();
         plant.place(x,y,z);
       }
     }

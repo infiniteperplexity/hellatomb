@@ -61,12 +61,6 @@ HTomb = (function(HTomb) {
       if (this.zone) {
         this.zone.remove();
       }
-      var beh = this.getBehaviors();
-      for (var i=0; i<beh.length; i++) {
-        if (beh[i].onRemove) {
-          beh[i].onRemove();
-        }
-      }
       this.x = null;
       this.y = null;
       this.z = null;
@@ -89,13 +83,14 @@ HTomb = (function(HTomb) {
       var beh = this.getBehaviors();
       for (var i=0; i<beh.length; i++) {
         var b = beh[i];
-        HTomb.Events.unsubscribeAll(b);
+        b.despawn();
       }
-      HTomb.Events.unsubscribeAll(this);
-      this.remove();
+      this.despawn();
     },
     onDespawn: function() {
-      this.remove();
+      if (this.x!==null) {
+        this.remove();
+      }
     },
     describe: function() {
       // add options for capitalization?
