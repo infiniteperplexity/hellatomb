@@ -9,7 +9,7 @@ HTomb = (function(HTomb) {
   	template: "Type",
   	name: "type",
   	stringify: function() {
-      return HTomb.Types.templates[this.parent].indexOf(this);
+      return HTomb.Types.templates[this.parent].types.indexOf(this);
     },
   	parse: function(value) {
       return HTomb.Types.templates[this.parent].types[value];

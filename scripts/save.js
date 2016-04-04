@@ -6,39 +6,20 @@ HTomb = (function(HTomb) {
   var NLEVELS = HTomb.Constants.NLEVELS;
 
 
-  HTomb.Save.testing = function() {
-    var list = ['"['];
-    for (var i=0; i<HTomb.World.things.length; i++) {
-        console.log(i);
-        if (i>0) {
-          list.push(",");
-        }
-        list.push(HTomb.Save.stringify(HTomb.World.things[i],true));
-        //if (i>1000) {
-        //  break;
-        //}
-      }
-    list.push(']"');
-    var json = list.join('');
-    return json;
-  };
-
+  var fakeLocalStorage;
   HTomb.Save.saveGame = function() {
     var saveGame = {};
-    console.log("testing");
+    console.time("save game");
     saveGame.things = HTomb.World.things;
     saveGame.tiles = HTomb.World.tiles;
     saveGame.explored = HTomb.World.explored;
-    saveGame.creatures = HTomb.World.creatures;
-    saveGame.items = HTomb.World.items;
-    saveGame.features = HTomb.World.features;
-    saveGame.zones = HTomb.World.zones;
     saveGame.covers = HTomb.World.covers;
     saveGame.dailyCycle = HTomb.World.dailyCycle;
-    localStorage.saveGame = saveGame;
-    //var json = HTomb.Save.stringify(saveGame);
+    var json = HTomb.Save.stringify(saveGame);
     //localStorage.saveGame = json;
-    //console.log(json.length);
+    fakeLocalStorage = json;
+    console.timeEnd("save game");
+    console.log(json.length);
   };
 
   var seen = [];

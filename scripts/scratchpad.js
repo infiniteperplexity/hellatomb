@@ -1,146 +1,116 @@
-
-var promise = new Promise(function(resolve,reject)) {
-  //do a thing, possibly asynch
-  if (/**/) {
-    resolve("stuff worked");
-  } else {
-    reject(Error("It broke!"));
-  }
-});
-
-var promise = new Promise(function(resolve, reject) {
-  resolve(1);
-});
-
-promise.then(function(val) {
-  console.log(val);
-  return val+2;
-}).then(function(val) {
-  console.log(val);
-});
-
-
-
-HTomb.Save.testing = function() {
-  var list = ['"['];
-  for (var i=0; i<HTomb.World.things.length; i++) {
-      console.log(i);
-      if (i>0) {
-        list.push(",");
+function Instance(template) {
+  var handler = {
+    set: function(target, property, value, receiver) {
+      if (this.instance===undefined) {
+        this.instance = Object.create(target);
+        this.instance[property] = value;
       }
-      list.push(HTomb.Save.stringify(HTomb.World.things[i],true));
-      //if (i>1000) {
-      //  break;
-      //}
+    },
+    get: function(target, property, receiver) {
+      if (property==="instance") {
+        return this.instance;
+      } else if (property==="template") {
+        return target;
+      } else {
+        return this.instance[property];
+      }
     }
-  list.push(']"');
-  var json = list.join('');
-  return json;
-};
+  };
+  return new Proxy(t, handler);
+}
 
-var fewer = HTomb.World.things.splice(0,10);
-HTomb.Save.promises = function() {
-  var list = [];
-  var sequence = Promise.resolve();
-  fewer.forEach(function(e,i,a) {
-    sequence = sequence.then(function() {
-      console.log(i);
-      list.push(HTomb.Save.stringify(e));
-    });
-  });
-};
-
-var i=0;
-(function () {
-    for (; i < 6000000; i++) {
-        /*
-            Normal processing here
-        */
-
-        // Every 100,000 iterations, take a break
-        if ( i > 0 && i % 100000 == 0) {
-            // Manually increment `i` because we break
-            i++;
-            console.log(i);
-            // Set a timer for the next iteration
-            window.setTimeout(arguments.callee);
-            break;
+function SparseGrid() {
+  var LEVELH = 100;
+  var LEVELW = 100;
+  var arr = {};
+  var zHandler = {
+    set: function() {},
+    get: function(ztarget, z) {
+      var xHandler = {
+        get: function(xtarget, x) {
+          var yHandler = {
+            set: function(target, y, value) {
+              arr[z*LEVELH*LEVELW + x*LEVELH + y] = value;
+            },
+            get: function(target, y) {
+              return arr[z*LEVELH*LEVELW + x*LEVELH + y];
+            }
+          };
+          return new Proxy({}, yHandler);
         }
+      };
+      return new Proxy({}, xHandler);
     }
-})();
+  };
+  return new Proxy(arr, zHandler);
+}
 
+HTomb.World.creatures = SparseGrid();
 
-
-
-var i=0;
-list = [];
-
-var i=0;
-list = [];
-function save () {
-  for (; i<HTomb.World.things.length; i++) {
-    list.push(HTomb.Save.stringify(HTomb.World.things[i]));
-    if (i>0 && i%1000===0) {
-      var bg = ROT.Colconsole.log(i);
-      i++;
-      setTimeout(save);
-  ;
+function FastGrid() {
+  var LEVELH = 100;
+  var LEVELW = 100;
+  var NLEVELS = 50;
+  var arr = [];
+  for (var z=0; z<NLEVELS; z++) {
+    arr.push([]);
+    for (var x=0; x<LEVELW; x++) {
+      arr[z].push([]);
+      for (var y=0; y<LEVELH; y++) {
+        arr[z][x] = null;
+      }
     }
   }
+  var zHandler = {
+    set: function() {},
+    get: function(ztarget, z) {
+      var xHandler = {
+        get: function(xtarget, x) {
+          var yHandler = {
+            set: function(target, y, value) {
+              arr[z*LEVELH*LEVELW + x*LEVELH + y] = value;
+            },
+            get: function(target, y) {
+              return arr[z*LEVELH*LEVELW + x*LEVELH + y];
+            }
+          };
+          return new Proxy({}, yHandler);
+        }
+      };
+      return new Proxy({}, xHandler);
+    }
+  };
+  return new Proxy(arr, zHandler);
 }
 
-function splitter(prep, fun) {
 
+class AnimalES6 {
+    constructor(name) {
+      console.log("making ")
+        this.name = name;
+    }
+
+    doSomething() {
+        console.log("I'm a " + this.name);
+    }
 }
 
-
-/*
-So...as of right now, serializing the "cover" objects is a horrendous waste.  Every grass tile is
-the same as every other grass tile.  And every water tile is the same as every other water tile,
-and same with lava.  In addition, the water tiles, of which there are thousands, have long "each"
-properties, and store two references to each of their two behaviors.
-
-The ideal solution here would be to...well...it would be nice if we could have polymorphous
-stuff going on...be able to have two different kinds of "cover" or "fill": Types and Things.
-
-But let's say we wanted to do just Type.  What would we lose?
-- We'd need at least six different kinds of water, one for each direction of flow or lack thereof.  And there won't be any speed of flow...
-- We would lose the flexibility to change water depth in the future, or add other similar properties.
-- No cover could have behaviors; for example, lava could not have PointLightBehavior.
-
-So...let's talk about polymorphism.  The main obvious problem is that Types might have a hard time
-implementing the Entity methods.
-x, y, and z are bad for that.
-place works.
-remove doesn't work, without additional arguments.  Same with "destroy".
-So that's not very promising.
-
-Some options:
-- Presume that Type, rather than Entity, is the interface we're shooting for.
-- Build a lightweight entity that wraps around a Type but doesn't get serialized.
-- Build temporary Entities on the fly when you access the Type.
-- Just go with the simpler option and support only Types.
-- Yet another option: pair the values, so we have a Type *and* an optional Thing in each square.
-
-Ugh...that's actually starting to seem like an attractive option...convert UpSlope and DownSlope back
-into features?  Although...I think I do allow features on slopes, actually.  Yup, and making those
-into features would lead to a proliferation of feature instances.  So yeah, walking back from *that*
-ledge.
-
-- Hmmm...I could make water into another type of tile.  But bear in mind, that still implies,
-for each liquid, multiple tile types.
-
-- What other kinds of "cover" might we someday have?  Fire?  Mud?  Soil?  Very few of these have
-any properties that would require instances.  What about traps...are those features?  Spiderwebs?
-
-- So...honestly I don't see liquids being all that important.  Like, nothing compared to Dwarf Fortress.  So maybe
-let's just make them a Type.
-
-- Okay, but just one second first...so...I can totally do this...ThingWrapper?
-
-- Ugh...so..."infinite" is another potentially instanced thing.  Should we create yet another type for it?
-- There are two kinds of liquid in minecraft...infinite and flowing.
-*/
+var lionES6 = new AnimalES6("Lion");
+lionES6.doSomething();
 
 
-})();
+class Foo {
+  constructor() {
+    console.log("making a Foo");
+    this.arr = [];
+  }
+  bar(thing) {
+    this.arr.push(thing);
+  }
+}
+class Bar extends Foo {
+  constructor() {
+    console.log("making a Bar");
+  }
+}
+var baz = new Bar();

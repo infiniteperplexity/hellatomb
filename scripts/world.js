@@ -7,9 +7,9 @@ HTomb = (function(HTomb) {
 
   function grid3d() {
     var grid = [];
-    for (var k=0; k<NLEVELS; k++) {
+    for (let k=0; k<NLEVELS; k++) {
       grid.push([]);
-      for (var i=0; i<LEVELW; i++) {
+      for (let i=0; i<LEVELW; i++) {
         grid[k].push([]);
       }
     }
