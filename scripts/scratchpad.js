@@ -1,5 +1,5 @@
 function Instance(template) {
-  var handler = {
+  let handler = {
     set: function(target, property, value, receiver) {
       if (this.instance===undefined) {
         this.instance = Object.create(target);
@@ -20,15 +20,15 @@ function Instance(template) {
 }
 
 function SparseGrid() {
-  var LEVELH = 100;
-  var LEVELW = 100;
-  var arr = {};
-  var zHandler = {
+  let LEVELH = 100;
+  let LEVELW = 100;
+  let arr = {};
+  let zHandler = {
     set: function() {},
     get: function(ztarget, z) {
-      var xHandler = {
+      let xHandler = {
         get: function(xtarget, x) {
-          var yHandler = {
+          let yHandler = {
             set: function(target, y, value) {
               arr[z*LEVELH*LEVELW + x*LEVELH + y] = value;
             },
@@ -48,25 +48,25 @@ function SparseGrid() {
 HTomb.World.creatures = SparseGrid();
 
 function FastGrid() {
-  var LEVELH = 100;
-  var LEVELW = 100;
-  var NLEVELS = 50;
-  var arr = [];
-  for (var z=0; z<NLEVELS; z++) {
+  let LEVELH = 100;
+  let LEVELW = 100;
+  let NLEVELS = 50;
+  let arr = [];
+  for (let z=0; z<NLEVELS; z++) {
     arr.push([]);
-    for (var x=0; x<LEVELW; x++) {
+    for (let x=0; x<LEVELW; x++) {
       arr[z].push([]);
-      for (var y=0; y<LEVELH; y++) {
+      for (let y=0; y<LEVELH; y++) {
         arr[z][x] = null;
       }
     }
   }
-  var zHandler = {
+  let zHandler = {
     set: function() {},
     get: function(ztarget, z) {
-      var xHandler = {
+      let xHandler = {
         get: function(xtarget, x) {
-          var yHandler = {
+          let yHandler = {
             set: function(target, y, value) {
               arr[z*LEVELH*LEVELW + x*LEVELH + y] = value;
             },
@@ -95,17 +95,13 @@ class AnimalES6 {
     }
 }
 
-var lionES6 = new AnimalES6("Lion");
+let lionES6 = new AnimalES6("Lion");
 lionES6.doSomething();
 
 
 class Foo {
   constructor() {
     console.log("making a Foo");
-    this.arr = [];
-  }
-  bar(thing) {
-    this.arr.push(thing);
   }
 }
 class Bar extends Foo {
@@ -113,4 +109,4 @@ class Bar extends Foo {
     console.log("making a Bar");
   }
 }
-var baz = new Bar();
+let baz = new Bar();
