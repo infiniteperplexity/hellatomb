@@ -17,6 +17,13 @@ HTomb = (function(HTomb) {
       HTomb.Encounters.table.push([this.frequency,this]);
     }
   });
+  HTomb.Encounters.check = function() {
+    if (HTomb.Time.dailyCycle.turn===1) {
+      return true;
+    } else {
+      return false;
+    }
+  };
   HTomb.Encounters.roll = function(callb) {
     //for now we don't use this
     //return;
@@ -116,24 +123,6 @@ HTomb = (function(HTomb) {
       console.log("placed a spider");
     }
   });
-  //***currently broken based on how ExhumeTask works
-  // for (var i in World.items) {
-  //   if (World.items[i].template==="Corpse") {
-  //     var co = World.items[i];
-  //     var f = HTomb.World.features[coord(co.x,co.y,co.z)];
-  //     if (f && f.template==="Tombstone") {
-  //       var g = Things.Ghast();
-  //       g.place(co.x,co.y,co.z);
-  //       World.tiles[co.x,co.y,co.z] = Tiles.UpSlopeTile;
-  //       var t = Things.ExhumeTask();
-  //       t.assignTo(g);
-  //       HTomb.GUI.sensoryEvent("You hear an ominous stirring below the earth...",co.x,co.y,co.z);
-  //       co.remove();
-  //       break;
-  //     }
-  //   }
-  // }
-
 
 
 

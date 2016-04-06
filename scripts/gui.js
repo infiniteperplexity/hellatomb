@@ -186,6 +186,12 @@ HTomb = (function(HTomb) {
       scroll.render();
     }
   };
+  HTomb.Debug.pushMessage = function(msg) {
+    if (Debug.messages===true) {
+      HTomb.GUI.pushMessage(msg);
+      console.log(msg);
+    }
+  };
   // Render display panels
   GUI.render = function() {
     // Draw all the panels
@@ -347,10 +353,10 @@ HTomb = (function(HTomb) {
     scrollDisplay.drawText(this.x0+cursor,this.y0+1,"Z:" + gameScreen.z);
     cursor+=7;
     scrollDisplay.drawText(this.x0+cursor,this.y0+1,
-      HTomb.World.dailyCycle.getPhase().symbol + " "
-      + HTomb.World.dailyCycle.day + ":"
-      + HTomb.World.dailyCycle.hour + ":"
-      + HTomb.World.dailyCycle.minute);
+      HTomb.Time.dailyCycle.getPhase().symbol + " "
+      + HTomb.Time.dailyCycle.day + ":"
+      + HTomb.Time.dailyCycle.hour + ":"
+      + HTomb.Time.dailyCycle.minute);
     cursor+=12;
     if (HTomb.Time.isPaused()===true) {
       scrollDisplay.drawText(this.x0+cursor,this.y0+1,"Paused");

@@ -329,6 +329,13 @@ HTomb = (function(HTomb) {
     bg: HTomb.Constants.GRASSBG || "#334422"
   });
 
+  HTomb.Types.defineCover({
+    template: "Road",
+    name: "road",
+    symbol: '\u25CB',
+    fg: HTomb.Constants.WALLFG,
+    bg: HTomb.Constants.WALLBG
+  });
 
   return HTomb;
 })(HTomb);

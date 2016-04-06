@@ -14,7 +14,7 @@ HTomb = (function(HTomb) {
     saveGame.tiles = HTomb.World.tiles;
     saveGame.explored = HTomb.World.explored;
     saveGame.covers = HTomb.World.covers;
-    saveGame.dailyCycle = HTomb.World.dailyCycle;
+    saveGame.dailyCycle = HTomb.Time.dailyCycle;
     let json = HTomb.Save.stringify(saveGame);
     //localStorage.saveGame = json;
     fakeLocalStorage = json;
@@ -141,10 +141,10 @@ HTomb = (function(HTomb) {
     fillListFrom(saveGame.features, HTomb.World.features);
     fillListFrom(saveGame.zones, HTomb.World.zones);
     fillListFrom(saveGame.covers, HTomb.World.covers);
-    HTomb.World.dailyCycle.turn = saveGame.dailyCycle.turn;
-    HTomb.World.dailyCycle.minute = saveGame.dailyCycle.minute;
-    HTomb.World.dailyCycle.hour = saveGame.dailyCycle.hour;
-    HTomb.World.dailyCycle.day = saveGame.dailyCycle.day;
+    HTomb.Time.dailyCycle.turn = saveGame.dailyCycle.turn;
+    HTomb.Time.dailyCycle.minute = saveGame.dailyCycle.minute;
+    HTomb.Time.dailyCycle.hour = saveGame.dailyCycle.hour;
+    HTomb.Time.dailyCycle.day = saveGame.dailyCycle.day;
     HTomb.FOV.resetVisible();
     if (HTomb.Player.sight) {
       HTomb.FOV.findVisible(HTomb.Player.x, HTomb.Player.y, HTomb.Player.z, HTomb.Player.sight.range);

@@ -142,7 +142,7 @@ HTomb = (function(HTomb) {
   };
 
   HTomb.World.validate.lighting = function() {
-    HTomb.FOV.ambientLight(HTomb.World.dailyCycle.lightLevel());
+    HTomb.FOV.ambientLight(HTomb.Time.dailyCycle.lightLevel());
     HTomb.FOV.pointLights();
     HTomb.FOV.resolveLights();
   };
