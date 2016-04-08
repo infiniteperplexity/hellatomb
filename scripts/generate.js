@@ -276,23 +276,24 @@ timeIt("elevation", function() {
     });
   }
 
-  function vscatter() {
+  function voronoi() {
+    let points = [];
     for (let i=1; i<LEVELW-1; i++) {
       for (let j=1; j<LEVELH-1; j++) {
-        if (Math.random()<0.005) {
-          let z = HTomb.Tiles.groundLevel(i,j);
-          HTomb.World.covers[coord(i,j,z)] = HTomb.Covers.Road;
+        if (Math.random()<0.001) {
+          points.push([i,j]);
         }
       }
     }
+    let boundaries = HTomb.Path.voronoi(points,3);
+    for (let i=0; i<boundaries.length; i++) {
+      let x = boundaries[i][0];
+      let y = boundaries[i][1];
+      let z = HTomb.Tiles.groundLevel(x,y);
+      HTomb.World.covers[coord(x,y,z)] = HTomb.Covers.Road;
+    }
   }
 
-  var distance = function(x0,y0,x1,y1) {
-    return Math.sqrt((x0-x1)*(x0-x1)+(y0-y1)*(y0-y1));
-  }
-  function fortuneVoronoi() {
-
-  }
 
   function cavernLevels(n) {
     n = n || 4;

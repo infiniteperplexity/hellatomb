@@ -228,5 +228,114 @@ Tomb = (function(HTomb) {
     f.compute(x,y);
     return f.grid;
   };
+
+  HTomb.Path.vonNeumann = function(x,y,n) {
+    n = n || 1;
+    let coords = [];
+    let dirs = ROT.DIRS[4];
+    for (let i=0; i<dirs.length; i++) {
+      for (let j=1; j<=n; j++) {
+        let x1 = x+j*dirs[i][0]
+        let y1 = y+j*dirs[i][1];
+        if (x1>0 && x1<LEVELW-1 && y1>0 && y1<LEVELH-1) {
+          coords.push([x1,y1]);
+        }
+      }
+    }
+    return coords;
+  }
+
+  function initRings() {
+    let circles = [];
+    for (let i=0; i<LEVELW; i++) {
+      let ring = [];
+      for (let x=-i; x<=i; x++) {
+        for (let y=-i; y<=i; y++) {
+          if (Math.round(Math.sqrt(x*x+y*y))===i) {
+            ring.push([x,y]);
+          }
+        }
+      }
+      circles.push(ring);
+    }
+    return circles;
+  }
+  HTomb.Path.concentric = initRings();
+  HTomb.Path.voronoi = function(points,thickness) {
+    let grid = [];
+    for (let x=0; x<LEVELW-1; x++) {
+      grid.push([]);
+      for (let y=0; y<LEVELH-1; y++) {
+        grid[x].push(null);
+      }
+    }
+    let visited = 0;
+    points = HTomb.Utils.shuffle(points);
+    // until all squares have been visited
+    let n = 0;
+    while (visited<(LEVELW-2)*(LEVELH-2)) {
+      let ring = HTomb.Path.concentric[n];
+      for (let i=0; i<points.length; i++) {
+        for (let j=0; j<ring.length; j++) {
+          let c = ring[j];
+          let x = points[i][0];
+          let y = points[i][1];
+          if (x+c[0]>=LEVELW-1 || x+c[0]<=0 || y+c[1]>=LEVELH-1 || y+c[1]<=0) {
+            continue;
+          } else if (grid[x+c[0]][y+c[1]]===null) {
+            grid[x+c[0]][y+c[1]] = i;
+            visited+=1;
+          }
+        }
+      }
+      n+=1;
+    }
+    let boundaries = [];
+    for (let i=1; i<LEVELW-1; i++) {
+      for (let j=1; j<LEVELH-1; j++) {
+        let boundary = false;
+        let coords = HTomb.Path.vonNeumann(i,j,thickness);
+        for (let k=0; k<coords.length; k++) {
+          let c = coords[k];
+          if (grid[c[0]][c[1]]>grid[i][j]) {
+            boundary = true;
+          }
+        }
+        if (boundary===true) {
+          boundaries.push([i,j]);
+        }
+      }
+    }
+    return boundaries;
+  };
+
+  let grid = HTomb.Path.voronoi(points, HTomb.Path.vonNeumann);
+  let boundaries = [];
+  for (let i=1; i<LEVELW-1; i++) {
+    for (let j=1; j<LEVELH-1; j++) {
+      let boundary = false;
+      let coords = HTomb.Path.vonNeumann(i,j);
+      for (let k=0; k<coords.length; k++) {
+        let c = coords[k];
+        if (grid[c[0]][c[1]]>grid[i][j]) {
+          boundary = true;
+        }
+      }
+      if (boundary===true) {
+        boundaries.push([i,j]);
+      }
+    }
+  }
+
+
+  HTomb.Path.DjikstraMap = function() {
+    this.grid = [];
+    for (let x=0; x<LEVELW-1; x++) {
+      this.grid.push([]);
+      for (let y=0; y<LEVELH-1; y++) {
+        this.grid.push(LEVELH*LEVELW);
+      }
+    }
+  }
 return HTomb;
 })(HTomb);
