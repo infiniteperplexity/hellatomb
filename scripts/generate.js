@@ -285,7 +285,7 @@ timeIt("elevation", function() {
         }
       }
     }
-    let boundaries = HTomb.Path.voronoi(points,3);
+    let boundaries = HTomb.Path.voronoi(points,3).boundaries;
     for (let i=0; i<boundaries.length; i++) {
       let x = boundaries[i][0];
       let y = boundaries[i][1];
