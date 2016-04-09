@@ -24,7 +24,7 @@ HTomb = (function(HTomb) {
           if (items) {
             for (i=0; i<items.length; i++) {
               if (items[i].template==="Corpse") {
-                items[i].remove();
+                items[i].despawn();
                 zombie = HTomb.Things.Zombie();
                 zombie.place(x,y,z);
                 HTomb.Things.Minion().addToEntity(zombie);
@@ -42,7 +42,7 @@ HTomb = (function(HTomb) {
           items = HTomb.World.items[coord(x,y,z-1)] || [];
           for (i=0; i<items.length; i++) {
             if (items[i].template==="Corpse") {
-              items[i].remove();
+              items[i].despawn();
               if (HTomb.World.tiles[z-1][x][y]===HTomb.Tiles.WallTile) {
                 HTomb.World.tiles[z-1][x][y]=HTomb.Tiles.UpSlopeTile;
               }
@@ -54,12 +54,8 @@ HTomb = (function(HTomb) {
               zombie.minion.setMaster(caster.entity);
               caster.entity.master.addMinion(zombie);
               zombie.ai.acted = true;
-              var zone = HTomb.Things.DigZone().place(x,y,z);
-              var task = HTomb.Things.DigTask();
-              task.assignTo(zombie);
-              zone.task = task;
-              zone.assigner = caster.entity;
-              task.zone = zone;
+              var zone = HTomb.Things.templates.DigTask.placeZone(x,y,z,caster.entity);
+              zone.task.assignTo(zombie);
               HTomb.Time.turn();
               return;
             }

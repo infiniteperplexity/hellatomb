@@ -133,6 +133,16 @@ HTomb = (function(HTomb) {
       } else {
         this.items.push(item);
       }
+    },
+    hasAll: function(ingredients) {
+      for (var ing in ingredients) {
+        var n = ingredients[ing];
+        // if we lack what we need, search for items
+        if (this.items.countAll(ing)<n) {
+          return false;
+        }
+      }
+      return true;
     }
   });
 
@@ -146,8 +156,7 @@ HTomb = (function(HTomb) {
     template: "Minion",
     name: "minion",
     master: null,
-    task: null,
-    each: ["master","task"],
+    each: ["master"],
     setMaster: function(cr) {
       this.master = cr;
       HTomb.Events.subscribe(this,"Destroy");
@@ -157,7 +166,15 @@ HTomb = (function(HTomb) {
         this.master = null;
         alert("My master died, haven't set how to handle this yet.");
       }
-    },
+    }
+  });
+
+  HTomb.Things.defineBehavior({
+    template: "Worker",
+    name: "worker",
+    task: null,
+    allowedTasks: ["DigTask","BuildTask","PatrolTask","CraftTask","HoardTask","FarmTask","DismantleTask"],
+    each: ["task","allowedTasks"],
     onAssign: function(tsk) {
       this.task = tsk;
       HTomb.Debug.pushMessage(this.entity.describe() + " was assigned " + tsk.describe());
@@ -171,17 +188,16 @@ HTomb = (function(HTomb) {
     }
   });
 
-  // The Master behavior maintains a list of minions and assignable tasks
   HTomb.Things.defineBehavior({
     template: "Master",
     name: "master",
     minions: null,
     taskList: null,
+    tasks: null,
     each: ["minions","tasks","taskList"],
     onCreate: function(options) {
       options = options || {};
-      options.tasks = options.tasks || [];
-      this.tasks = options.tasks;
+      this.tasks = options.tasks || [];
       this.minions = [];
       this.taskList = [];
       HTomb.Events.subscribe(this, "Destroy");
@@ -199,14 +215,13 @@ HTomb = (function(HTomb) {
       this.minions.splice(this.minions.indexOf(cr,1));
     },
     designate: function(tsk) {
-      tsk.designate(this);
+      tsk.designate(this.entity);
     },
     assignTasks: function() {
       for(var i=0; i<this.taskList.length; i++) {
         var tsk = this.taskList[i];
         if (tsk.assignee!==null) {
           if (tsk.assignee.reference!==undefined && tsk.assignee.reference!==null) {
-            console.log("task lost a reference");
             tsk.assignee = tsk.assignee.reference;
           } else {
             continue;
@@ -215,7 +230,10 @@ HTomb = (function(HTomb) {
         var master = this.entity;
         var minions = this.minions;
         for (var j=0; j<minions.length; j++) {
-          if (minions[j].minion.task!==null) {
+          if (minions[j].worker===undefined) {
+            continue;
+          }
+          if (minions[j].worker.task!==null) {
             continue;
           }
           if (minions[j].worker===undefined) {
@@ -240,8 +258,6 @@ HTomb = (function(HTomb) {
     }
   });
 
-  // The Stackable behavior allows items to be stacked into piles
-
 
   // The SpellCaster behavior maintains a list of castable spells
   HTomb.Things.defineBehavior({
@@ -262,12 +278,6 @@ HTomb = (function(HTomb) {
       }
       return spells;
     }
-  });
-
-  HTomb.Things.defineBehavior({
-    template: "Worker",
-    name: "worker",
-    allowedTasks: ["DigTask","BuildTask","PatrolTask","CraftTask","HoardTask","FarmTask","DismantleTask"]
   });
 
   // The Movement behavior allows the creature to move
@@ -341,8 +351,8 @@ HTomb = (function(HTomb) {
       if (terrain.fallable===true && this.flies!==true) {
         return false;
       }
-      var turf = HTomb.World.turfs[c];
-      if (turf && turf.liquid && this.swims!==true) {
+      var cover = HTomb.World.covers[c];
+      if (cover && cover.liquid && this.swims!==true) {
         return false;
       }
       // non-flyers can't climb diagonally
@@ -369,7 +379,7 @@ HTomb = (function(HTomb) {
       if (this.flies===true) {
         return true;
       }
-      if (this.swims===true && turf && turf.liquid) {
+      if (this.swims===true && cover && cover.liquid) {
         return true;
       }
       return false;
@@ -444,6 +454,10 @@ HTomb = (function(HTomb) {
           //how do we decide how to die first?  just do it in order I guess...
           if (this.materials[m].has < this.materials[m].needs) {
             this.entity.creature.die();
+            // this is an ad hoc solution...I think what was happening is some later AI script in the same turn used the target?
+            if (attack.entity.ai && attack.entity.ai.target===this.entity) {
+              attack.entity.ai.target = null;
+            }
           }
         }
       }

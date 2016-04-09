@@ -132,7 +132,7 @@ HTomb = (function(HTomb) {
   Tiles.getBackground = function(x,y,z) {
     var crd = HTomb.Utils.coord(x,y,z);
     var cbelow = HTomb.Utils.coord(x,y,z-1);
-    var turfs = HTomb.World.turfs;
+    var covers = HTomb.World.covers;
     var zones = HTomb.World.zones;
     var visible = HTomb.World.visible;
     var explored = HTomb.World.explored;
@@ -155,23 +155,23 @@ HTomb = (function(HTomb) {
       }
     }
     // *********** Choose the background color *******************************
-    if (turfs[crd] && turfs[crd].liquid && tile.solid!==true) {
+    if (covers[crd] && covers[crd].liquid && tile.solid!==true) {
       if (vis) {
-        bg = bg || turfs[crd].liquid.shimmer();
+        bg = bg || covers[crd].shimmer();
       } else {
-        bg = bg || turfs[crd].liquid.darken();
+        bg = bg || covers[crd].darken();
       }
-    } else if (zview===-1 && turfs[cbelow] && turfs[cbelow].liquid && tiles[z-1][x][y].solid!==true) {
+    } else if (zview===-1 && covers[cbelow] && covers[cbelow].liquid && tiles[z-1][x][y].solid!==true) {
       if (vis) {
-        bg = bg || turfs[cbelow].liquid.shimmer();
+        bg = bg || covers[cbelow].shimmer();
       } else {
-        bg = bg || turfs[cbelow].liquid.darken();
+        bg = bg || covers[cbelow].darken();
       }
     } else if (zview===-1 && tiles[z-1][x][y].zview===-1 && tiles[z-2][x][y].solid!==true
-        &&turfs[coord(x,y,z-2)] && turfs[coord(x,y,z-2)].liquid) {
-      bg = bg || turfs[coord(x,y,z-2)].liquid.darken();
-    } else if (turfs[crd]) {
-      bg = bg || turfs[crd].bg;
+        &&covers[coord(x,y,z-2)] && covers[coord(x,y,z-2)].liquid) {
+      bg = bg || covers[coord(x,y,z-2)].darken();
+    } else if (covers[crd]) {
+      bg = bg || covers[crd].bg;
     }
     // ** An empty tile with an explored floor below...
     if (zview===-1 && HTomb.World.tiles[z-1][x][y]===Tiles.FloorTile && explored[z-1][x][y]) {
@@ -190,7 +190,7 @@ HTomb = (function(HTomb) {
     var creatures = HTomb.World.creatures;
     var items = HTomb.World.items;
     var features = HTomb.World.features;
-    var turfs = HTomb.World.turfs;
+    var covers = HTomb.World.covers;
     var zones = HTomb.World.zones;
     var visible = HTomb.World.visible;
     var explored = HTomb.World.explored;
@@ -222,8 +222,8 @@ HTomb = (function(HTomb) {
       fg = fg || WALLFG;
     } else if (zview===-1 && creatures[cbelow] && (vis || visb)) {
       sym = creatures[cbelow].symbol;
-      if (turfs[cbelow] && turfs[cbelow].liquid) {
-        fg = fg || turfs[cbelow].fg;
+      if (covers[cbelow] && covers[cbelow].liquid) {
+        fg = fg || covers[cbelow].fg;
       } else {
         fg = fg || BELOWFG;
       }
@@ -238,8 +238,8 @@ HTomb = (function(HTomb) {
       fg = fg || WALLFG;
     } else if (zview===-1 && items[cbelow]) {
       sym = items[cbelow].tail().symbol;
-      if (zview===-1 && turfs[cbelow] && turfs[cbelow].liquid) {
-        fg = fg || turfs[cbelow].fg;
+      if (zview===-1 && covers[cbelow] && covers[cbelow].liquid) {
+        fg = fg || covers[cbelow].fg;
       } else {
         fg = fg || BELOWFG;
       }
@@ -249,18 +249,18 @@ HTomb = (function(HTomb) {
     // ** Can't see features down through liquids? or maybe we should color it with the liquid instead?
     } else if (zview===-1 && features[cbelow]) {
       sym = features[cbelow].symbol;
-      if (turfs[cbelow] && turfs[cbelow].liquid) {
-        fg = fg || turfs[cbelow].fg;
+      if (covers[cbelow] && covers[cbelow].liquid) {
+        fg = fg || covers[cbelow].fg;
       } else {
         fg = fg || BELOWFG;
       }
     } else {
-      // *** if the square is empty except for turf, handle the symbol and color separately. ***
-      if (turfs[crd]) {
-        fg = fg || turfs[crd].fg;
+      // *** if the square is empty except for cover, handle the symbol and color separately. ***
+      if (covers[crd]) {
+        fg = fg || covers[crd].fg;
       // maybe do show the waterlogged ground?
-      } else if (turfs[cbelow] && turfs[cbelow].liquid && (tile.solid!==true && tile.zview!==+1)) {
-        fg = fg || turfs[cbelow].fg;
+      } else if (covers[cbelow] && covers[cbelow].liquid && (tile.solid!==true && tile.zview!==+1)) {
+        fg = fg || covers[cbelow].fg;
       } else {
         fg = tile.fg;
       }
@@ -271,9 +271,9 @@ HTomb = (function(HTomb) {
       } else if (tile===Tiles.FloorTile && explored[z-1][x][y] && tiles[z-1][x][y].solid!==true) {
       // explored tunnel below
         sym = "\u25E6";
-      } else if (turfs[crd] && tile.solid!==true) {
-        if (turfs[crd].liquid) {
-          if (zview===-1 && turfs[cbelow] && turfs[cbelow].liquid && tiles[z-1][x][y].zmove!==+1) {
+      } else if (covers[crd] && tile.solid!==true) {
+        if (covers[crd].liquid) {
+          if (zview===-1 && covers[cbelow] && covers[cbelow].liquid && tiles[z-1][x][y].zmove!==+1) {
           // deeper liquid
             sym = "\u2235";
           } else {
@@ -281,12 +281,12 @@ HTomb = (function(HTomb) {
             sym = tile.symbol;
           }
         } else {
-          // non-liquid turf
-          sym = turfs[crd].symbol;
+          // non-liquid cover
+          sym = covers[crd].symbol;
         }
-      } else if (zview===-1 && turfs[cbelow] && turfs[cbelow].liquid) {
+      } else if (zview===-1 && covers[cbelow] && covers[cbelow].liquid) {
         // liquid surface
-        sym = turfs[cbelow].symbol;
+        sym = covers[cbelow].symbol;
       } else {
         // ordinary tile
         sym = tile.symbol;
@@ -307,7 +307,7 @@ HTomb = (function(HTomb) {
     square.feature = HTomb.World.features[crd];
     square.portals = HTomb.World.portals[crd];
     square.zone = HTomb.World.zones[crd];
-    square.turf = HTomb.World.turfs[crd];
+    square.cover = HTomb.World.covers[crd];
     square.explored = HTomb.World.explored[z][x][y];
     square.visible = HTomb.World.visible[crd];
     //square.visible = HTomb.World.visible[z][x][y];
@@ -345,7 +345,7 @@ HTomb = (function(HTomb) {
   Tiles.fill = function(x,y,z) {
     // check for more stuff in a while
     if (HTomb.World.features[coord(x,y,z)]) {
-      HTomb.World.features[coord(x,y,z)].remove();
+      HTomb.World.features[coord(x,y,z)].despawn();
     }
     HTomb.World.tiles[z][x][y] = HTomb.Tiles.WallTile;
     if (HTomb.World.tiles[z+1][x][y]===HTomb.Tiles.EmptyTile) {

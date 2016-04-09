@@ -10,7 +10,6 @@ HTomb = (function(HTomb) {
     y: null,
     z: null,
     behaviors: {},
-    myBehaviors: [],
     each: ["x","y","z","reference"],
     place: function(x,y,z) {
       this.remove();
@@ -26,21 +25,28 @@ HTomb = (function(HTomb) {
       if (this.zone) {
         this.zone.place(x,y,z);
       }
-      if (this.turf) {
-        this.turf.place(x,y,z);
-      }
       this.x = x;
       this.y = y;
       this.z = z;
       if (this.onPlace) {
         this.onPlace(x,y,z);
       }
-      for (var b in this.myBehaviors) {
-        if (this.myBehaviors[b].onPlace) {
-          this.myBehaviors[b].onPlace();
+      var beh = this.getBehaviors();
+      for (var i=0; i<beh.length; i++) {
+        if (beh[i].onPlace) {
+          beh[i].onPlace();
         }
       }
       return this;
+    },
+    getBehaviors: function() {
+      var behaviors = [];
+      for (var b in HTomb.Things.behaviors) {
+        if (this[b]!==undefined) {
+          behaviors.push(this[b]);
+        }
+      }
+      return behaviors;
     },
     remove: function() {
       if (this.creature) {
@@ -54,14 +60,6 @@ HTomb = (function(HTomb) {
       }
       if (this.zone) {
         this.zone.remove();
-      }
-      if (this.turf) {
-        this.turf.remove();
-      }
-      for (var b in this.myBehaviors) {
-        if (this.myBehaviors[b].onRemove) {
-          this.myBehaviors[b].onRemove();
-        }
       }
       this.x = null;
       this.y = null;
@@ -80,20 +78,19 @@ HTomb = (function(HTomb) {
       if (this.zone && this.zone.destroy) {
         this.zone.destroy();
       }
-      if (this.turf && this.turf.destroy) {
-        this.turf.destroy();
-      }
       this.reference = null;
       HTomb.Events.publish({type: "Destroy", entity: this});
-      for (var i=0; i<this.myBehaviors.length; i++) {
-        var b = this.myBehaviors[i];
-        HTomb.Events.unsubscribeAll(b);
+      var beh = this.getBehaviors();
+      for (var i=0; i<beh.length; i++) {
+        var b = beh[i];
+        b.despawn();
       }
-      HTomb.Events.unsubscribeAll(this);
-      this.remove();
+      this.despawn();
     },
     onDespawn: function() {
-      this.remove();
+      if (this.x!==null) {
+        this.remove();
+      }
     },
     describe: function() {
       // add options for capitalization?
@@ -137,7 +134,6 @@ HTomb = (function(HTomb) {
       HTomb.GUI.render();
     },
     onCreate: function() {
-      this.myBehaviors = [];
       // Add behaviors to entity
       for (var b in this.behaviors) {
         if (typeof(HTomb.Things[b])!=="function") {
@@ -186,10 +182,13 @@ HTomb = (function(HTomb) {
       if (this.onAdd) {
         this.onAdd(this.options);
       }
-      ent.myBehaviors.push(this);
+    },
+    onDefine: function() {
+      HTomb.Things.behaviors.push(this.name);
     },
     each: ["entity"]
   });
+  HTomb.Things.behaviors = [];
 
   HTomb.Things.defineBehavior({
     template: "Creature",
@@ -245,9 +244,9 @@ HTomb = (function(HTomb) {
       if (pile) {
         if (pile.contains(this.entity)) {
           pile.remove(this.entity);
-          if (pile.length===0) {
-            delete HTomb.World.items[c];
-          }
+        }
+        if (pile.length===0) {
+          delete HTomb.World.items[c];
         }
       }
     },
@@ -257,13 +256,13 @@ HTomb = (function(HTomb) {
       }
     }
   });
+
   HTomb.Things.defineBehavior({
     template: "Feature",
     name: "feature",
-    hp: 10,
-    maxhp: 10,
-    each: ["hp"],
     yields: null,
+    integrity: null,
+    each: ["integrity","yields"],
     place: function(x,y,z) {
       var c = coord(x,y,z);
       var features = HTomb.World.features;
@@ -277,6 +276,18 @@ HTomb = (function(HTomb) {
       var c = coord(f.x,f.y,f.z);
       var features = HTomb.World.features;
       delete features[c];
+    },
+    dismantle: function(optionalTask) {
+      if (this.integrity===null) {
+        this.integrity=5;
+      }
+      this.integrity-=1;
+      if (this.integrity<=0) {
+        this.harvest();
+        if (optionalTask) {
+          optionalTask.complete();
+        }
+      }
     },
     harvest: function() {
       if (this.yields!==null) {
@@ -317,76 +328,16 @@ HTomb = (function(HTomb) {
       delete zones[c];
     }
   });
-  HTomb.Things.defineBehavior({
-    template: "Turf",
-    name: "turf",
-    place: function(x,y,z) {
-      var c = coord(x,y,z);
-      var turfs = HTomb.World.turfs;
-      if (turfs[c]) {
-        turfs[c].remove();
-      }
-      turfs[c] = this.entity;
-    },
-    remove: function() {
-      var l = this.entity;
-      var c = coord(l.x,l.y,l.z);
-      var turfs = HTomb.World.turfs;
-      delete turfs[c];
-    }
-  });
-
-  HTomb.Things.defineBehavior({
-    template: "Liquid",
-    name: "liquid",
-    infinite: true,
-    each: ["infinite"],
-    shimmer: function() {
-      var bg = ROT.Color.fromString(this.entity.bg);
-      bg = ROT.Color.randomize(bg,[bg[0]/16, bg[1]/16, bg[2]/16]);
-      bg = ROT.Color.toHex(bg);
-      return bg;
-    },
-    darken: function() {
-      var bg = ROT.Color.fromString(this.entity.bg);
-      bg = ROT.Color.multiply(bg,[72,128,192]);
-      bg = ROT.Color.toHex(bg);
-      return bg;
-    },
-    flood: function() {
-      var x = this.entity.x;
-      var y = this.entity.y;
-      var z = this.entity.z;
-      var t = HTomb.World.turfs[coord(x,y,z-1)];
-      var water;
-      if (HTomb.World.tiles[z-1][x][y].solid!==true && t.liquid===undefined) {
-        water = HTomb.Things.Water().place(x,y,z);
-        water.liquid.flood();
-        // if we flood below, don't flood to the sides...should this happen each turn?
-        return;
-      }
-      var neighbors = HTomb.Tiles.neighbors(this.entity.x,this.entity.y,4);
-      for (var i=0; i<neighbors.length; i++) {
-        x = neighbors[i][0];
-        y = neighbors[i][1];
-        t = HTomb.World.turfs[coord(x,y,z)];
-        if (HTomb.World.tiles[z][x][y].solid===true || (t && t.liquid)) {
-          continue;
-        }
-        water = HTomb.Things.Water().place(x,y,z);
-        water.liquid.flood();
-      }
-    }
-  });
 
   HTomb.Things.defineCreature = function(args) {
     args = args || {};
     args.behaviors = args.behaviors || {};
-    args.behaviors.Creature = args.behaviors.Creature || {};
+    args.behaviors.Creature = {};
     HTomb.Things.defineEntity(args);
   };
   HTomb.Things.defineItem = function(args) {
     args = args || {};
+    var parent = HTomb.Things.templates[args.parent] || {};
     args.behaviors = args.behaviors || {};
     var item = {};
     if (args.stackable) {
@@ -397,44 +348,35 @@ HTomb = (function(HTomb) {
       if (args.maxn) {
         item.maxn = args.maxn;
       }
+    } else if (args.stackable===undefined || parent.stackable) {
+      item.stackable = parent.stackable;
+      if (parent.n) {
+        item.n = parent.n;
+      }
+      if (parent.maxn) {
+        item.maxn = parent.maxn;
+      }
     }
     args.behaviors.Item = item;
     HTomb.Things.defineEntity(args);
-    //if (args.asFeature) {
-    //  var feature = {};
-    //  feature.template = args.asFeature.template || args.feature + "Feature";
-    //  feature.name = args.asFeature.name || args.name;
-    //}
+
   };
   HTomb.Things.defineFeature = function(args) {
     args = args || {};
+    // this should work since it uses inheritance
+    var parent = HTomb.Things.templates[args.parent]  || {};
     args.behaviors = args.behaviors || {};
     var feature = {};
-    if (args.yields) {
-      feature.yields = args.yields;
-    }
-    args.behaviors.Feature = args.behaviors.Feature || feature;
+    feature.yields = args.yields || HTomb.Utils.clone(parent.yields) || null;
+    args.behaviors.Feature = feature;
     HTomb.Things.defineEntity(args);
   };
   HTomb.Things.defineZone = function(args) {
     args = args || {};
     args.behaviors = args.behaviors || {};
-    args.behaviors.Zone = args.behaviors.Zone || {};
+    args.behaviors.Zone = {};
     HTomb.Things.defineEntity(args);
   };
-  HTomb.Things.defineTurf = function(args) {
-    args = args || {};
-    var turf = {};
-    args.behaviors = args.behaviors || {};
-    args.behaviors.Turf = args.behaviors.Turf || {};
-    args.plural = true;
-    HTomb.Things.defineEntity(args);
-  };
-
-
-  function EntityWrapper(entity) {
-    this.entity = entity;
-  }
 
   function ItemContainer(args) {
     var container = Object.create(Array.prototype);
@@ -553,6 +495,7 @@ HTomb = (function(HTomb) {
       } else {
         var last = this.getLast(i_or_t);
         if (last.item.n===1) {
+          this.remove(last);
           return last;
         } else {
           last.item.n-=1;
@@ -572,6 +515,7 @@ HTomb = (function(HTomb) {
       } else {
         var last = this.getLast(i_or_t);
         if (last.item.n<=n) {
+          this.remove(last);
           return last;
         } else {
           last.item.n-=n;
@@ -595,7 +539,10 @@ HTomb = (function(HTomb) {
       var indx = this.indexOf(item);
       if (indx>-1) {
         item.item.container = null;
-        return this.splice(indx,1);
+        this.splice(indx,1);
+        // should this only happen if it's on the ground?
+        item.remove();
+        return item;
       }
     },
     list: function() {

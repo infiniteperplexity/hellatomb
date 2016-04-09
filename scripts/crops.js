@@ -1,179 +1,148 @@
 HTomb = (function(HTomb) {
   "use strict";
 
-HTomb.Things.defineBehavior({
-  template: "CropBehavior",
-  name: "crop",
-  maxHerbs: 2,
-  maxSeeds: 4,
-  growTurns: 512,
-  each: ["growTurns"],
-  onTurnBegin: function() {
-    if (this.growTurns>0) {
+  HTomb.Things.defineItem({
+    template: "Seed",
+    name: "seed",
+    symbol: "\u2026",
+    base: null,
+    stackable: true,
+    maxn: 10
+  });
+  HTomb.Things.defineItem({
+    template: "Herb",
+    name: "herb",
+    symbol: "\u273F",
+    base: null,
+    stackable: true,
+    maxn: 10
+  });
+  HTomb.Things.defineFeature({
+    template: "Sprout",
+    name: "sprout",
+    symbol: "\u0662",
+    incompleteSymbol: "\u2692",
+    base: null,
+    yields: null,
+    growTurns: 256,
+    each: ["growTurns"],
+    onPlace: function() {
+      HTomb.Events.subscribe(this,"TurnBegin");
+    },
+    onTurnBegin: function() {
       this.growTurns-=1;
-    } else {
-      this.mature();
+      if (this.growTurns<=0) {
+        var plant = HTomb.Things[this.base+"Plant"]();
+        var x = this.x;
+        var y = this.y;
+        var z = this.z;
+        this.despawn();
+        plant.place(x,y,z);
+      }
     }
-  },
-  plantAt: function(x,y,z) {
-    this.entity.remove();
-    var plant = HTomb.Things[this.entity.baseTemplate+"Plant"]().place(x,y,z);
-    HTomb.Events.subscribe(plant.crop,"TurnBegin");
-  },
-  mature: function() {
-    this.growTurns = 0;
-    this.entity.symbol = this.entity.matureSymbol || this.entity.symbol;
-    this.entity.fg = this.entity.matureFg || this.entity.fg;
-    HTomb.Events.unsubscribe(this,"TurnBegin");
-  },
-  plow: function() {
-    var x = this.entity.x;
-    var y = this.entity.y;
-    var z = this.entity.z;
-    this.entity.remove();
-    // 50% chance of yielding a seed
-    if (Math.random<=0.5) {
-      var seed = HTomb.Things[this.entity.baseTemplate+"Seed"]().place(x,y,z);
+  });
+  HTomb.Things.defineFeature({
+    template: "Plant",
+    name: "plant",
+    base: null,
+    symbol: "\u2698",
+    yields: null
+  });
+
+
+HTomb.Types.define({
+  template: "Crop",
+  name: "crop",
+  onDefine: function(args) {
+    if (args===undefined || args.template===undefined || args.name===undefined) {
+      HTomb.Debug.pushMessage("invalid template definition");
+      return;
     }
-  },
-  harvestBy: function(cr) {
-    var x = this.entity.x;
-    var y = this.entity.y;
-    var z = this.entity.z;
-    this.entity.remove();
-    var herbs = Math.floor(Math.random()*(this.maxHerbs-1))+1;
-    var seeds = Math.floor(Math.random()*(this.maxSeeds+1));
-    var t = HTomb.Things.templates[this.entity.baseTemplate+"Seed"];
-    var f = HTomb.Things[this.entity.baseTemplate+"Seed"];
-    if (seeds>0) {
-      if (t.stackable) {
-        item = f();
-        item.item.n = seeds;
-        item.place(x,y,z);
-      } else {
-        for (i=0; i<seeds; i++) {
-          item = f();
-          item.place(x,y,z);
+    var stages = ["Seed","Sprout","Herb","Plant"];
+    var specials = ["parent","base","template","name"];
+    for (var i=0; i<4; i++) {
+      args[stages[i]] = args[stages[i]] || {};
+      var parent = HTomb.Things.templates[stages[i]];
+      args[stages[i]].parent = parent.template;
+      args[stages[i]].base = args.template;
+      args[stages[i]].template = args.template+stages[i];
+      args[stages[i]].name = args[stages[i]].name || args.name+" "+parent.name;
+      if (stages[i]==="Sprout") {
+        var seed = {};
+        seed[args.Seed.template] = {n: 1, nonzero: true};
+        args[stages[i]].yields = args[stages[i]].yields || seed;
+        args[stages[i]].incompleteFg = args[stages[i]].incompleteFg || args.fg;
+      } else if (stages[i]==="Plant") {
+        var harvest = {};
+        harvest[args.Seed.template] = {n: 2, nozero: true};
+        harvest[args.Herb.template] = {n: 3, nozero: true};
+        args[stages[i]].yields = args[stages[i]].yields || harvest;
+      }
+      for (var arg in args) {
+        if (stages.indexOf(arg)===-1 && specials.indexOf(arg)===-1) {
+          args[stages[i]][arg] = args[stages[i]][arg] || args[arg];
         }
       }
     }
-    t = HTomb.Things.templates[this.entity.baseTemplate+"Herb"];
-    f = HTomb.Things[this.entity.baseTemplate+"Herb"];
-    var item, i;
-    if (t.stackable) {
-      item = f();
-      item.item.n = herbs;
-      item.place(x,y,z);
-    } else {
-      for (i=0; i<herbs; i++) {
-        item = f();
-        item.place(x,y,z);
-      }
-    }
+    HTomb.Things.defineItem(args.Seed);
+    HTomb.Things.defineFeature(args.Sprout);
+    HTomb.Things.defineFeature(args.Plant);
+    HTomb.Things.defineItem(args.Herb);
   }
 });
 
-HTomb.Things.defineCrop = function(args) {
-  if (args===undefined || args.template===undefined || args.name===undefined) {
-    HTomb.Debug.pushMessage("invalid template definition");
-    return;
-  }
-  var plant = args.plant || {};
-  var herb = args.herb || {};
-  var seed = args.seed || {};
-  var behavior = args.behavior || {};
-  plant.template = args.template + "Plant";
-  plant.baseTemplate = args.template;
-  plant.name = plant.name || args.name + " plant";
-  plant.matureSymbol = plant.matureSymbol || "\u2698";
-  plant.symbol = plant.symbol || '\u0662';
-  plant.fg = plant.fg || args.fg || "white";
-  plant.behaviors = {CropBehavior: behavior};
-  plant.behaviors.CropBehavior.stage = "plant";
-  plant.activate = function() {
-    if (this.crop.growTurns<=0) {
-      this.crop.harvestBy();
-    } else {
-      this.crop.plow();
-    }
-  };
-  herb.template = args.template + "Herb";
-  herb.baseTemplate = args.template;
-  herb.name = herb.name || args.name + " herb";
-  herb.symbol = herb.symbol || "\u273F";
-  herb.fg = herb.fg || args.fg || "white";
-  herb.behaviors = {CropBehavior: behavior};
-  herb.behaviors.CropBehavior.stage = "herb";
-  herb.stackable = true;
-  seed.template = args.template + "Seed";
-  seed.baseTemplate = args.template;
-  seed.name = seed.name || args.name + " seed";
-  seed.symbol = seed.symbol || "\u2026";
-  seed.fg = seed.fg || args.fg || "white";
-  seed.behaviors = {CropBehavior: behavior};
-  seed.behaviors.CropBehavior.stage = "seed";
-  seed.stackable = true;
-  if (args.randomColor) {
-    plant.randomColor = plant.randomColor || args.randomColor;
-    herb.randomColor = herb.randomColor || args.randomColor;
-    seed.randomColor = seed.randomColor || args.randomColor;
-  }
-  HTomb.Things.defineFeature(plant);
-  HTomb.Things.defineItem(herb);
-  HTomb.Things.defineItem(seed);
-};
 
-HTomb.Things.defineCrop({
+HTomb.Types.defineCrop({
   template: "Wolfsbane",
   name: "wolfsbane",
   fg: "#AA55DD",
   randomColor: 10
 });
 
-HTomb.Things.defineCrop({
+HTomb.Types.defineCrop({
   template: "Mandrake",
   name: "mandrake",
   fg: "#DDAA66",
-  herb: {
+  Herb: {
     name: "mandrake root",
     symbol: "\u2767"
   },
   randomColor: 10
 });
 
-HTomb.Things.defineCrop({
+HTomb.Types.defineCrop({
   template: "Wormwood",
   name: "wormwood",
   fg: "#55DDBB",
-  herb: {
+  Herb: {
     name: "wormwood leaf",
     symbol: "\u2766"
   },
   randomColor: 10
 });
 
-HTomb.Things.defineCrop({
+HTomb.Types.defineCrop({
   template: "Amanita",
   name: "amanita",
   fg: "#DD5566",
-  plant: {
-    matureSymbol: "\u2763"
+  Plant: {
+    symbol: "\u2763"
   },
-  herb: {
+  Herb: {
     symbol: "\u2763",
     name: "amanita cap"
   },
-  seed: {
+  Seed: {
     name: "amanita spore"
   },
   randomColor: 10
 });
 
-HTomb.Things.defineCrop({
+HTomb.Types.defineCrop({
   template: "Bloodwort",
   name: "bloodwort",
   fg: "#BBAAAA",
-  herb: {
+  Herb: {
     name: "bloodwort root",
     symbol: "\u2767"
   },

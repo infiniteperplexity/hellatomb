@@ -8,9 +8,110 @@ HTomb = (function(HTomb) {
   HTomb.Types.define({
     template: "Routine",
     name: "routine",
-    act: function(ai) {
+    act: function(ai, args) {
       if (false) {
         ai.acted = true;
+      }
+    }
+  });
+
+  HTomb.Types.defineRoutine({
+    template: "ShoppingList",
+    name: "shopping list",
+    act: function(ai, args) {
+      var cr = ai.entity;
+      var task = cr.worker.task;
+      var ingredients = args || task.ingredients;
+      // if no ingredients are required, skip the rest
+      if (Object.keys(ingredients).length===0) {
+        return false;
+      }
+      var x = task.zone.x;
+      var y = task.zone.y;
+      var z = task.zone.z;
+      var f = HTomb.World.features[coord(x,y,z)];
+      // no need for ingredients if construction has begun
+      if (f && f.template===task.makes) {
+        return false;
+      }
+      // check to see if we are already targeting an ingredient
+      var t = cr.ai.target;
+      // if target has been shaken
+      if (t && (t.reference===null || t.x===null)) {
+        cr.ai.target = null;
+      }
+      t = cr.ai.target;
+      // if the target is not an ingredient
+      if (t && ingredients[t.template]===undefined) {
+        cr.ai.target = null;
+      }
+      t = cr.ai.target;
+      var needy = false;
+      // cycle through ingredients to see if we have enough
+      if (t===null) {
+        for (var ing in ingredients) {
+          var n = ingredients[ing];
+          // if we lack what we need, search for items
+          if (cr.inventory.items.countAll(ing)<n) {
+            needy = true;
+            var items = HTomb.Utils.findItems(function(v,k,i) {
+              if (v.item.owned!==true) {
+                return false;
+              } else if (v.template===ing) {
+                return true;
+              }
+            });
+            // if we find an item we need, target it
+            if (items.length>0) {
+              items = HTomb.Path.closest(cr,items);
+              cr.ai.target = items[0];
+              break;
+            }
+          }
+        }
+      }
+      t = cr.ai.target;
+      // we have everything we need so skip the rest
+      if (needy===false && t===null) {
+        return false;
+      // failed to find what we needed
+      } else if (needy===true && t===null) {
+        cr.worker.task.unassign();
+        cr.ai.walkRandom();
+      } else if (t!==null) {
+        if (t.x===cr.x && t.y===cr.y && t.z===cr.z) {
+          cr.inventory.pickupSome(t.template,ingredients[t.template]);
+          cr.ai.acted = true;
+          cr.ai.target = null;
+        } else {
+          cr.ai.walkToward(t.x,t.y,t.z);
+        }
+      }
+    }
+  });
+
+  HTomb.Types.defineRoutine({
+    template: "GoToWork",
+    name: "go to work",
+    act: function(ai) {
+      var cr = ai.entity;
+      var task = cr.worker.task;
+      if (cr.movement) {
+        var zone = task.zone;
+        var x = zone.x;
+        var y = zone.y;
+        var z = zone.z;
+        var dist = HTomb.Path.distance(cr.x,cr.y,x,y);
+        if (HTomb.Tiles.isTouchableFrom(x,y,z,cr.x,cr.y,cr.z)) {
+          task.work(x,y,z);
+        } else if (dist>0 || cr.z!==z) {
+          cr.ai.walkToward(x,y,z);
+        } else if (dist===0) {
+          cr.ai.walkRandom();
+        } else {
+          task.unassign();
+          cr.ai.walkRandom();
+        }
       }
     }
   });
@@ -22,8 +123,8 @@ HTomb = (function(HTomb) {
       if (ai.entity.minion===undefined) {
         return;
       }
-      if (ai.entity.minion.task) {
-        ai.entity.minion.task.ai();
+      if (ai.entity.worker && ai.entity.worker.task) {
+        ai.entity.worker.task.ai();
       } else {
         // Otherwise, patrol around the creature's master
         // or maybe check for tasks now?
@@ -59,6 +160,7 @@ HTomb = (function(HTomb) {
           ai.target = hostiles[0];
         }
       }
+      // should this test for a valid target?
       if (ai.target && ai.isHostile(ai.target)) {
         if (HTomb.Tiles.isTouchableFrom(ai.target.x, ai.target.y,ai.target.z, ai.entity.x, ai.entity.y, ai.entity.z)) {
           ai.entity.combat.attack(ai.target);
@@ -70,9 +172,6 @@ HTomb = (function(HTomb) {
     }
   });
 
-
-
-
   HTomb.Types.defineRoutine({
     template: "HuntDeadThings",
     name: "hunt dead things",
@@ -80,7 +179,7 @@ HTomb = (function(HTomb) {
       // should this hunt in sight range first?
       if (ai.target===null) {
         var zombies = HTomb.Utils.where(HTomb.World.creatures,function(v,k,o) {
-          return (v.template==="Zombie" && ai.isHostile(v));
+          return (v.template==="Zombie" && ai.isHostile(v) && HTomb.Tiles.isEnclosed(v.x,v.y,v.z)===false);
         });
         if (zombies.length>0) {
           var e = ai.entity;
@@ -169,8 +268,8 @@ HTomb = (function(HTomb) {
         this.fallback.act(this);
       }
       if (this.acted===false) {
-        console.log(this.entity);
-        HTomb.Debug.pushMessage("creature failed to act!");
+        // console.log(this.entity);
+        // HTomb.Debug.pushMessage("creature failed to act!");
       }
       // Reset activity for next turn
       this.acted = false;
@@ -210,9 +309,6 @@ HTomb = (function(HTomb) {
       var x0 = this.entity.x;
       var y0 = this.entity.y;
       var z0 = this.entity.z;
-      if (HTomb.Tiles.isEnclosed(x,y,z)) {
-        return false;
-      }
       var path = HTomb.Path.aStar(x0,y0,z0,x,y,z,{useLast: false});
       if (path!==false) {
         var square = path[0];
@@ -263,8 +359,6 @@ HTomb = (function(HTomb) {
           return true;
         }
       }
-      console.log(this.entity);
-      console.log("creature couldn't move.");
       return false;
     },
   });

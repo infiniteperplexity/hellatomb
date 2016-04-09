@@ -20,9 +20,9 @@ HTomb = (function(HTomb) {
       var y = this.y;
       var z = this.z;
       this.destroy();
-      var t = HTomb.World.turfs[coord(x,y,z)];
+      var t = HTomb.World.covers[coord(x,y,z)];
       if (t) {
-        t.destroy();
+        delete HTomb.World.covers[coord(x,y,z)];
       }
       var cr = HTomb.World.creatures[coord(x,y,z-1)];
       if (cr) {
@@ -78,15 +78,6 @@ HTomb = (function(HTomb) {
   });
 
   HTomb.Things.defineFeature({
-    template: "Construction",
-    name: "construction",
-    steps: 10,
-    task: null,
-    symbol: "X",
-    each: ["steps","symbol","fg","task","name"]
-  });
-
-  HTomb.Things.defineFeature({
     template: "Throne",
     name: "throne",
     //symbol: "\u2655",
@@ -136,26 +127,201 @@ HTomb = (function(HTomb) {
     opaque: true
   });
 
-  HTomb.Things.defineTurf({
+  HTomb.Things.defineFeature({
+    template: "Excavation",
+    name: "excavation",
+    incompleteSymbol: "\u2717",
+    incompleteFg: HTomb.Constants.BELOW,
+    onPlace: function(f) {
+      var tiles = HTomb.World.tiles;
+      var EmptyTile = HTomb.Tiles.EmptyTile;
+      var FloorTile = HTomb.Tiles.FloorTile;
+      var WallTile = HTomb.Tiles.WallTile;
+      var UpSlopeTile = HTomb.Tiles.UpSlopeTile;
+      var DownSlopeTile = HTomb.Tiles.DownSlopeTile;
+      var x = this.x;
+      var y = this.y;
+      var z = this.z;
+      var t = tiles[z][x][y];
+      // If there is a slope below, dig out the floor
+      if (tiles[z-1][x][y]===UpSlopeTile && HTomb.World.explored[z-1][x][y] && (t===WallTile || t===FloorTile)) {
+        tiles[z][x][y] = DownSlopeTile;
+      // If it's a wall, dig a tunnel
+      } else if (t===WallTile) {
+        tiles[z][x][y] = FloorTile;
+      } else if (t===FloorTile) {
+        // If it's a floor with a wall underneath dig a trench
+        if (tiles[z-1][x][y]===WallTile) {
+          tiles[z][x][y] = DownSlopeTile;
+          tiles[z-1][x][y] = UpSlopeTile;
+        // Otherwise just remove the floor
+        } else {
+          tiles[z][x][y] = EmptyTile;
+        }
+      // If it's a down slope tile, remove the slopes
+      } else if (t===DownSlopeTile) {
+        tiles[z][x][y] = EmptyTile;
+        tiles[z-1][x][y] = FloorTile;
+      // if it's an upward slope, remove the slope
+      } else if (t===UpSlopeTile) {
+        tiles[z][x][y] = FloorTile;
+        if (tiles[z+1][x][y]===DownSlopeTile) {
+          tiles[z+1][x][y] = EmptyTile;
+        }
+      } else if (t===EmptyTile) {
+        tiles[z-1][x][y] = FloorTile;
+      }
+      if(HTomb.World.covers[coord(x,y,z)]) {
+        delete HTomb.World.covers[coord(x,y,z)];
+        //HTomb.World.covers[coord(x,y,z)].destroy();
+      }
+      if (Math.random()<0.25) {
+        var rock = HTomb.Things.Rock();
+        rock.item.n = 1;
+        rock.place(x,y,z);
+      }
+      HTomb.World.validate.cleanNeighbors(x,y,z);
+      this.despawn();
+    }
+  });
+
+
+  HTomb.Things.defineFeature({
+    template: "Construction",
+    name: "construction",
+    incompleteSymbol: "\u2692",
+    incompleteFg: HTomb.Constants.ABOVE,
+    onPlace: function() {
+      var tiles = HTomb.World.tiles;
+      var EmptyTile = HTomb.Tiles.EmptyTile;
+      var FloorTile = HTomb.Tiles.FloorTile;
+      var WallTile = HTomb.Tiles.WallTile;
+      var UpSlopeTile = HTomb.Tiles.UpSlopeTile;
+      var DownSlopeTile = HTomb.Tiles.DownSlopeTile;
+      var x = this.x;
+      var y = this.y;
+      var z = this.z;
+      var t = tiles[z][x][y];
+      var cover = HTomb.World.covers[coord(x,y,z)];
+      if (cover) {
+        delete HTomb.World.covers[coord(x,y,z)];
+      }
+      // If it's a floor, build a slope
+      if (t===FloorTile) {
+        tiles[z][x][y] = UpSlopeTile;
+        if (tiles[z+1][x][y]===EmptyTile) {
+          tiles[z+1][x][y] = DownSlopeTile;
+        }
+      // If it's a slope, make it into a wall
+    } else if (t===UpSlopeTile) {
+        tiles[z][x][y] = WallTile;
+        if (tiles[z+1][x][y] === DownSlopeTile) {
+          tiles[z+1][x][y] = FloorTile;
+        }
+      // If it's empty, add a floor
+      } else if (t===DownSlopeTile || t===EmptyTile) {
+        tiles[z][x][y] = FloorTile;
+      }
+      HTomb.World.validate.cleanNeighbors(x,y,z);
+      this.despawn();
+    }
+  });
+
+  HTomb.Things.defineFeature({
+    template: "IncompleteFeature",
+    name: "incomplete feature",
+    symbol: "\u25AB",
+    fg: "#BB9922",
+    makes: null,
+    fg: HTomb.Constants.ABOVE,
+    task: null,
+    each: ["task","name","makes","integrity"],
+    onPlace: function() {
+      var makes = HTomb.Things.templates[this.makes];
+      this.symbol = makes.incompleteSymbol || this.symbol;
+      this.fg = makes.incompleteFg || this.fg;
+      this.name = "incomplete "+makes.name;
+    },
+    work: function() {
+      if (this.integrity===null || this.integrity===undefined) {
+        this.integrity = -5;
+      }
+      this.integrity+=1;
+      if (this.integrity>=0) {
+        this.finish();
+      }
+    },
+    finish: function() {
+      var x = this.x;
+      var y = this.y;
+      var z = this.z;
+      this.task.complete();
+      this.despawn();
+      var f = HTomb.Things[this.makes]();
+      f.place(x,y,z);
+    }
+  });
+
+  HTomb.Types.define({
+    template: "Cover",
+    name: "cover",
+    liquid: false,
+    shimmer: function() {
+      var bg = ROT.Color.fromString(this.bg);
+      bg = ROT.Color.randomize(bg,[bg[0]/16, bg[1]/16, bg[2]/16]);
+      bg = ROT.Color.toHex(bg);
+      return bg;
+    },
+    darken: function() {
+      var bg = ROT.Color.fromString(this.bg);
+      bg = ROT.Color.multiply(bg,[72,128,192]);
+      bg = ROT.Color.toHex(bg);
+      return bg;
+    },
+    flood: function(x,y,z) {
+      var t = HTomb.World.covers[coord(x,y,z-1)];
+      var water;
+      if (HTomb.World.tiles[z-1][x][y].solid!==true && t.liquid===undefined) {
+        HTomb.World.covers[coord(x,y,z)] = this;
+        this.flood(x,y,z);
+        // if we flood below, don't flood to the sides...should this happen each turn?
+        return;
+      }
+      var neighbors = HTomb.Tiles.neighbors(x,y,4);
+      for (var i=0; i<neighbors.length; i++) {
+        x = neighbors[i][0];
+        y = neighbors[i][1];
+        t = HTomb.World.covers[coord(x,y,z)];
+        if (HTomb.World.tiles[z][x][y].solid===true || (t && t.liquid)) {
+          continue;
+        }
+        HTomb.World.covers = this;
+        this.flood(x,y,z);
+      }
+    }
+  });
+
+  HTomb.Types.defineCover({
     template: "Water",
     name: "water",
     symbol: "~",
     flowSymbol: "\u2248",
+    liquid: true,
     fg: HTomb.Constants.WATERFG || "#3388FF",
-    bg: HTomb.Constants.WATERBG || "#1144BB",
-    behaviors: {Liquid: {}}
+    bg: HTomb.Constants.WATERBG || "#1144BB"
   });
-  HTomb.Things.defineTurf({
+
+  HTomb.Types.defineCover({
     template: "Lava",
     name: "lava",
     symbol: "~",
     flowSymbol: "\u2248",
+    liquid: true,
     fg: "#FF8833",
-    bg: "#DD4411",
-    behaviors: {Liquid: {}}
+    bg: "#DD4411"
   });
 
-  HTomb.Things.defineTurf({
+  HTomb.Types.defineCover({
     template: "Grass",
     name: "grass",
     symbol: '"',
@@ -163,12 +329,12 @@ HTomb = (function(HTomb) {
     bg: HTomb.Constants.GRASSBG || "#334422"
   });
 
-  HTomb.Things.defineTurf({
-    template: "Soil",
-    name: "soil",
-    symbol: '"',
-    fg: "#886644",
-    bg: "#332211"
+  HTomb.Types.defineCover({
+    template: "Road",
+    name: "road",
+    symbol: '\u25CB',
+    fg: HTomb.Constants.WALLFG,
+    bg: HTomb.Constants.WALLBG
   });
 
   return HTomb;

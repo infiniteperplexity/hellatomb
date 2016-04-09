@@ -9,7 +9,7 @@ HTomb = (function(HTomb) {
   	template: "Type",
   	name: "type",
   	stringify: function() {
-      return HTomb.Types.templates[this.parent].indexOf(this);
+      return HTomb.Types.templates[this.parent].types.indexOf(this);
     },
   	parse: function(value) {
       return HTomb.Types.templates[this.parent].types[value];
@@ -70,7 +70,7 @@ HTomb = (function(HTomb) {
     }
   	// Don't fire onDefine for the top-level thing
   	if (t.onDefine && args.parent!=="Type") {
-  		t.onDefine();
+  		t.onDefine(args);
   	}
   };
 

@@ -1,32 +1,33 @@
 // This submodule handles saving the game
 HTomb = (function(HTomb) {
   "use strict";
-  var LEVELW = HTomb.Constants.LEVELW;
-  var LEVELH = HTomb.Constants.LEVELH;
-  var NLEVELS = HTomb.Constants.NLEVELS;
+  let LEVELW = HTomb.Constants.LEVELW;
+  let LEVELH = HTomb.Constants.LEVELH;
+  let NLEVELS = HTomb.Constants.NLEVELS;
 
+
+  let fakeLocalStorage;
   HTomb.Save.saveGame = function() {
-    var saveGame = {};
-    console.log("testing");
+    let saveGame = {};
+    console.time("save game");
     saveGame.things = HTomb.World.things;
     saveGame.tiles = HTomb.World.tiles;
     saveGame.explored = HTomb.World.explored;
-    saveGame.creatures = HTomb.World.creatures;
-    saveGame.items = HTomb.World.items;
-    saveGame.features = HTomb.World.features;
-    saveGame.zones = HTomb.World.zones;
-    saveGame.turfs = HTomb.World.turfs;
-    saveGame.dailyCycle = HTomb.World.dailyCycle;
-    var json = HTomb.Save.stringify(saveGame);
-    localStorage.saveGame = json;
+    saveGame.covers = HTomb.World.covers;
+    saveGame.dailyCycle = HTomb.Time.dailyCycle;
+    let json = HTomb.Save.stringify(saveGame);
+    //localStorage.saveGame = json;
+    fakeLocalStorage = json;
+    console.timeEnd("save game");
     console.log(json.length);
   };
 
-  var seen = [];
+  let seen = [];
   HTomb.Save.duplicates = [];
   HTomb.Save.nThings = 0;
-  HTomb.Save.stringify = function(obj) {
-    var json = JSON.stringify(obj, function(key, val) {
+  //HTomb.Save.stringify = function(obj) {
+  HTomb.Save.stringify = function(obj, arg) {
+    let json = JSON.stringify(obj, function(key, val) {
       if (val===undefined) {
         //console.log("why is val undefined?");
         return undefined;
@@ -39,10 +40,12 @@ HTomb = (function(HTomb) {
         //console.log("special way to stringify");
         return val.stringify();
         // if it's from the global things table, stringify it normally
-      } else if (this===HTomb.World.things) {
+      //} else if (this===HTomb.World.things) {
+      } else if (arg===true) {
+        arg = false;
         HTomb.Save.nThings+=1;
         // stringify only those things on the "each" list
-        for (var p in val) {
+        for (let p in val) {
           if (p!=="each" && val.hasOwnProperty(p)===false) {
             delete val[p];
           }
@@ -74,39 +77,39 @@ HTomb = (function(HTomb) {
       while(toList.length>0) {
         toList.pop();
       }
-      for (var i=0; i<fromList.length; i++) {
+      for (let i=0; i<fromList.length; i++) {
         toList.push(fromList[i]);
       }
     } else {
-      for (var t in toList) {
+      for (let t in toList) {
         delete toList[t];
       }
-      for (var f in fromList) {
+      for (let f in fromList) {
         toList[f] = fromList[f];
       }
     }
-  }
+  };
 
   function fillGrid3dFrom(fromGrid, toGrid, callb) {
   // default callback is to return self
     callb = callb || function(x) {return x;};
     // pull all elements from old grid
-    for (var z=0; z<NLEVELS; z++) {
-      for (var x=0; x<LEVELW; x++) {
-        for (var y=0; y<LEVELH; y++) {
+    for (let z=0; z<NLEVELS; z++) {
+      for (let x=0; x<LEVELW; x++) {
+        for (let y=0; y<LEVELH; y++) {
           toGrid[z][x][y] = callb(fromGrid[z][x][y]);
         }
       }
     }
-  }
+  };
 
   HTomb.Save.restoreGame = function(j) {
-    var json = localStorage.saveGame;
-    var tids = [];
-    //var templates = [];
-    var player = null;
+    let json = localStorage.saveGame;
+    let tids = [];
+    //let templates = [];
+    let player = null;
     // parse while keeping a list of references to thingIds
-    var saveGame = JSON.parse(json, function (key, val) {
+    let saveGame = JSON.parse(json, function (key, val) {
       if (val===null) {
         return null;
       } else if (val.tid) {
@@ -125,8 +128,8 @@ HTomb = (function(HTomb) {
       }
     });
     // swap all thingId references for their thing
-    for (var i=0; i<tids.length; i++) {
-      var tid = tids[i];
+    for (let i=0; i<tids.length; i++) {
+      let tid = tids[i];
       tid[0][tid[1]] = saveGame.things[tid[2].tid];
     }
     HTomb.Player = player.entity;
@@ -137,11 +140,11 @@ HTomb = (function(HTomb) {
     fillListFrom(saveGame.items, HTomb.World.items);
     fillListFrom(saveGame.features, HTomb.World.features);
     fillListFrom(saveGame.zones, HTomb.World.zones);
-    fillListFrom(saveGame.turfs, HTomb.World.turfs);
-    HTomb.World.dailyCycle.turn = saveGame.dailyCycle.turn;
-    HTomb.World.dailyCycle.minute = saveGame.dailyCycle.minute;
-    HTomb.World.dailyCycle.hour = saveGame.dailyCycle.hour;
-    HTomb.World.dailyCycle.day = saveGame.dailyCycle.day;
+    fillListFrom(saveGame.covers, HTomb.World.covers);
+    HTomb.Time.dailyCycle.turn = saveGame.dailyCycle.turn;
+    HTomb.Time.dailyCycle.minute = saveGame.dailyCycle.minute;
+    HTomb.Time.dailyCycle.hour = saveGame.dailyCycle.hour;
+    HTomb.Time.dailyCycle.day = saveGame.dailyCycle.day;
     HTomb.FOV.resetVisible();
     if (HTomb.Player.sight) {
       HTomb.FOV.findVisible(HTomb.Player.x, HTomb.Player.y, HTomb.Player.z, HTomb.Player.sight.range);
@@ -150,4 +153,5 @@ HTomb = (function(HTomb) {
   };
 
   return HTomb;
+
 })(HTomb);

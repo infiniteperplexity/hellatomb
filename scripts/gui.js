@@ -186,6 +186,12 @@ HTomb = (function(HTomb) {
       scroll.render();
     }
   };
+  HTomb.Debug.pushMessage = function(msg) {
+    if (Debug.messages===true) {
+      HTomb.GUI.pushMessage(msg);
+      console.log(msg);
+    }
+  };
   // Render display panels
   GUI.render = function() {
     // Draw all the panels
@@ -347,10 +353,10 @@ HTomb = (function(HTomb) {
     scrollDisplay.drawText(this.x0+cursor,this.y0+1,"Z:" + gameScreen.z);
     cursor+=7;
     scrollDisplay.drawText(this.x0+cursor,this.y0+1,
-      HTomb.World.dailyCycle.getPhase().symbol + " "
-      + HTomb.World.dailyCycle.day + ":"
-      + HTomb.World.dailyCycle.hour + ":"
-      + HTomb.World.dailyCycle.minute);
+      HTomb.Time.dailyCycle.getPhase().symbol + " "
+      + HTomb.Time.dailyCycle.day + ":"
+      + HTomb.Time.dailyCycle.hour + ":"
+      + HTomb.Time.dailyCycle.minute);
     cursor+=12;
     if (HTomb.Time.isPaused()===true) {
       scrollDisplay.drawText(this.x0+cursor,this.y0+1,"Paused");
@@ -487,9 +493,9 @@ HTomb = (function(HTomb) {
       }
       text.
       push(next);
-      next = "Turf/Liquid: ";
-      if (square.turf) {
-        next+=square.turf.describe();
+      next = "cover/Liquid: ";
+      if (square.cover) {
+        next+=square.cover.describe();
       }
       text.push(next);
       next = "Lighting: ";
@@ -523,9 +529,9 @@ HTomb = (function(HTomb) {
         next+=above.zone.describe();
       }
       text.push(next);
-      next = "Turf/Liquid: ";
-      if (above.turf) {
-        next+=above.turf.describe();
+      next = "cover/Liquid: ";
+      if (above.cover) {
+        next+=above.cover.describe();
       }
       text.push(next);
       next = "Lighting: ";
@@ -559,9 +565,9 @@ HTomb = (function(HTomb) {
         next+=below.zone.describe();
       }
       text.push(next);
-      next = "Turf/Liquid: ";
-      if (below.turf) {
-        next+=below.turf.describe();
+      next = "cover/Liquid: ";
+      if (below.cover) {
+        next+=below.cover.describe();
       }
       text.push(next);
       next = "Lighting: ";
@@ -678,8 +684,8 @@ HTomb = (function(HTomb) {
         details.push("Its attention is focused on " + b.describe() + " at "+b.x+", "+y+", "+z+".");
         details.push(" ");
       }
-      if (thing.minion) {
-        b = thing.minion;
+      if (thing.worker) {
+        b = thing.worker;
         if (b.task) {
           s = "It is assigned to " + b.task.describe();
           if (b.task.zone) {
@@ -931,7 +937,7 @@ HTomb = (function(HTomb) {
     survey.saveY = gameScreen.yoffset;
     survey.saveZ = gameScreen.z;
     context.clickTile = function(x,y) {
-      callb(x,y,gameScreen.z);
+      callb(x,y,gameScreen.z,options);
       GUI.reset();
     };
     if (options.line!==undefined) {
@@ -1063,7 +1069,7 @@ HTomb = (function(HTomb) {
           }
         }
         // Invoke the callback function on the squares selected
-        callb(squares);
+        callb(squares, options);
         if (options.reset!==false) {
           GUI.reset();
         }
@@ -1133,6 +1139,7 @@ HTomb = (function(HTomb) {
   });
   survey.menuText = ["You are now in survey mode.","Use movement keys to navigate.","Comma go down.","Period to go up.","Escape to exit."];
   survey.clickTile = main.clickTile;
+  survey.rightClickTile = main.rightClickTile;
 
   // Currently implemented, seems slow and I don't know where to put it
   var minimap = {};
