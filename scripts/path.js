@@ -209,23 +209,23 @@ Tomb = (function(HTomb) {
   };
 
   HTomb.Path.flood = function(x,y, callb) {
-    if (callb(x,y)===false) {
-      return [];
+    let stack = [[x,y]];
+    let checked = [];
+    for (let x=0; x<LEVELW; x++) {
+      checked.push([]);
     }
     let squares = [];
-    let checked = [[x,y]];
-    function _flood(x,y) {
-      let vn = HTomb.Path.vonNeumann(x,y);
-      for (let i=0; i<vn.length; i++) {
-        let x1 = vn[i][0];
-        let y1 = vn[i][1];
-        if (HTomb.Utils.arrayInArray([x1,y1],checked)===-1) {
-          continue;
-        }
-        checked.push([x1,y1]);
-        if (callb(x1,y1)) {
-          squares.push([x1,y1);
-          _flood(x1,y1);
+    while (stack.length>0) {
+      let next = stack.pop();
+      if (checked[next[0]][next[1]]===true) {
+        continue;
+      }
+      checked[next[0]][next[1]] = true;
+      if (callb(next[0],next[1])===true) {
+        squares.push(next);
+        let vn = HTomb.Path.vonNeumann(next[0],next[1]);
+        for (let i=0; i<vn.length; i++) {
+          stack.push([vn[i][0],vn[i][1]]);
         }
       }
     }
@@ -233,52 +233,29 @@ Tomb = (function(HTomb) {
   };
 
   HTomb.Path.floodRegions = function(callb) {
-    let visited = [];
+    let checked = [];
+    for (let x=0; x<LEVELW; x++) {
+      checked.push([]);
+    }
     let regions = [];
     let tries = 0;
     while (tries<500) {
-      let x = Math.floor(Math.random()*LEVELW+2)-1;
-      let y = Math.floor(Math.random().LEVELH+2)-1;
-      if (callb(x,y) && HTomb.Utils.arrayInArray([x,y],visited)===-1) {
+      console.log(1);
+      let x = Math.floor(Math.random()*(LEVELW-2))+1;
+      let y = Math.floor(Math.random()*(LEVELH-2))+1;
+      if (callb(x,y) && checked[x][y]!==true) {
         let squares = HTomb.Path.flood(x,y,callb);
         regions.push(squares);
-        visited = visited.concat(squares);
+        for (let i=0; i<squares.length; i++) {
+          let s = squares[i];
+          checked[s[0]][s[1]] = true;
+        }
         tries = 0;
       } else {
         tries+=1;
       }
     }
     return regions;
-  };
-
-  /*
-
-let's say we wanna flood fill function...what are our inputs and outputs?
-
-- flood(x,y.(z))
-
-
-
-  */
-  HTomb.Path.FloodFill = function(callb) {
-    this._callback = callb;
-    this.filled = {};
-    this.compute = function(x,y) {
-      if (this._callback(x,y) === true && this.filled[x+","+y] === undefined) {
-        this.filled[x+","+y] = true;
-        this.compute(x+1,y);
-        this.compute(x-1,y);
-        this.compute(x,y+1);
-        this.compute(x,y-1);
-      }
-    };
-  };
-
-  HTomb.Path.flood = function(x,y,z) {
-    grid0 = levels[z].grid;
-    var f = new HTomb.Path.FloodFill(passable);
-    f.compute(x,y);
-    return f.grid;
   };
 
   HTomb.Path.vonNeumann = function(x,y,n,hollow) {

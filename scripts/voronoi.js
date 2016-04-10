@@ -38,6 +38,7 @@ HTomb = (function(HTomb) {
       }
       let line = HTomb.Path.line(left[0],left[1],right[0],right[1]);
       for (let j=0; j<line.length; j++) {
+        // this may be an inefficient use of arrayInArray
         if (HTomb.Utils.arrayInArray(line[j],obj.boundaries)===-1) {
           obj.boundaries.push(line[j]);
         }
@@ -50,7 +51,7 @@ HTomb = (function(HTomb) {
         return false;
       }
     }
-    obj.regions = HTomb.Path.floodRegions(x,y,notEdge);
+    obj.regions = HTomb.Path.floodRegions(notEdge);
     return obj;
   };
 

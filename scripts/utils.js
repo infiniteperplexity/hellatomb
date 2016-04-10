@@ -113,17 +113,13 @@ HTomb = (function(HTomb) {
   };
 
   HTomb.Utils.arrayInArray = function(c, a) {
-    var match;
-    var mis;
     for (var i=0; i<a.length; i++) {
-      match = true;
       for (var j=0; j<c.length; j++) {
         if (c[j]!==a[i][j]) {
-          match = false;
+          break;
+        } else if(j===c.length-1) {
+          return i;
         }
-      }
-      if (match===true) {
-        return i;
       }
     }
     return -1;
