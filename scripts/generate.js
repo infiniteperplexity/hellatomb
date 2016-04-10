@@ -117,7 +117,7 @@ timeIt("elevation", function() {
     placement.resolve();
 }); timeIt("no hauling", function() {
     notOwned();
-    voronoi();
+    //voronoi();
 });
   };
 
@@ -277,20 +277,18 @@ timeIt("elevation", function() {
   }
 
   function voronoi() {
-    let points = [];
-    for (let i=1; i<LEVELW-1; i++) {
-      for (let j=1; j<LEVELH-1; j++) {
-        if (Math.random()<0.001) {
-          points.push([i,j]);
-        }
-      }
-    }
-    let boundaries = HTomb.Path.voronoi(points,3).boundaries;
-    for (let i=0; i<boundaries.length; i++) {
-      let x = boundaries[i][0];
-      let y = boundaries[i][1];
+    let v = HTomb.Path.brutalVoronoi();
+    for (let i=0; i<v.edges.length; i++) {
+      let x = v.edges[i][0];
+      let y = v.edges[i][1];
       let z = HTomb.Tiles.groundLevel(x,y);
-      HTomb.World.covers[coord(x,y,z)] = HTomb.Covers.Road;
+      HTomb.Things.Bloodstone().place(x,y,z);
+    }
+    for (let i=0; i<v.vertices.length; i++) {
+      let x = v.vertices[i][0];
+      let y = v.vertices[i][1];
+      let z = HTomb.Tiles.groundLevel(x,y);
+      HTomb.Things.GoldOre().place(x,y,z);
     }
   }
 
