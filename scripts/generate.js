@@ -117,12 +117,13 @@ timeIt("elevation", function() {
     placement.resolve();
 }); timeIt("no hauling", function() {
     notOwned();
-    //voronoi();
+    voronoi();
 });
   };
 
   var lowest;
   var highest;
+  var elevation;
   function assignElevation(ground) {
     ground = ground || 50;
     var hscale1 = 128;
@@ -155,8 +156,18 @@ timeIt("elevation", function() {
     }
     lowest = mn;
     highest = mx;
+    elevation = grid;
     console.log("Highest at " + mx + ", lowest at " + mn);
   }
+
+  HTomb.World.elevation = function(x,y) {
+    x = Math.round(x);
+    y = Math.round(y);
+    if (elevation[x]===undefined) {
+      console.log([x,y]);
+    }
+    return elevation[x][y];
+  };
 
   function addSlopes() {
     var tiles = HTomb.World.tiles;
@@ -277,20 +288,24 @@ timeIt("elevation", function() {
   }
 
   function voronoi() {
-    let v = HTomb.Path.brutalVoronoi();
-    for (let i=0; i<v.edges.length; i++) {
-      let x = v.edges[i][0];
-      let y = v.edges[i][1];
-      let z = HTomb.Tiles.groundLevel(x,y);
-      HTomb.Things.Bloodstone().place(x,y,z);
+    let routes = HTomb.Path.citygen();
+    for (let i=0; i<routes.length; i++) {
+      let route = routes[i];
+      for (let j=0; j<route.length-1; j++) {
+        let x0 = route[j][0];
+        let y0 = route[j][1];
+        let x1 = route[j+1][0];
+        let y1 = route[j+1][1];
+        let line = HTomb.Path.line(x0,y0,x1,y1);
+        for (let k=0; k<line.length; k++) {
+          let x = line[k][0];
+          let y = line[k][1];
+          let z = HTomb.Tiles.groundLevel(x,y);
+          HTomb.Things.Bloodstone().place(x,y,z);
+        }
+      }
     }
-    for (let i=0; i<v.vertices.length; i++) {
-      let x = v.vertices[i][0];
-      let y = v.vertices[i][1];
-      let z = HTomb.Tiles.groundLevel(x,y);
-      HTomb.Things.GoldOre().place(x,y,z);
-    }
-  }
+  };
 
 
   function cavernLevels(n) {

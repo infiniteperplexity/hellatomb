@@ -125,6 +125,10 @@ HTomb = (function(HTomb) {
     return -1;
   };
 
+  HTomb.Utils.maxIndex = function(arr) {
+    return arr.reduce(function(iMax,x,i,a) {return x>a[iMax] ? i : iMax;}, 0);
+  };
+
   HTomb.Utils.alphaHex = function(newc,oldc,alpha) {
     var combined = [];
     for (var i=0; i<3; i++) {

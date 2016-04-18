@@ -2,6 +2,48 @@ HTomb = (function(HTomb) {
   var LEVELW = HTomb.Constants.LEVELW;
   var LEVELH = HTomb.Constants.LEVELH;
 
+  HTomb.Path.citygen = function(points) {
+    let v = HTomb.Path.voronoi(points);
+    let routes = [];
+    for (let g=0; g<v.edges.length; g++) {
+      let edge = v.edges[g];
+      let first = edge[0];
+      let last = edge[1];
+      let angle = Math.atan2(last[1]-first[1],last[0]-first[0]);
+      let dist = Math.sqrt((last[0]-first[0])*(last[0]-first[0])+(last[1]-first[1])*(last[1]-first[1]));
+      const segments = 4;
+      const npoints = 5;
+      const mangle = Math.PI/8;
+      let next = first;
+      let route = [first];
+      for (let i=0; i<segments-2; i++) {
+        let consider = [];
+        for (let j=0; j<npoints; j++) {
+          let a = angle-mangle+j*Math.floor(mangle/2);
+          let x = next[0]+(dist/segments)*Math.cos(a);
+          let y = next[1]+(dist/segments)*Math.sin(a);
+          x = Math.min(LEVELW-1,Math.max(x,0));
+          y = Math.min(LEVELH-1,Math.max(y,0));
+          consider.push([x,y]);
+        }
+        let ratios = consider.map(function(e,i,a) {
+          let first_z = HTomb.World.elevation(first[0],first[1]);
+          let last_z = HTomb.World.elevation(last[0],last[1]);
+          let middle_z = HTomb.World.elevation(e[0],e[1]);
+          let d = (dist*(i+1))/segments;
+          return Math.abs(((middle_z-first_z)/d)-((last_z-first_z)/dist));
+        });
+        next = consider[HTomb.Utils.maxIndex(ratios)];
+        next[0] = Math.round(next[0]);
+        next[1] = Math.round(next[1]);
+        route.push(next);
+      }
+      route.push(last);
+      routes.push(route);
+    }
+    return routes;
+  };
+
   HTomb.Path.voronoi = function(points) {
     // for testing purposes
     if (points===undefined) {

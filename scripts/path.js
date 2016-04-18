@@ -1,4 +1,4 @@
-Tomb = (function(HTomb) {
+HTomb = (function(HTomb) {
   "use strict";
   var LEVELW = HTomb.Constants.LEVELW;
   var LEVELH = HTomb.Constants.LEVELH;
@@ -240,7 +240,6 @@ Tomb = (function(HTomb) {
     let regions = [];
     let tries = 0;
     while (tries<500) {
-      console.log(1);
       let x = Math.floor(Math.random()*(LEVELW-2))+1;
       let y = Math.floor(Math.random()*(LEVELH-2))+1;
       if (callb(x,y) && checked[x][y]!==true) {

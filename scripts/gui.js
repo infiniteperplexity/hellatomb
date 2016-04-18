@@ -187,7 +187,7 @@ HTomb = (function(HTomb) {
     }
   };
   HTomb.Debug.pushMessage = function(msg) {
-    if (Debug.messages===true) {
+    if (HTomb.Debug.messages===true) {
       HTomb.GUI.pushMessage(msg);
       console.log(msg);
     }
