@@ -25,6 +25,16 @@ HTomb = (function(HTomb) {
         },
         complete: false
       }
+      // ,
+      // {
+      //   message: "Press J, then assign a zombie to dig to find rocks for building.",
+      //   check: function() {
+      //     return (HTomb.Utils.findItems(function(v,k,i) {
+      //       return (v.template==="Rock" && v.item.owned!==false);
+      //     }).length>0);
+      //   },
+      //   complete: false
+      // }
     ]
   };
 

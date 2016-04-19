@@ -1,7 +1,6 @@
 Small:
 + don't put graves below water table
 + merge dismantling and harvesting
-+ figure out pop-up screen
 + grass grows back?
 + particle system
 + particles for spells
