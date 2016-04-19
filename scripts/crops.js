@@ -25,7 +25,6 @@ HTomb = (function(HTomb) {
     base: null,
     yields: null,
     growTurns: 256,
-    each: ["growTurns"],
     onPlace: function() {
       HTomb.Events.subscribe(this,"TurnBegin");
     },

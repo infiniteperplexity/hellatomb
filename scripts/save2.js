@@ -108,6 +108,9 @@ HTomb = (function(HTomb) {
         HTomb.Save.nThings+=1;
         // stringify only those things on the "each" list
         for (var p in val) {
+          if (val[p]!==HTomb.Things.templates[val.template][p]) {
+
+          }
           if (p!=="each" && val.hasOwnProperty(p)===false) {
             delete val[p];
           }

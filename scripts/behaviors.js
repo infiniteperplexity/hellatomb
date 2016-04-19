@@ -19,7 +19,6 @@ HTomb = (function(HTomb) {
     point: null,
     level: 255,
     range: 8,
-    each: ["point","level","range"],
     onAdd: function() {
       this.point = this.entity;
     },
@@ -156,7 +155,6 @@ HTomb = (function(HTomb) {
     template: "Minion",
     name: "minion",
     master: null,
-    each: ["master"],
     setMaster: function(cr) {
       this.master = cr;
       HTomb.Events.subscribe(this,"Destroy");
@@ -174,7 +172,6 @@ HTomb = (function(HTomb) {
     name: "worker",
     task: null,
     allowedTasks: ["DigTask","BuildTask","PatrolTask","CraftTask","HoardTask","FarmTask","DismantleTask"],
-    each: ["task","allowedTasks"],
     onAssign: function(tsk) {
       this.task = tsk;
       HTomb.Debug.pushMessage(this.entity.describe() + " was assigned " + tsk.describe());
@@ -194,7 +191,6 @@ HTomb = (function(HTomb) {
     minions: null,
     taskList: null,
     tasks: null,
-    each: ["minions","tasks","taskList"],
     onCreate: function(options) {
       options = options || {};
       this.tasks = options.tasks || [];
@@ -265,7 +261,6 @@ HTomb = (function(HTomb) {
     name: "caster",
     maxmana: 20,
     mana: 20,
-    each: ["mana","maxmana"],
     onCreate: function(options) {
       options = options || {};
       options.spells = options.spells || [];
@@ -296,7 +291,6 @@ HTomb = (function(HTomb) {
     // flags for different kinds of movement
     walks: true,
     climbs: true,
-    //each: ["walks","climbs","flies","swims"],
     displaceCreature: function(cr) {
       var x0 = this.entity.x;
       var y0 = this.entity.y;

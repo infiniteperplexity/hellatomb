@@ -10,7 +10,6 @@ HTomb = (function(HTomb) {
     y: null,
     z: null,
     behaviors: {},
-    each: ["x","y","z","reference"],
     place: function(x,y,z) {
       this.remove();
       if (this.creature) {
@@ -41,7 +40,8 @@ HTomb = (function(HTomb) {
     },
     getBehaviors: function() {
       var behaviors = [];
-      for (var b in HTomb.Things.behaviors) {
+      for (let i=0; i<HTomb.Things.behaviors.length; i++) {
+        let b = HTomb.Things.behaviors[i];
         if (this[b]!==undefined) {
           behaviors.push(this[b]);
         }
@@ -171,22 +171,13 @@ HTomb = (function(HTomb) {
     addToEntity: function(ent) {
       this.entity = ent;
       ent[this.name] = this;
-      if (ent.hasOwnProperty("each")===false) {
-        var each = [];
-        for (var i=0; i<ent.each.length; i++) {
-          each.push(ent.each[i]);
-        }
-        ent.each = each;
-      }
-      ent.each.push(this.name);
       if (this.onAdd) {
         this.onAdd(this.options);
       }
     },
     onDefine: function() {
       HTomb.Things.behaviors.push(this.name);
-    },
-    each: ["entity"]
+    }
   });
   HTomb.Things.behaviors = [];
 
@@ -195,7 +186,6 @@ HTomb = (function(HTomb) {
     name: "creature",
     maxhp: 10,
     hp: 10,
-    each: ["hp"],
     place: function(x,y,z) {
       var c = coord(x,y,z);
       var creatures = HTomb.World.creatures;
@@ -226,7 +216,6 @@ HTomb = (function(HTomb) {
     container: null,
     owned: true,
     bulk: 10,
-    each: ["n","owned"],
     place: function(x,y,z) {
       var c = coord(x,y,z);
       var pile = HTomb.World.items[c] || ItemContainer();
@@ -262,7 +251,6 @@ HTomb = (function(HTomb) {
     name: "feature",
     yields: null,
     integrity: null,
-    each: ["integrity","yields"],
     place: function(x,y,z) {
       var c = coord(x,y,z);
       var features = HTomb.World.features;

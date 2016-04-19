@@ -15,7 +15,6 @@ HTomb = (function(HTomb) {
     zoneTemplate: null,
     makes: null,
     target: null,
-    each: ["assigner","assignee","zone","feature"],
     ingredients: {},
     // note that this passes the behavior, not the entity
     canReachZone: function(cr) {
@@ -167,9 +166,6 @@ HTomb = (function(HTomb) {
       var f = HTomb.World.features[coord(x,y,z)];
       var cr = this.assignee ;
       if ((f===undefined || f.makes!==this.makes) && this.ingredients!==null) {
-        if (f) {
-          console.log([f.template,f.makes,this.makes,this.ingredients]);
-        }
         HTomb.Routines.ShoppingList.act(cr.ai);
       }
       if (cr.ai.acted===true) {
@@ -523,6 +519,9 @@ HTomb = (function(HTomb) {
             var zone = that.placeZone(x,y,z, assigner);
             if (zone) {
               zone.task.makes = feature.template;
+              if (feature.ingredients) {
+                zone.task.ingredients = HTomb.Utils.clone(feature.ingredients);
+              }
             }
           }
           HTomb.GUI.selectSquare(assigner.z,that.designateSquare,{

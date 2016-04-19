@@ -37,9 +37,7 @@ HTomb = (function(HTomb) {
     },
     details: function() {
       return ["This is " + this.describe() + "."];
-    },
-    // list any properties that are specific to eachs, such as current hit points
-    each: ["template"]
+    }
   };
   // The global list of known templates
   HTomb.Things.templates = {Thing: thing};
@@ -74,18 +72,6 @@ HTomb = (function(HTomb) {
     for (var arg in args) {
       t[arg] = args[arg];
     }
-    // concatenate "each" instead of overriding it
-    if (t.hasOwnProperty("each")===false) {
-      t.each = [];
-    }
-    if (t.parent && HTomb.Things.templates[t.parent]) {
-      var par = HTomb.Things.templates[t.parent].each;
-      for (var i=0; i<par.length; i++) {
-        if (t.each.indexOf(par[i])===-1) {
-          t.each.push(par[i]);
-        }
-      }
-    }
     // Add to the list of templates
     HTomb.Things.templates[args.template] = t;
     // Don't fire onDefine for the top-level thing
@@ -102,10 +88,6 @@ HTomb = (function(HTomb) {
       console.log([template,args]);
     }
     var t = Object.create(HTomb.Things.templates[template]);
-    for (var i=0; i<t.each.length; i++) {
-      t[t.each[i]] = HTomb.Things.templates[template][t.each[i]];
-    }
-    t.template = template;
     // Copy the arguments onto the thing
     // here's where we went wrong...
     for (var arg in args) {
@@ -119,48 +101,6 @@ HTomb = (function(HTomb) {
     // return the thing
     return t;
   };
-
-
-  // Define a generic task that gets workers assigned
-  HTomb.Things.define({
-    template: "Task",
-    name: "task",
-    parent: "Thing",
-    assigner: null,
-    assignee: null,
-    zone: null,
-    each: ["assigner","assignee"],
-    onDefine: function() {
-      if (this.zone) {
-        var z = this.zone;
-        z.isZone = true;
-        // is this how we define an entity?
-        HTomb.Things.define(z);
-      }
-    },
-    tryAssign: function(cr) {
-      HTomb.Debug.pushMessage("Probably shouldn't use default tryAssign()");
-      this.assignTo(cr);
-      return true;
-    },
-    assignTo: function(cr) {
-      if (cr.minion===undefined) {
-        HTomb.Debug.pushMessage("Problem assigning task");
-      } else {
-        this.assignee = cr;
-        cr.minion.onAssign(this);
-      }
-    },
-    unassign: function() {
-      var cr = this.assignee;
-      if (cr.minion===undefined) {
-        HTomb.Debug.pushMessage("Problem unassigning task");
-      } else {
-        this.assignee = null;
-        cr.minion.unassign();
-      }
-    }
-  });
 
 return HTomb;
 })(HTomb);

@@ -203,7 +203,6 @@ HTomb = (function(HTomb) {
     team: null,
     //allegiance: null,
     acted: false,
-    each: ["target","team","acted"],
     priority: null,
     alert: null,
     goals: null,

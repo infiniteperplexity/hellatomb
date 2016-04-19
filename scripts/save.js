@@ -45,17 +45,17 @@ HTomb = (function(HTomb) {
         arg = false;
         HTomb.Save.nThings+=1;
         // stringify only those things on the "each" list
+        let dummy = {};
+        let template = HTomb.Things.templates[val.template];
         for (let p in val) {
-          if (p!=="each" && val.hasOwnProperty(p)===false) {
-            delete val[p];
+          if (p==="template" || val[p]!==template[p]) {
+            dummy[p] = val[p];
           }
-      		// this should not delete inherited properties or attached things
-            //// Can maybe dump x, y, and z, and reconstruct from lists?
-      		//if (p!=="each" && val.each.indexOf(p)===-1) {
-      		//	delete val[p];
-      		//}
-      	}
-        return val;
+        }
+        if (dummy.thingId) {
+          delete dummy.thingId;
+        }
+        return dummy;
       // if it's on the global things table, stringify its ID
       } else if (val.thingId) {
         //console.log("serialized as ID");
@@ -103,6 +103,33 @@ HTomb = (function(HTomb) {
     }
   };
 
+  HTomb.Save.firstParse = function(j) {
+    let tids = [];
+    let player = null;
+    let thing = JSON.parse(j, function (key, val) {
+      if (val.tid) {
+        tids.push([this,key,val]);
+        return val;
+        //return undefined;
+      } else if (val.template) {
+        let template = HTomb.Things.templates[val.template];
+        let dummy = Object.create(template);
+        for (let p in val) {
+          if (p!=="template" || val[p]!==template[p]) {
+            dummy[p] = val[p];
+          }
+        }
+        if (val.template==="Player") {
+          player = dummy;
+        }
+        return dummy;
+      } else {
+        return val;
+      }
+    });
+    return thing;
+  };
+
   HTomb.Save.restoreGame = function(j) {
     let json = localStorage.saveGame;
     let tids = [];
@@ -110,22 +137,22 @@ HTomb = (function(HTomb) {
     let player = null;
     // parse while keeping a list of references to thingIds
     let saveGame = JSON.parse(json, function (key, val) {
-      if (val===null) {
-        return null;
-      } else if (val.tid) {
+      if (val.tid) {
         tids.push([this,key,val]);
         return undefined;
       } else if (val.template) {
-        // supposedly writing to __proto__ makes baby jesus cry
-        val.__proto__ = HTomb.Things.templates[val.template];
-        //templates.push([this,key,val]);
+        let template = HTomb.Things.templates[val.template];
+        let dummy = Object.create(template);
+        for (let p in val) {
+          if (p!=="template" || val[p]!==template[p]) {
+            dummy[p] = val[p];
+          }
+        }
         if (val.template==="Player") {
           player = val;
         }
-        return val;
-      } else {
-        return val;
       }
+      return val;
     });
     // swap all thingId references for their thing
     for (let i=0; i<tids.length; i++) {

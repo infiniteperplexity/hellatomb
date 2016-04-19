@@ -82,14 +82,16 @@ HTomb = (function(HTomb) {
     name: "throne",
     //symbol: "\u2655",
     symbol: "\u265B",
-    fg: "#CCAA00"
+    fg: "#CCAA00",
+    ingredients: {GoldOre: 1}
   });
 
   HTomb.Things.defineFeature({
     template: "ScryingGlass",
     name: "scrying glass",
     symbol: "\u25CB",
-    fg: "cyan"
+    fg: "cyan",
+    ingredients: {Moonstone: 1}
   });
 
   HTomb.Things.defineFeature({
@@ -97,7 +99,8 @@ HTomb = (function(HTomb) {
     name: "torch",
     symbol: "\u2AEF",
     fg: "yellow",
-    behaviors: {PointLight: {}}
+    behaviors: {PointLight: {}},
+    ingredients: {WoodPlank: 1}
   });
 
   HTomb.Things.defineFeature({
@@ -106,7 +109,6 @@ HTomb = (function(HTomb) {
     locked: false,
     symbol: "\u25A5",
     fg: "#BB9922",
-    each: ["locked","name","passable","symbol"],
     activate: function() {
       if (this.locked) {
         HTomb.GUI.sensoryEvent("Unlocked " + this.describe()+".",this.x, this.y, this.z);
@@ -124,7 +126,8 @@ HTomb = (function(HTomb) {
       HTomb.GUI.reset();
     },
     solid: false,
-    opaque: true
+    opaque: true,
+    ingredients: {WoodPlank: 1}
   });
 
   HTomb.Things.defineFeature({
@@ -235,11 +238,10 @@ HTomb = (function(HTomb) {
     makes: null,
     fg: HTomb.Constants.ABOVE,
     task: null,
-    each: ["task","name","makes","integrity"],
     onPlace: function() {
       var makes = HTomb.Things.templates[this.makes];
       this.symbol = makes.incompleteSymbol || this.symbol;
-      this.fg = makes.incompleteFg || this.fg;
+      this.fg = makes.incompleteFg || makes.fg || this.fg;
       this.name = "incomplete "+makes.name;
     },
     work: function() {
