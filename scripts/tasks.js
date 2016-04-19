@@ -165,8 +165,11 @@ HTomb = (function(HTomb) {
       var y = this.zone.y;
       var z = this.zone.z;
       var f = HTomb.World.features[coord(x,y,z)];
-      var cr = this.assignee;
-      if (f===undefined || f.makes!==this.makes || this.ingredients!==null) {
+      var cr = this.assignee ;
+      if ((f===undefined || f.makes!==this.makes) && this.ingredients!==null) {
+        if (f) {
+          console.log([f.template,f.makes,this.makes,this.ingredients]);
+        }
         HTomb.Routines.ShoppingList.act(cr.ai);
       }
       if (cr.ai.acted===true) {
