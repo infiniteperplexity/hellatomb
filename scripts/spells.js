@@ -4,13 +4,36 @@ HTomb = (function(HTomb) {
 
   HTomb.Things.define({
     template: "Spell",
-    name: "spell"
+    name: "spell",
+    getCost: function() {
+      return 10;
+    },
+    onList: function() {
+      return this.describe()+" ("+this.getCost()+")";
+    },
   });
 
   HTomb.Things.defineSpell({
     template: "RaiseZombie",
     name: "raise zombie",
-    cast: function(caster) {
+    getCost: function() {
+      let cost = [10,15,20,25,30,35,40];
+      let c = this.caster.entity;
+      if (c.master===undefined) {
+        return cost[0];
+      }
+      else if (c.master.minions.length<cost.length-1) {
+        return cost[c.master.minions.length];
+      }
+      else {
+        return cost[cost.length-1];
+      }
+    },
+    spendMana: function() {
+      this.caster.mana-=this.getCost();
+    },
+    cast: function() {
+      let caster = this.caster;
       var c = caster.entity;
       var that = this;
       var items, zombie, i;
@@ -24,6 +47,7 @@ HTomb = (function(HTomb) {
           if (items) {
             for (i=0; i<items.length; i++) {
               if (items[i].template==="Corpse") {
+                that.spendMana();
                 items[i].despawn();
                 zombie = HTomb.Things.Zombie();
                 zombie.place(x,y,z);
@@ -42,6 +66,7 @@ HTomb = (function(HTomb) {
           items = HTomb.World.items[coord(x,y,z-1)] || [];
           for (i=0; i<items.length; i++) {
             if (items[i].template==="Corpse") {
+              that.spendMana();
               items[i].despawn();
               if (HTomb.World.tiles[z-1][x][y]===HTomb.Tiles.WallTile) {
                 HTomb.World.tiles[z-1][x][y]=HTomb.Tiles.UpSlopeTile;

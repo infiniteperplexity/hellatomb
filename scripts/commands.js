@@ -53,13 +53,14 @@ HTomb = (function(HTomb) {
     if (HTomb.Player.movement===undefined) {
       HTomb.GUI.pushMessage("You can't move!");
     // attack a touchable, hostile creature
-    } else if (square.creature && square.creature.ai && square.creature.ai.hostile && HTomb.Tiles.isTouchableFrom(newx, newy, newz, x, y, z)) {
+    } else if (square.creature && square.creature.ai && square.creature.ai.isHostile(HTomb.Player) && HTomb.Tiles.isTouchableFrom(newx, newy, newz, x, y, z)) {
+    //} else if (square.creature && square.creature.ai && square.creature.ai.hostile && HTomb.Tiles.isTouchableFrom(newx, newy, newz, x, y, z)) {
       HTomb.Player.combat.attack(square.creature);
       HTomb.Time.turn();
       return;
     // if you can move, either move or displace
     } else if (HTomb.Player.movement.canMove(newx,newy,newz)) {
-      if (square.creature && square.creature.ai && square.creature.ai.hostile===false) {
+      if (square.creature && square.creature.ai && square.creature.ai.isHostile(HTomb.Player)===false) {
         Commands.displaceCreature(newx,newy,newz);
         return;
       } else {
@@ -70,7 +71,7 @@ HTomb = (function(HTomb) {
     } else if (square.feature && square.feature.activate) {
       square.feature.activate();
       return;
-    } else if (HTomb.Debug.mobility===true) {
+    } else if (HTomb.Debug.mobility===true && square.creature===undefined) {
       Commands.movePlayer(newx,newy,newz);
       return;
     } else if (newz===z) {
@@ -261,10 +262,14 @@ HTomb = (function(HTomb) {
   Commands.showSpells = function() {
     //var spells = [];
     //for (var i=0;)
-    GUI.choosingMenu("Choose a spell:", HTomb.Player.caster.listSpells(),
+    GUI.choosingMenu("Choose a spell (mana cost):", HTomb.Player.caster.spells,
       function(sp) {
         return function() {
-          HTomb.Player.caster.cast(sp);
+          if (HTomb.Player.caster.mana>=sp.getCost()) {
+            HTomb.Player.caster.cast(sp);
+          } else {
+            HTomb.GUI.pushMessage("Not enough mana!");
+          }
         };
       }
     );

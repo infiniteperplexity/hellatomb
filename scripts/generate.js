@@ -86,8 +86,8 @@ timeIt("elevation", function() {
 }); timeIt("water", function() {
     waterTable(48,4);
 }); timeIt("graveyards", function() {
-    //graveyards();
-    graveyards2();
+    graveyards();
+    //graveyards2();
 }); timeIt("slopes", function() {
     addSlopes();
 }); timeIt("minerals", function() {
@@ -110,14 +110,14 @@ timeIt("elevation", function() {
     growPlants({template: "MandrakePlant", p: 0.001});
     growPlants({template: "WormwoodPlant", p: 0.001});
     growPlants({template: "BloodwortPlant", p: 0.001});
-}); timeIt("player", function() {
-    placePlayer();
-}); timeIt("critters", function() {
+});  timeIt("critters", function() {
     placeCritters();
 }); timeIt("resolving", function() {
     placement.resolve();
 }); timeIt("no hauling", function() {
     notOwned();
+}); timeIt("player", function() {
+    placePlayer();
 });
   };
 
@@ -460,17 +460,63 @@ timeIt("elevation", function() {
   }
   function placePlayer() {
     var placed = false;
+    let padding = 25;
+    // place the player near some graves
+    let graves = HTomb.Utils.where(HTomb.World.features, function(v,k,o) {
+      if (v.template!=="Tombstone") {
+        return false;
+      }
+      let c = HTomb.Utils.decoord(k);
+      let x = c[0];
+      let y = c[1];
+      let z = c[2];
+      // look for graves that are not near the edge
+      if (x<padding || x>LEVELW-padding || y<padding || y>LEVELH-padding) {
+        return false;
+      }
+      // make sure there are at least two graves close together
+      let n = HTomb.Tiles.countNeighborsWhere(x,y,z,function(x1,y1,z1) {
+        let f = HTomb.World.features[coord(x1,y1,z1)];
+        if (f && f.template==="Tombstone") {
+          return true;
+        }
+        return false;
+      });
+      if (n>=1) {
+        return true;
+      }
+      return false;
+    });
+    if (graves.length===0) {
+      alert("no valid starting locations!");
+      return;
+    }
     while (placed===false) {
-      var x = parseInt(ROT.RNG.getNormal(0,LEVELW/4) + LEVELW/2);
-      var y = parseInt(ROT.RNG.getNormal(0,15) + LEVELH/2);
+      HTomb.Utils.shuffle(graves);
+      let grave = graves[0];
+      let xdiff = HTomb.Utils.dice(2,6)-7;
+      let ydiff = HTomb.Utils.dice(2,6)-7;
+      let x = grave.x+xdiff;
+      let y = grave.y+ydiff;
       if (x<=0 || y<=0 || x>=LEVELW-1 || y>=LEVELH-1) {
         continue;
       }
-      var z = HTomb.Tiles.groundLevel(x,y);
+      let z = HTomb.Tiles.groundLevel(x,y);
+      // do not displace another creature
       if (HTomb.World.creatures[coord(x,y,z)]) {
         continue;
       }
+      // do not place under water
       if (HTomb.World.covers[coord(x,y,z)] && HTomb.World.covers[coord(x,y,z)].liquid) {
+        continue;
+      }
+      // do not place on a different Z level from the graves
+      if (z!==grave.z) {
+        continue;
+      }
+      // do not place directly on top of a tombstone
+      let f = HTomb.World.features[coord(x,y,z)];
+      if (f && f.template==="Tombstone") {
         continue;
       }
       var p = HTomb.Things.Necromancer();
@@ -480,7 +526,6 @@ timeIt("elevation", function() {
         HTomb.FOV.findVisible(p.x, p.y, p.z, p.sight.range);
       }
       placed = true;
-
     }
   }
 

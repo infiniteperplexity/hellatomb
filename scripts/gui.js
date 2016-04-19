@@ -344,8 +344,8 @@ HTomb = (function(HTomb) {
     //black out the entire line with solid blocks
     var cursor = 0;
     scrollDisplay.drawText(this.x0+cursor,this.y0+1,"%c{black}"+(UNIBLOCK.repeat(SCROLLW-2)));
-    scrollDisplay.drawText(this.x0+cursor,this.y0+1,"HP:" + 5 + "/" + 5);
-    cursor+=9;
+    scrollDisplay.drawText(this.x0+cursor,this.y0+1,"Mana:" + HTomb.Player.caster.mana + "/" + HTomb.Player.caster.maxmana);
+    cursor+=12;
     scrollDisplay.drawText(this.x0+cursor,this.y0+1,"X:" + HTomb.Player.x);
     cursor+=6;
     scrollDisplay.drawText(this.x0+cursor,this.y0+1,"Y:" + HTomb.Player.y);
@@ -357,7 +357,7 @@ HTomb = (function(HTomb) {
       + HTomb.Time.dailyCycle.day + ":"
       + HTomb.Time.dailyCycle.hour + ":"
       + HTomb.Time.dailyCycle.minute);
-    cursor+=12;
+    cursor+=11;
     if (HTomb.Time.isPaused()===true) {
       scrollDisplay.drawText(this.x0+cursor,this.y0+1,"Paused");
     }
@@ -451,12 +451,20 @@ HTomb = (function(HTomb) {
     oldCursor = [x,y];
     var z = gameScreen.z;
     var txt = examineSquare(x,y,z);
-    var myText = this.menuText || defaultText;
+    var myText = this.menuText || getDefaultText();
     GUI.displayMenu(myText.concat(" ").concat(txt));
   };
+  function getDefaultText() {
+    if (HTomb.Debug.tutorial.active!==true) {
+      return defaultText;
+    } else {
+      let tutorialText = defaultText.concat([" ","TUTORIAL:",HTomb.Debug.tutorial.getText()]);
+      return tutorialText;
+    }
+  }
 
   GUI.updateMenu = function() {
-    GUI.displayMenu(Controls.context.menuText || defaultText);
+    GUI.displayMenu(Controls.context.menuText || getDefaultText());
   };
 
   function examineSquare(x,y,z) {
@@ -736,7 +744,7 @@ HTomb = (function(HTomb) {
   }
   main.mouseOver = function() {
     // The main control context always wants to show the instructions
-    GUI.displayMenu(defaultText);
+    GUI.displayMenu(getDefaultText());
     gameScreen.render();
   };
 
@@ -908,7 +916,7 @@ HTomb = (function(HTomb) {
     var choices = [s];
     // there is probably a huge danger of memory leaks here
     for (var i=0; i<arr.length; i++) {
-      var desc = (arr[i].describe!==undefined) ? arr[i].describe() : arr[i];
+      var desc = (arr[i].onList!==undefined) ? arr[i].onList() : arr[i];
       var choice = arr[i];
       // Bind a callback function and its closure to each keystroke
       contrls["VK_" + alpha[i].toUpperCase()] = func(choice);
@@ -1109,6 +1117,18 @@ HTomb = (function(HTomb) {
     } else if (Player.y <= gameScreen.yoffset) {
       gameScreen.yoffset = Player.y-1;
     }
+  };
+
+  GUI.center = function(x,y,z) {
+    x = x-Math.floor(SCREENW/2)-1;
+    y = y-Math.floor(SCREENH/2)-1;
+    z = z || HTomb.Player.z;
+    x = Math.max(x,Math.ceil(SCREENW/2));
+    y = Math.max(y,Math.ceil(SCREENW/2));
+    x = Math.min(x,Math.floor(LEVELW-1-SCREENW/2));
+    y = Math.min(y,Math.floor(LEVELH-1-SCREENH/2));
+    gameScreen.xoffset = x;
+    gameScreen.yoffset = y;
   };
 
   // The control context for surveying

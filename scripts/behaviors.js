@@ -263,20 +263,29 @@ HTomb = (function(HTomb) {
   HTomb.Things.defineBehavior({
     template: "SpellCaster",
     name: "caster",
+    maxmana: 20,
+    mana: 20,
+    each: ["mana","maxmana"],
     onCreate: function(options) {
       options = options || {};
       options.spells = options.spells || [];
-      this.spells = options.spells;
+      this.spells = [];
+      for (let i=0; i<options.spells.length; i++) {
+        this.spells.push(HTomb.Things[options.spells[i]]({caster: this}));
+        //this.spells[i].caster = this;
+      }
+      HTomb.Events.subscribe(this,"TurnBegin");
+    },
+    onTurnBegin: function() {
+      if (this.mana<this.maxmana && Math.random()<(1/10)) {
+        this.mana+=1;
+      }
     },
     cast: function(sp) {
-      sp.cast(this);
-    },
-    listSpells: function() {
-      var spells = [];
-      for (var i=0; i<this.spells.length; i++) {
-        spells.push(HTomb.Things.templates[this.spells[i]]);
+      let cost = sp.getCost();
+      if (this.mana>=cost) {
+        sp.cast();
       }
-      return spells;
     }
   });
 

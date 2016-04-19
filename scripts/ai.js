@@ -344,7 +344,8 @@ HTomb = (function(HTomb) {
         if (this.entity.movement.canMove(x+dir[0],y+dir[1],z+dir[2])===false) {
           continue;
         } else if (cr) {
-          if (cr.ai && cr.ai.isFriendly && cr.player===undefined && cr.movement) {
+          //if (cr.ai && cr.ai.isFriendly && cr.player===undefined && cr.movement) {
+          if (cr.ai && cr.ai.isHostile(this.entity)===false && cr.player===undefined && cr.movement) {
             // try displacing only half the time?
             if (Math.random()<=0.5) {
               cr.movement.displaceCreature(cr);
