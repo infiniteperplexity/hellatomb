@@ -36,11 +36,6 @@ HTomb = (function(HTomb) {
       }
       // check to see if we are already targeting an ingredient
       var t = cr.ai.target;
-      // if target has been shaken
-      if (t && (t.reference===null || t.x===null)) {
-        cr.ai.target = null;
-      }
-      t = cr.ai.target;
       // if the target is not an ingredient
       if (t && ingredients[t.template]===undefined) {
         cr.ai.target = null;
@@ -84,6 +79,9 @@ HTomb = (function(HTomb) {
           cr.ai.acted = true;
           cr.ai.target = null;
         } else {
+          if (t.z===null) {
+            console.log("why did this shopping list fail?");
+          }
           cr.ai.walkToward(t.x,t.y,t.z);
         }
       }
@@ -101,6 +99,9 @@ HTomb = (function(HTomb) {
         var x = zone.x;
         var y = zone.y;
         var z = zone.z;
+        if (z===null) {
+          console.log("why go to work fail?");
+        }
         var dist = HTomb.Path.distance(cr.x,cr.y,x,y);
         if (HTomb.Tiles.isTouchableFrom(x,y,z,cr.x,cr.y,cr.z)) {
           task.work(x,y,z);
@@ -207,6 +208,20 @@ HTomb = (function(HTomb) {
     alert: null,
     goals: null,
     fallback: null,
+    onCreate: function(args) {
+      let handler = {
+        get: function(ai, prop) {
+          if (prop==="target") {
+            if (ai.target!==null && (ai.target.x===null || ai.target.y===null || ai.target.z===null)) {
+              ai.target = null;
+            }
+          }
+          return ai[prop];
+        }
+      }
+      let proxy = new Proxy(this, handler);
+      return proxy;
+    },
     isHostile: function(thing) {
       if (thing.ai===undefined || thing.ai.team===undefined || this.team===undefined) {
         return false;
@@ -251,10 +266,6 @@ HTomb = (function(HTomb) {
         this.acted = false;
         return false;
       }
-      // handle dead or polymorphed targets
-      if (this.target!==null && this.target.reference!==undefined && this.target.reference!==this.target) {
-        this.target = this.target.reference;
-      }
       if (this.acted===false) {
         this.alert.act(this);
       }
@@ -279,6 +290,9 @@ HTomb = (function(HTomb) {
       max = max || 5;
       if (!this.entity.movement) {
         return false;
+      }
+      if (z===null) {
+        console.log("why problem with patrol???");
       }
       var dist = HTomb.Path.distance(this.entity.x,this.entity.y,x,y);
       if (dist<min) {

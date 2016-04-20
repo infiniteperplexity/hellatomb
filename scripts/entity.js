@@ -78,7 +78,6 @@ HTomb = (function(HTomb) {
       if (this.zone && this.zone.destroy) {
         this.zone.destroy();
       }
-      this.reference = null;
       HTomb.Events.publish({type: "Destroy", entity: this});
       var beh = this.getBehaviors();
       for (var i=0; i<beh.length; i++) {
@@ -159,6 +158,7 @@ HTomb = (function(HTomb) {
           this.fg = c;
         }
       }
+      return this;
     }
   });
 
@@ -202,8 +202,11 @@ HTomb = (function(HTomb) {
     },
     die: function() {
       //maybe check to see if the parent entity has a different "die" function
-      HTomb.GUI.sensoryEvent(this.entity.describe() + " dies.",this.entity.x,this.entity.y,this.entity.z);
-      this.entity.destroy();
+      // sometimes things can "multi-die"...how should that be handled?
+      if (this.entity.x!==null && this.entity.y!==null && this.entity.z!==null) {
+        HTomb.GUI.sensoryEvent(this.entity.describe() + " dies.",this.entity.x,this.entity.y,this.entity.z);
+        this.entity.destroy();
+      }
     }
   });
 

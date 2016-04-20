@@ -113,7 +113,8 @@ HTomb = (function(HTomb) {
         //return undefined;
       } else if (val.template) {
         let template = HTomb.Things.templates[val.template];
-        let dummy = Object.create(template);
+        //let dummy = Object.create(template);
+        let dummy = HTomb.Things[template]();
         for (let p in val) {
           if (p!=="template" || val[p]!==template[p]) {
             dummy[p] = val[p];

@@ -75,6 +75,7 @@ HTomb = (function(HTomb) {
     },
     onCreate: function() {
       HTomb.Events.subscribe(this,"Destroy");
+      return this;
     },
     onDefine: function() {
       if (this.zoneTemplate) {
@@ -371,9 +372,6 @@ HTomb = (function(HTomb) {
     ai: function() {
       var cr = this.assignee;
       var t = cr.ai.target;
-      if (t && (t.x===null || t.y===null || t.z===null)) {
-        cr.ai.target = null;
-      }
       if (cr.movement) {
         var zone = this.zone;
         var x = zone.x;

@@ -96,7 +96,7 @@ HTomb = (function(HTomb) {
     // Do all "on spawn" tasks
     t.spawn();
     if (t.onCreate) {
-      t.onCreate(args);
+      return t.onCreate(args);
     }
     // return the thing
     return t;

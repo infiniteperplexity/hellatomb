@@ -67,8 +67,12 @@ HTomb = (function(HTomb) {
     }
     HTomb.Utils.shuffle(creatureDeck);
     for (var c=0; c<creatureDeck.length; c++) {
-      if (creatureDeck[c].ai) {
-        creatureDeck[c].ai.act();
+      let cr = creatureDeck[c];
+      if (cr.x===null || cr.y===null || cr.z===null) {
+        continue;
+      }
+      if (cr.ai) {
+        cr.ai.act();
       }
     }
     // Calculate visibility

@@ -35,7 +35,7 @@ HTomb = (function(HTomb) {
   var _fastgrid;
   //function aStar(x0,y0,z0,x1,y1,z1,canPass) {
   HTomb.Path.aStar = function(x0,y0,z0,x1,y1,z1,options) {
-    if (x0+y0+z0+x1+y1+z1===undefined || x1===null || y1===null || z1===null) {
+    if (x0+y0+z0+x1+y1+z1===undefined || x1===null || y1===null || z1===null || x0===null || y0===null || z0===null) {
       alert("bad path arguments!");
     }
     //perhaps run a quick check to make sure neither end of the path is enclosed?

@@ -17,5 +17,6 @@ HTomb = (function(HTomb) {
       console.log(msg);
     }
   };
+
   return HTomb;
 })(HTomb);

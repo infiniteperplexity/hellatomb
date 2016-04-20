@@ -197,6 +197,7 @@ HTomb = (function(HTomb) {
       this.minions = [];
       this.taskList = [];
       HTomb.Events.subscribe(this, "Destroy");
+      return this;
     },
     onDestroy: function(event) {
       if (this.minions.indexOf(event.entity)>-1) {
@@ -217,11 +218,7 @@ HTomb = (function(HTomb) {
       for(var i=0; i<this.taskList.length; i++) {
         var tsk = this.taskList[i];
         if (tsk.assignee!==null) {
-          if (tsk.assignee.reference!==undefined && tsk.assignee.reference!==null) {
-            tsk.assignee = tsk.assignee.reference;
-          } else {
-            continue;
-          }
+          continue;
         }
         var master = this.entity;
         var minions = this.minions;
@@ -270,6 +267,7 @@ HTomb = (function(HTomb) {
         //this.spells[i].caster = this;
       }
       HTomb.Events.subscribe(this,"TurnBegin");
+      return this;
     },
     onTurnBegin: function() {
       if (this.mana<this.maxmana && Math.random()<(1/10)) {
@@ -432,6 +430,7 @@ HTomb = (function(HTomb) {
           this.materials[m].needs = options.materials[m].needs;
         }
       }
+      return this;
     }
   });
 
@@ -458,9 +457,10 @@ HTomb = (function(HTomb) {
           if (this.materials[m].has < this.materials[m].needs) {
             this.entity.creature.die();
             // this is an ad hoc solution...I think what was happening is some later AI script in the same turn used the target?
-            if (attack.entity.ai && attack.entity.ai.target===this.entity) {
-              attack.entity.ai.target = null;
-            }
+            /// try commenting this out...
+            //if (attack.entity.ai && attack.entity.ai.target===this.entity) {
+            //  attack.entity.ai.target = null;
+            //}
           }
         }
       }
@@ -482,6 +482,7 @@ HTomb = (function(HTomb) {
           this.materials[m].needs = options.materials[m].needs;
         }
       }
+      return this;
     }
   });
 
@@ -498,6 +499,7 @@ HTomb = (function(HTomb) {
       //for (var d in options.damage) {
       //  this.damage[d] = options.damage[d];
       //}
+      return this;
     },
   	// worry about multiple attacks later
   	attack: function(thing) {

@@ -14,7 +14,7 @@ Small:
 + zombies attack stuff too
 + make it so fetch can require variable numbers?
 + prerequisite items for tasks
-
++ test and handle "multi-death"
 
 - will of wisps
 - drain life spell
