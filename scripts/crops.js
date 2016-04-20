@@ -125,10 +125,10 @@ HTomb.Types.defineCrop({
   name: "amanita",
   fg: "#DD5566",
   Plant: {
-    symbol: "\u2763"
+    symbol: "\u2660"
   },
   Herb: {
-    symbol: "\u2763",
+    symbol: "\u25CF",
     name: "amanita cap"
   },
   Seed: {

@@ -13,6 +13,8 @@ down arrowhead 2304
 
 cross: "\u271F",
 
+backwards question: 2A26
+
 tombstone: "\u2A4D",
 symbols
 http://www.unicode.org/charts/PDF/U2000.pdf
@@ -29,6 +31,7 @@ http://www.unicode.org/charts/PDF/U2A00.pdf
 
 http://www.unicode.org/charts/PDF/U2E00.pdf
 
+http://www.unicode.org/charts/PDF/U2C00.pdf
 http://www.unicode.org/charts/PDF/U2C80.pdf
 http://unicode-table.com/en/sets/flowers-symbols/
 http://www.unicode.org/charts/PDF/U13A0.pdf
