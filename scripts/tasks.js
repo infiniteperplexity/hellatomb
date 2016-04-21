@@ -57,6 +57,13 @@ HTomb = (function(HTomb) {
         callb.call(options.context,crd[0],crd[1],crd[2],assigner);
       }
     },
+    designateBox: function(squares, options) {
+      options = options || {};
+      var assigner = options.assigner;
+      var callb = options.callback;
+      var crd = squares[0];
+      callb.call(options.context,crd[0],crd[1],crd[2],assigner);
+    },
     placeZone: function(x,y,z,assigner) {
       var zone, t;
       if (this.canDesignateTile(x,y,z)) {
@@ -639,6 +646,64 @@ HTomb = (function(HTomb) {
         }
       }
       return zone;
+    }
+  });
+
+  HTomb.Things.defineTask({
+    template: "ChamberTask",
+    name: "create chamber",
+    zoneTemplate: {
+      template: "ChamberZone",
+      name: "create chamber",
+      bg: "#553300"
+    },
+    makes: null,
+    chambers: ["Mortuary"/*,"Sawmill","Boneyard"*/],
+    canDesignateTile: function(x,y,z) {
+      var square = HTomb.Tiles.getSquare(x,y,z);
+      if (square.terrain===HTomb.Tiles.FloorTile && HTomb.World.features[coord(x,y,z)]===undefined) {
+        return true;
+      } else {
+        return false;
+      }
+    },
+    designate: function(assigner) {
+      var arr = [];
+      for (var i=0; i<this.chambers.length; i++) {
+        arr.push(HTomb.Things.templates[this.chambers[i]]);
+      }
+      var that = this;
+      HTomb.GUI.choosingMenu("Choose a chamber:", arr, function(chamber) {
+        return function() {
+          function createZone(x,y,z) {
+            var zone = that.placeZone(x,y,z, assigner);
+            if (zone) {
+              zone.task.makes = chamber.template;
+              if (chamber.ingredients) {
+                zone.task.ingredients = HTomb.Utils.clone(chamber.ingredients);
+              }
+            }
+          }
+          HTomb.GUI.selectBox(chamber.width, chamber.height, assigner.z,that.designateBox,{
+            assigner: assigner,
+            context: that,
+            callback: createZone
+          });
+        };
+      });
+    },
+    work: function(x,y,z) {
+      var f = HTomb.World.features[coord(x,y,z)];
+      if (f && f.template===this.makes && f.makes!==this.makes) {
+        f.dismantle();
+      } else {
+        HTomb.Things.templates.Task.work.call(this,x,y,z);
+        // kind of a weird way to do it...
+        f = HTomb.World.features[coord(x,y,z)];
+        if (f.template===this.makes) {
+          f.makes = this.choice;
+        }
+      }
     }
   });
 
