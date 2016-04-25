@@ -45,11 +45,27 @@ HTomb = (function(HTomb) {
   });
 
   HTomb.Things.defineChamber({
-    template: "MeatLocker",
-    name: "meat locker",
-    symbols: ["\u2744","\u260D","\u2744","\u260D","\u2744","\u260D","\u2744","\u260D","\u2744"],
+    template: "Mortuary",
+    name: "mortuary",
+    symbols: ["\u2744","\u25AD","\u2744","\u25AD","\u2744","\u25AD","\u2744","\u25AD","\u2744"],
     fgs: ["#AAAAFF","#999999","#AAAAFF","#999999","#AAAAFF","#999999","#AAAAFF","#999999","#AAAAFF"]
   });
+
+  HTomb.Things.defineChamber({
+    template: "BoneCarvery",
+    name: "bone carvery",
+    symbols: ["\u2692","\u2620","\u2692","\u2620","\u25AD","\u2620","\u2692","\u2620","\u2692"],
+    fgs: ["#BBBBBB","#BBBBBB","#BBBBBB","#BBBBBB","#BBBBBB","#BBBBBB","#BBBBBB","#BBBBBB","#BBBBBB"]
+  });
+
+  HTomb.Things.defineChamber({
+    template: "LumberMill",
+    name: "lumber mill",
+    symbols: ["\u2261","/","\u2261","/","\u25AD","/","\u2261","/","\u2261"],
+    fgs: ["#BB9922","#BB9922","#BB9922","#BB9922","#BB9922","#BB9922","#BB9922","#BB9922","#BB9922"]
+  });
+
+
 
   HTomb.Things.defineTask({
     template: "ChamberTask",
@@ -61,7 +77,7 @@ HTomb = (function(HTomb) {
       position: null
     },
     makes: null,
-    chambers: ["MeatLocker"],
+    chambers: ["Mortuary","BoneCarvery","LumberMill"],
     designate: function(assigner) {
       var arr = [];
       for (var i=0; i<this.chambers.length; i++) {
