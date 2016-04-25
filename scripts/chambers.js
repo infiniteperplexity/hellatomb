@@ -54,14 +54,28 @@ HTomb = (function(HTomb) {
   HTomb.Things.defineChamber({
     template: "BoneCarvery",
     name: "bone carvery",
-    symbols: ["\u2692","\u2620","\u2692","\u2620","\u25AD","\u2620","\u2692","\u2620","\u2692"],
+    symbols: ["\u2692","\u2620","\u2692","\u2620","\u2699","\u2620","\u2692","\u2620","\u2692"],
     fgs: ["#BBBBBB","#BBBBBB","#BBBBBB","#BBBBBB","#BBBBBB","#BBBBBB","#BBBBBB","#BBBBBB","#BBBBBB"]
   });
 
   HTomb.Things.defineChamber({
-    template: "LumberMill",
-    name: "lumber mill",
-    symbols: ["\u2261","/","\u2261","/","\u25AD","/","\u2261","/","\u2261"],
+    template: "Carpenter",
+    name: "carpenter",
+    symbols: ["\u2261","/","\u2261","\u2699","\u2637","/","\u2261","/","\u2261"],
+    fgs: ["#BB9922","#BB9922","#BB9922","#BB9922","#BB9922","#BB9922","#BB9922","#BB9922","#BB9922"]
+  });
+
+  HTomb.Things.defineChamber({
+    template: "Library",
+    name: "library",
+    symbols: ["\u270D","\u270E","\u2710","/","\u25AD","\u26B4/","\u2261","/","\u2261"],
+    fgs: ["#BB9922","#BB9922","#BB9922","#BB9922","#BB9922","#BB9922","#BB9922","#BB9922","#BB9922"]
+  });
+
+  HTomb.Things.defineChamber({
+    template: "Laboratory",
+    name: "library",
+    symbols: ["\u2609","\u263F","\u2640","\u263D,""\u2641","\u2697","\u2642","\u2643","\u26A9"],
     fgs: ["#BB9922","#BB9922","#BB9922","#BB9922","#BB9922","#BB9922","#BB9922","#BB9922","#BB9922"]
   });
 
