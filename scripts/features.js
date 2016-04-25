@@ -256,7 +256,6 @@ HTomb = (function(HTomb) {
     symbol: "\u25AB",
     fg: "#BB9922",
     makes: null,
-    fg: HTomb.Constants.ABOVE,
     task: null,
     onPlace: function() {
       var makes = HTomb.Things.templates[this.makes];
@@ -277,10 +276,10 @@ HTomb = (function(HTomb) {
       var x = this.x;
       var y = this.y;
       var z = this.z;
-      this.task.complete();
       this.despawn();
       var f = HTomb.Things[this.makes]();
       f.place(x,y,z);
+      this.task.complete();
     }
   });
 

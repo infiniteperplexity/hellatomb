@@ -501,7 +501,7 @@ HTomb = (function(HTomb) {
       }
       text.
       push(next);
-      next = "cover/Liquid: ";
+      next = "Cover: ";
       if (square.cover) {
         next+=square.cover.describe();
       }
@@ -537,7 +537,7 @@ HTomb = (function(HTomb) {
         next+=above.zone.describe();
       }
       text.push(next);
-      next = "cover/Liquid: ";
+      next = "Cover: ";
       if (above.cover) {
         next+=above.cover.describe();
       }
@@ -573,7 +573,7 @@ HTomb = (function(HTomb) {
         next+=below.zone.describe();
       }
       text.push(next);
-      next = "cover/Liquid: ";
+      next = "Cover: ";
       if (below.cover) {
         next+=below.cover.describe();
       }
@@ -673,6 +673,7 @@ HTomb = (function(HTomb) {
 
   function viewDetails(x,y,z) {
     var square = HTomb.Tiles.getSquare(x,y,z);
+    console.log(square);
     var c = coord(x,y,z);
     var details = ["PageUp or PageDown to scroll through minions; Tab to view summary; Escape to exit."]
     details.push(" ");
@@ -967,42 +968,7 @@ HTomb = (function(HTomb) {
   };
 
 
-  HTomb.GUI.selectBox = function(width, height, z, callb, options) {
-    options = options || {};
-    HTomb.GUI.pushMessage("Select a square.");
-    var context = Object.create(survey);
-    context.menuText = ["Use movement keys to navigate.","Comma go down.","Period to go up.","Escape to exit."];
-    context.mouseTile = function(x0,y0) {
-      var bg = options.bg || "#550000";
-      gameScreen.render();
-      var squares = [];
-      for (var x=0; x<width; x++) {
-        for (var y=0; y<height; y++) {
-          squares.push([x0+x,y0+y,gameScreen.z]);
-        }
-      }
-      for (var k =0; k<squares.length; k++) {
-        var coord = squares[k];
-        GUI.highlightTile(coord[0],coord[1],bg);
-      }
-      var txt = examineSquare(x0,y0,gameScreen.z);
-      var myText = HTomb.Controls.context.menuText;
-      GUI.displayMenu(myText.concat(" ").concat(txt));
-    };
-    HTomb.Controls.context = context;
-    if (options.message) {
-      context.menuText.unshift("");
-      context.menuText.unshift(options.message);
-    }
-    GUI.updateMenu();
-    survey.saveX = gameScreen.xoffset;
-    survey.saveY = gameScreen.yoffset;
-    survey.saveZ = gameScreen.z;
-    context.clickTile = function(x,y) {
-      callb(x,y,gameScreen.z,options);
-      GUI.reset();
-    };
-  };
+
 
   HTomb.GUI.pickDirection = function(callb) {
     function actToward(dx,dy,dz) {
@@ -1286,6 +1252,50 @@ HTomb = (function(HTomb) {
     }
     oldSquares = squares;
   };
+
+  HTomb.GUI.selectBox = function(width, height, z, callb, options) {
+    options = options || {};
+    HTomb.GUI.pushMessage("Select a square.");
+    var context = Object.create(survey);
+    context.menuText = ["Use movement keys to navigate.","Comma go down.","Period to go up.","Escape to exit."];
+    context.mouseTile = function(x0,y0) {
+      var bg = options.bg || "#550000";
+      gameScreen.render();
+      var squares = [];
+      for (var x=0; x<width; x++) {
+        for (var y=0; y<height; y++) {
+          squares.push([x0+x,y0+y,gameScreen.z]);
+        }
+      }
+      for (var k =0; k<squares.length; k++) {
+        var coord = squares[k];
+        GUI.highlightTile(coord[0],coord[1],bg);
+      }
+      var txt = examineSquare(x0,y0,gameScreen.z);
+      var myText = HTomb.Controls.context.menuText;
+      GUI.displayMenu(myText.concat(" ").concat(txt));
+    };
+    HTomb.Controls.context = context;
+    if (options.message) {
+      context.menuText.unshift("");
+      context.menuText.unshift(options.message);
+    }
+    GUI.updateMenu();
+    survey.saveX = gameScreen.xoffset;
+    survey.saveY = gameScreen.yoffset;
+    survey.saveZ = gameScreen.z;
+    context.clickTile = function(x0,y0) {
+      var squares = [];
+      for (var y=0; y<height; y++) {
+        for (var x=0; x<width; x++) {
+          squares.push([x0+x,y0+y,gameScreen.z]);
+        }
+      }
+      callb(squares,options);
+      GUI.reset();
+    };
+  };
+
 
 
   return HTomb;
