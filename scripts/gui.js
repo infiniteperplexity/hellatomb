@@ -911,7 +911,7 @@ HTomb = (function(HTomb) {
   };
 
   // Display a menu of letter-bound choices
-  GUI.choosingMenu = function(s,arr, func) {
+  GUI.choosingMenu = function(s, arr, func) {
     var alpha = "abcdefghijklmnopqrstuvwxyz";
     var contrls = {};
     var choices = [s];

@@ -360,6 +360,13 @@ HTomb = (function(HTomb) {
     var feature = {};
     feature.yields = args.yields || HTomb.Utils.clone(parent.yields) || null;
     args.behaviors.Feature = feature;
+    if (args.craftable===true) {
+      let item = HTomb.Utils.clone(args);
+      item.template = args.template+"Item";
+      HTomb.Things.defineItem(args);
+      args.ingredients = {};
+      args.ingredients[args.template+"Item"] = 1;
+    }
     HTomb.Things.defineEntity(args);
   };
   HTomb.Things.defineZone = function(args) {

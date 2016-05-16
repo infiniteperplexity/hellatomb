@@ -80,6 +80,7 @@ HTomb = (function(HTomb) {
   HTomb.Things.defineFeature({
     template: "Throne",
     name: "throne",
+    craftable: true,
     //symbol: "\u2655",
     symbol: "\u265B",
     fg: "#CCAA00",
@@ -88,6 +89,7 @@ HTomb = (function(HTomb) {
 
   HTomb.Things.defineFeature({
     template: "ScryingGlass",
+    craftable: true,
     name: "scrying glass",
     symbol: "\u25CB",
     fg: "cyan",
@@ -97,6 +99,7 @@ HTomb = (function(HTomb) {
   HTomb.Things.defineFeature({
     template: "Torch",
     name: "torch",
+    craftable: true,
     symbol: "\u2AEF",
     fg: "yellow",
     behaviors: {PointLight: {}},
@@ -109,6 +112,7 @@ HTomb = (function(HTomb) {
     locked: false,
     symbol: "\u25A5",
     fg: "#BB9922",
+    craftable: true,
     activate: function() {
       if (this.locked) {
         HTomb.GUI.sensoryEvent("Unlocked " + this.describe()+".",this.x, this.y, this.z);

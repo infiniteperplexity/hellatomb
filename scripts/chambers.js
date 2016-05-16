@@ -75,7 +75,7 @@ HTomb = (function(HTomb) {
   HTomb.Things.defineChamber({
     template: "Laboratory",
     name: "library",
-    symbols: ["\u2609","\u263F","\u2640","\u263D,""\u2641","\u2697","\u2642","\u2643","\u26A9"],
+    symbols: ["\u2609","\u263F","\u2640","\u263D","\u2641","\u2697","\u2642","\u2643","\u26A9"],
     fgs: ["#BB9922","#BB9922","#BB9922","#BB9922","#BB9922","#BB9922","#BB9922","#BB9922","#BB9922"]
   });
 
@@ -91,7 +91,7 @@ HTomb = (function(HTomb) {
       position: null
     },
     makes: null,
-    chambers: ["Mortuary","BoneCarvery","LumberMill"],
+    chambers: ["Mortuary","BoneCarvery","Carpenter"],
     designate: function(assigner) {
       var arr = [];
       for (var i=0; i<this.chambers.length; i++) {
@@ -175,6 +175,22 @@ HTomb = (function(HTomb) {
       }
     }
   });
+
+  // UseWorkshopTask
+    // Each workshop maintains a queue...it spawns tasks one at a time.
+    // When the task finished, it tries to assign the next one to the same minion.
+  // We could auto-queue a feature when we CraftTask
+  // Or we can do it through stocks
+
+  //DF workshops...
+    // Bowyer, Carpenter, Jeweler, Mason, Butcher, Mechanic, Farmer, Fishery, Craftsdwarf, Siege, Furnace, Smelter, Kiln, Glass Furnace
+    // Tanner, Loom, Still, Ashery, Screw Press, Kitchen, Quern, Millstone,
+    // Leatherwork, Clothier, Dyer, Metalsmith, Soap
+
+  // Goblin Camp
+    // Saw Pit, Carpenter, Basket Weaver, Winery, Kitchen, Butcher, Weaver, Bone Carver, Stone Mason, Weapon Crafter,
+    // Leather Crafter, Tanner, Mill, Bloomery, Blacksmith, Kiln, Oil Press, Alchemist, Armorsmith
+
 
 
 return HTomb;
