@@ -190,12 +190,14 @@ HTomb = (function(HTomb) {
     name: "master",
     minions: null,
     taskList: null,
+    workshops: null,
     tasks: null,
     onCreate: function(options) {
       options = options || {};
       this.tasks = options.tasks || [];
       this.minions = [];
       this.taskList = [];
+      this.workshops = [];
       HTomb.Events.subscribe(this, "Destroy");
       return this;
     },
@@ -210,6 +212,12 @@ HTomb = (function(HTomb) {
     },
     removeMinion: function(cr) {
       this.minions.splice(this.minions.indexOf(cr,1));
+    },
+    addWorkshop: function(w) {
+      this.workshops.push(w);
+    },
+    removeWorkshop: function(w) {
+      this.workshops.splice(this.workshops.indexOf(w,1));
     },
     designate: function(tsk) {
       tsk.designate(this.entity);

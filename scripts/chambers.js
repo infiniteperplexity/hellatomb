@@ -6,6 +6,7 @@ HTomb = (function(HTomb) {
   HTomb.Things.define({
     template: "Chamber",
     name: "chamber",
+    owner: null,
     x: null,
     y: null,
     z: null,
@@ -17,6 +18,7 @@ HTomb = (function(HTomb) {
     fgs: [],
     ingredients: {},
     active: false,
+    queue: null,
     onDefine: function() {
       HTomb.Things.defineFeature({
         template: this.template+"Feature",
@@ -38,12 +40,17 @@ HTomb = (function(HTomb) {
     },
     activate: function() {
       this.active = true;
+      this.owner.master.workshops.push(this);
+      this.queue = [];
     },
     deactivate: function() {
       this.active = false;
+      this.owner.master.workshops.splice(this.owner.master.workshops.indexOf(this),1);
     }
   });
-
+  //    -	Do X times
+  //    -	As many as possible (u221E)
+  //    -	Cycle (u27F3, u21BB, u21C4)
   HTomb.Things.defineChamber({
     template: "Mortuary",
     name: "mortuary",
@@ -128,6 +135,7 @@ HTomb = (function(HTomb) {
             ch = cham;
           } else {
             ch = HTomb.Things[chamber.template]();
+            ch.owner = assigner;
             ch.x = squares[0][0];
             ch.y = squares[0][1];
             ch.z = squares[0][2];
@@ -191,6 +199,9 @@ HTomb = (function(HTomb) {
     // Saw Pit, Carpenter, Basket Weaver, Winery, Kitchen, Butcher, Weaver, Bone Carver, Stone Mason, Weapon Crafter,
     // Leather Crafter, Tanner, Mill, Bloomery, Blacksmith, Kiln, Oil Press, Alchemist, Armorsmith
 
+//    -	Do X times
+//    -	As many as possible (u221E)
+//    -	Cycle (u27F3, u21BB, u21C4)
 
 
 return HTomb;

@@ -664,6 +664,12 @@ HTomb = (function(HTomb) {
     HTomb.Time.toggleTime();
   };
   main.rightClickTile = function(x,y) {
+    let f = HTomb.World.features[coord(x,y,gameScreen.z)];
+    console.log(f);
+    if (f && f.chamber) {
+      workshopView(f.chamber);
+      return;
+    }
     detailsView(x,y,gameScreen.z);
   }
   main.clickTile = function(x,y) {
@@ -673,7 +679,6 @@ HTomb = (function(HTomb) {
 
   function viewDetails(x,y,z) {
     var square = HTomb.Tiles.getSquare(x,y,z);
-    console.log(square);
     var c = coord(x,y,z);
     var details = ["PageUp or PageDown to scroll through minions; Tab to view summary; Escape to exit."]
     details.push(" ");
@@ -751,19 +756,26 @@ HTomb = (function(HTomb) {
 
 
   // These are the default controls
+  var summary = new ControlContext({
+    VK_ESCAPE: HTomb.GUI.reset,
+    VK_PAGE_UP: detailsView,
+    VK_PAGE_DOWN: workshopView,
+    VK_TAB: workshopView
+  });
+  var workshops = new ControlContext({
+    VK_ESCAPE: HTomb.GUI.reset,
+    VK_PAGE_UP: nextWorkshop,
+    VK_PAGE_DOWN: previousWorkshop,
+    VK_TAB: detailsView
+  });
   var details = new ControlContext({
     VK_ESCAPE: HTomb.GUI.reset,
     VK_PAGE_UP: nextMinion,
     VK_PAGE_DOWN: previousMinion,
     VK_TAB: summaryView
   });
-  var summary = new ControlContext({
-    VK_ESCAPE: HTomb.GUI.reset,
-    VK_PAGE_UP: detailsView,
-    VK_PAGE_DOWN: detailsView,
-    VK_TAB: detailsView
-  });
   var currentMinion = null;
+  var currentWorkshop = null;
   function nextMinion() {
     var p = HTomb.Player;
     if (currentMinion===null && p.master.minions.length>0) {
@@ -807,6 +819,56 @@ HTomb = (function(HTomb) {
       updateOverlay(viewDetails(p.x,p.y,p.z));
     }
     HTomb.Controls.context = details;
+  }
+  function nextWorkshop() {
+    var p = HTomb.Player;
+    if (currentWorkshop===null && p.master.workshops.length>0) {
+      p = p.master.workshops[0];
+      currentWorkshop = p;
+      updateOverlay(workshopDetails(p));
+    } else if (p.master.workshops.indexOf(currentWorkshop)===-1) {
+      currentWorkshop = null;
+      updateOverlay(viewDetails(p.x,p.y,p.z));
+    } else {
+      var i = p.master.workshops.indexOf(currentWorkshop);
+      if (i===p.master.workshops.length-1) {
+        i = 0;
+      } else {
+        i+=1;
+      }
+      p = p.master.workshops[i];
+      currentWorkshop = p;
+      updateOverlay(workshopDetails(p));
+    }
+    HTomb.Controls.context = workshops;
+  }
+  function previousWorkshop() {
+    var p = HTomb.Player;
+    if (currentWorkshop===null && p.master.workshops.length>0) {
+      p = p.master.workshops[p.master.workshops.length-1];
+      currentWorkshop = p;
+      updateOverlay(workshopDetails(p));
+    } else if (p.master.workshops.indexOf(currentWorkshop)===-1) {
+      currentWorkshop = null;
+      updateOverlay(viewDetails(p.x,p.y,p.z));
+    } else {
+      var i = p.master.workshops.indexOf(currentWorkshop);
+      if (i===0) {
+        i = p.master.workshops.length-1;;
+      } else {
+        i-=1;
+      }
+      p = p.master.workshops[i];
+      currentWorkshop = p;
+      updateOverlay(workshopDetails(p));
+    }
+    HTomb.Controls.context = workshops;
+  }
+  function workshopView(w) {
+    w = w || HTomb.Player.master.workshops[0] || null;
+    currentWorkshop = w;
+    updateOverlay(workshopDetails(w));
+    HTomb.Controls.context = workshops;
   }
   function summaryView() {
     HTomb.Controls.context = summary;
@@ -855,6 +917,11 @@ HTomb = (function(HTomb) {
     }
     updateOverlay(text);
   }
+  function workshopDetails(w) {
+
+    return w.describe();
+  }
+
   function detailsView(x,y,z) {
     if (x===undefined || y===undefined || z===undefined) {
       var p = HTomb.Player;
