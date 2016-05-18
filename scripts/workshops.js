@@ -4,8 +4,8 @@ HTomb = (function(HTomb) {
 
   // Might like to have animations
   HTomb.Things.define({
-    template: "Chamber",
-    name: "chamber",
+    template: "Workshop",
+    name: "workshop",
     owner: null,
     x: null,
     y: null,
@@ -19,15 +19,16 @@ HTomb = (function(HTomb) {
     ingredients: {},
     active: false,
     queue: null,
+    task: null,
     onDefine: function() {
       HTomb.Things.defineFeature({
         template: this.template+"Feature",
         name: this.name,
         position: null,
         onRemove: function() {
-          let c = this.chamber;
+          let c = this.workshop;
           c.features.splice(c.features.indexOf(this),0);
-          this.chamber.deactivate();
+          this.workshop.deactivate();
           if (c.features.length<=0) {
             c.despawn();
           }
@@ -46,40 +47,81 @@ HTomb = (function(HTomb) {
     deactivate: function() {
       this.active = false;
       this.owner.master.workshops.splice(this.owner.master.workshops.indexOf(this),1);
+      for (let i=0; i<this.queue.length; i++) {
+        // not actually correct
+        this.task.cancel();
+      }
+    },
+    nextGood: function() {
+      let zone = HTomb.Things.templates.ProduceTask.placeZone(this.x,this.y,this.z,this.owner);
+      this.task = zone.task;
+      zone.task.makes = this.queue[0][0];
+      if (this.queue[0][1]==="finite") {
+        this.queue[0][2]-=1;
+        if (this.queue[0][2]<=0) {
+          this.queue.shift();
+        }
+      } else if (this.queue[0][1]===parseInt(this.queue[0][1])) {
+        this.queue[0][2]-=1;
+        if (this.queue[0][2]<=0) {
+          this.queue[0][2] = this.queue[0][1];
+          this.queue.push(this.queue.shift());
+        }
+      } else if (this.queue[0][1]==="infinite") {
+        // do nothing
+        // except maybe check to see if there are enough materials???
+      }
+    },
+    formattedQueue: function() {
+      let txt = [];
+      for (let i=0; i<this.queue.length; i++) {
+        let item = this.queue[i];
+        let s = "- " + item[0] + ": ";
+        if (item[1]==="finite") {
+          s+=item[2];
+        } else if (item[1]==="infinite") {
+          s+="\u221E";
+        } else if (item[1]===parseInt(item[1])) {
+          s+=item[2]+ " " + "\u27F3" + " " + item[1];
+        }
+        txt.push(s);
+      }
+      return txt;
     }
   });
   //    -	Do X times
   //    -	As many as possible (u221E)
   //    -	Cycle (u27F3, u21BB, u21C4)
-  HTomb.Things.defineChamber({
+  HTomb.Things.defineWorkshop({
     template: "Mortuary",
     name: "mortuary",
     symbols: ["\u2744","\u25AD","\u2744","\u25AD","\u2744","\u25AD","\u2744","\u25AD","\u2744"],
     fgs: ["#AAAAFF","#999999","#AAAAFF","#999999","#AAAAFF","#999999","#AAAAFF","#999999","#AAAAFF"]
   });
 
-  HTomb.Things.defineChamber({
+  HTomb.Things.defineWorkshop({
     template: "BoneCarvery",
     name: "bone carvery",
     symbols: ["\u2692","\u2620","\u2692","\u2620","\u2699","\u2620","\u2692","\u2620","\u2692"],
     fgs: ["#BBBBBB","#BBBBBB","#BBBBBB","#BBBBBB","#BBBBBB","#BBBBBB","#BBBBBB","#BBBBBB","#BBBBBB"]
   });
 
-  HTomb.Things.defineChamber({
+  HTomb.Things.defineWorkshop({
     template: "Carpenter",
     name: "carpenter",
-    symbols: ["\u2261","/","\u2261","\u2699","\u2637","/","\u2261","/","\u2261"],
-    fgs: ["#BB9922","#BB9922","#BB9922","#BB9922","#BB9922","#BB9922","#BB9922","#BB9922","#BB9922"]
+    symbols: ["\u2261","\u2637","\u2261","\u2637","\u2699","\u2637","\u2261","\u2637","\u2261"],
+    fgs: ["#BB9922","#BB9922","#BB9922","#BB9922","#BB9922","#BB9922","#BB9922","#BB9922","#BB9922"],
+    makes: ["Door","Torch","Throne"]
   });
 
-  HTomb.Things.defineChamber({
+  HTomb.Things.defineWorkshop({
     template: "Library",
     name: "library",
     symbols: ["\u270D","\u270E","\u2710","/","\u25AD","\u26B4/","\u2261","/","\u2261"],
     fgs: ["#BB9922","#BB9922","#BB9922","#BB9922","#BB9922","#BB9922","#BB9922","#BB9922","#BB9922"]
   });
 
-  HTomb.Things.defineChamber({
+  HTomb.Things.defineWorkshop({
     template: "Laboratory",
     name: "library",
     symbols: ["\u2609","\u263F","\u2640","\u263D","\u2641","\u2697","\u2642","\u2643","\u26A9"],
@@ -87,42 +129,70 @@ HTomb = (function(HTomb) {
   });
 
 
+  HTomb.Things.defineTask({
+    template: "ProduceTask",
+    name: "produce",
+    zoneTemplate: {
+      template: "ProduceZone",
+      name: "produce",
+      bg: "#004444"
+    },
+    workshop: null,
+    makes: null,
+    steps: 10,
+    work: function(x,y,z) {
+      this.workshop.occupied = this.assignee;
+      this.steps-=1;
+      if (this.steps<=0) {
+        let x = this.zone.x;
+        let y = this.zone.y;
+        let z = this.zone.z;
+        HTomb.Things[this.makes]().place(x,y,z);
+        this.workshop.occupied = null;
+        this.complete();
+      }
+    },
+    onDespawn: function() {
+      this.workshop.nextGood();
+    }
+  });
 
   HTomb.Things.defineTask({
-    template: "ChamberTask",
-    name: "create chamber",
+    template: "WorkshopTask",
+    name: "build workshop",
     zoneTemplate: {
-      template: "ChamberZone",
-      name: "create chamber",
+      template: "WorkshopZone",
+      name: "build workshop",
       bg: "#553300",
       position: null
     },
     makes: null,
-    chambers: ["Mortuary","BoneCarvery","Carpenter"],
+    workshop: null,
+    workshops: ["Mortuary","BoneCarvery","Carpenter"],
     designate: function(assigner) {
       var arr = [];
-      for (var i=0; i<this.chambers.length; i++) {
-        arr.push(HTomb.Things.templates[this.chambers[i]]);
+      for (var i=0; i<this.workshops.length; i++) {
+        arr.push(HTomb.Things.templates[this.workshops[i]]);
       }
       var that = this;
-      HTomb.GUI.choosingMenu("Choose a chamber:", arr, function(chamber) {
+      HTomb.GUI.choosingMenu("Choose a workshop:", arr, function(workshop) {
         function placeBox(squares, options) {
           let failed = false;
-          let cham = null;
+          let work = null;
           for (let i=0; i<squares.length; i++) {
             let crd = squares[i];
             let f = HTomb.World.features[coord(crd[0],crd[1],crd[2])];
             if (HTomb.World.tiles[crd[2]][crd[0]][crd[1]]!==HTomb.Tiles.FloorTile) {
               failed = true;
-            // a completed, partial version of the same chamber
-            } else if (f && f.template===chamber.template+"Feature") {
-              cham = f.chamber;
+            // a completed, partial version of the same workshop
+            } else if (f && f.template===workshop.template+"Feature") {
+              work = f.workshop;
               // if it's already active, or misplaced
-              if (cham.active===true || cham.x!==squares[0][0] || cham.y!==squares[0][1]) {
+              if (work.active===true || work.x!==squares[0][0] || work.y!==squares[0][1]) {
                 failed = true;
               }
-            // an incomplete version of the same chamber
-          } else if (f && (f.template!=="IncompleteFeature" || f.makes!==chamber.template+"Feature")) {
+            // an incomplete version of the same workshop
+          } else if (f && (f.template!=="IncompleteFeature" || f.makes!==workshop.template+"Feature")) {
               failed = true;
             }
           }
@@ -131,10 +201,10 @@ HTomb = (function(HTomb) {
             return;
           }
           let ch;
-          if (cham!==null) {
-            ch = cham;
+          if (work!==null) {
+            ch = work;
           } else {
-            ch = HTomb.Things[chamber.template]();
+            ch = HTomb.Things[workshop.template]();
             ch.owner = assigner;
             ch.x = squares[0][0];
             ch.y = squares[0][1];
@@ -147,15 +217,15 @@ HTomb = (function(HTomb) {
             }
             let zone = this.placeZone(crd[0],crd[1],crd[2],assigner);
             if (zone) {
-              zone.task.chamber = ch;
-              zone.task.makes = chamber.template+"Feature";
+              zone.task.workshop = ch;
+              zone.task.makes = workshop.template+"Feature";
               zone.task.ingredients = HTomb.Utils.clone(ch.ingredients);
               zone.position = i;
             }
           }
         }
         return function() {
-          HTomb.GUI.selectBox(chamber.width, chamber.height, assigner.z,that.designateBox,{
+          HTomb.GUI.selectBox(workshop.width, workshop.height, assigner.z,that.designateBox,{
             assigner: assigner,
             context: that,
             callback: placeBox
@@ -174,12 +244,12 @@ HTomb = (function(HTomb) {
       let y = this.zone.y;
       let z = this.zone.z;
       let f = HTomb.World.features[coord(x,y,z)];
-      f.chamber = this.chamber;
-      this.chamber.features.push(f);
-      f.fg = this.chamber.fgs[this.zone.position];
-      f.symbol = this.chamber.symbols[this.zone.position];
-      if (this.chamber.features.length===this.chamber.height*this.chamber.width) {
-        this.chamber.activate();
+      f.workshop = this.workshop;
+      this.workshop.features.push(f);
+      f.fg = this.workshop.fgs[this.zone.position];
+      f.symbol = this.workshop.symbols[this.zone.position];
+      if (this.workshop.features.length===this.workshop.height*this.workshop.width) {
+        this.workshop.activate();
       }
     }
   });
