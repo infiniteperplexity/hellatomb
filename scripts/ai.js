@@ -91,7 +91,9 @@ HTomb = (function(HTomb) {
   HTomb.Types.defineRoutine({
     template: "GoToWork",
     name: "go to work",
-    act: function(ai) {
+    act: function(ai, options) {
+      options = options || {};
+      let useLast = options.useLast || false;
       var cr = ai.entity;
       var task = cr.worker.task;
       if (cr.movement) {
@@ -103,7 +105,9 @@ HTomb = (function(HTomb) {
           console.log("why go to work fail?");
         }
         var dist = HTomb.Path.distance(cr.x,cr.y,x,y);
-        if (HTomb.Tiles.isTouchableFrom(x,y,z,cr.x,cr.y,cr.z)) {
+        if (useLast===true && x===cr.x && y===cr.y && z===cr.z) {
+          task.work(x,y,z);
+        } else if (useLast!==true && HTomb.Tiles.isTouchableFrom(x,y,z,cr.x,cr.y,cr.z)) {
           task.work(x,y,z);
         } else if (dist>0 || cr.z!==z) {
           cr.ai.walkToward(x,y,z);

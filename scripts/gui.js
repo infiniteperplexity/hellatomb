@@ -805,7 +805,8 @@ HTomb = (function(HTomb) {
   }
   function workQueueDown() {
     workQueueCursor+=1;
-    if (workQueueCursor>currentWorkshop.queue.length-1) {
+    //if (workQueueCursor>currentWorkshop.queue.length-1) {
+    if (workQueueCursor>currentWorkshop.queue.length) {
       workQueueCursor = 0;
     }
     updateOverlay(workshopDetails(currentWorkshop));
@@ -813,13 +814,17 @@ HTomb = (function(HTomb) {
   function workQueueUp() {
     workQueueCursor-=1;
     if (workQueueCursor<0) {
-      workQueueCursor = currentWorkshop.queue.length-1;
+      //workQueueCursor = currentWorkshop.queue.length-1;
+      workQueueCursor = currentWorkshop.queue.length;
     }
     updateOverlay(workshopDetails(currentWorkshop));
   }
   function workQueueRight() {
     let i = workQueueCursor;
     let w = currentWorkshop;
+    if (i>=w.queue.length) {
+      return;
+    }
     if (w.queue[i][1]==="finite") {
       w.queue[i][1]=1;
     } else if (parseInt(w.queue[i][1])===w.queue[i][1]) {
@@ -832,6 +837,9 @@ HTomb = (function(HTomb) {
   function workQueueLeft() {
     let i = workQueueCursor;
     let w = currentWorkshop;
+    if (i>=w.queue.length) {
+      return;
+    }
     if (w.queue.length===0) {
       return;
     }
@@ -847,6 +855,9 @@ HTomb = (function(HTomb) {
   function workQueueMore() {
     let i = workQueueCursor;
     let w = currentWorkshop;
+    if (i>=w.queue.length) {
+      return;
+    }
     if (w.queue.length===0) {
       return;
     }
@@ -861,6 +872,9 @@ HTomb = (function(HTomb) {
   function workQueueLess() {
     let i = workQueueCursor;
     let w = currentWorkshop;
+    if (i>=w.queue.length) {
+      return;
+    }
     if (w.queue.length===0) {
       return;
     }

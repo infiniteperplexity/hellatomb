@@ -29,6 +29,30 @@ HTomb = (function(HTomb) {
     return selected;
   };
 
+  // like clone but don't keep the prototype
+  HTomb.Utils.copy = function(obj) {
+    if (typeof(obj)==="object") {
+      if (obj===null) {
+        return null;
+      }
+      // recursively copy arrays and objects
+      var nobj = {};
+      if (Array.isArray(obj)) {
+        for (var i=0; i<obj.length; i++) {
+          nobj[i].push(HTomb.Utils.copy(obj[i]));
+        }
+      } else {
+        for (var key in obj) {
+          nobj[key] = HTomb.Utils.copy(obj[key]);
+        }
+      }
+      return nobj;
+    // pass primitives by value and functions by reference
+    } else {
+      return obj;
+    }
+  };
+  // clone actually uses the same prototype
   HTomb.Utils.clone = function(obj) {
     if (typeof(obj)==="object") {
       if (obj===null) {

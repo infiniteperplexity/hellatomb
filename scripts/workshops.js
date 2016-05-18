@@ -53,6 +53,9 @@ HTomb = (function(HTomb) {
       }
     },
     nextGood: function() {
+      if (this.queue.length===0) {
+        return;
+      }
       let zone = HTomb.Things.templates.ProduceTask.placeZone(this.x,this.y,this.z,this.owner);
       this.task = zone.task;
       zone.task.makes = this.queue[0][0];
@@ -88,6 +91,8 @@ HTomb = (function(HTomb) {
         }
         txt.push(s);
       }
+      /// maybe..
+      txt.push("  [end of queue]");
       return txt;
     }
   });
@@ -137,7 +142,7 @@ HTomb = (function(HTomb) {
     zoneTemplate: {
       template: "ProduceZone",
       name: "produce",
-      bg: "#004444"
+      bg: "#336699"
     },
     workshop: null,
     makes: null,
@@ -145,6 +150,7 @@ HTomb = (function(HTomb) {
     work: function(x,y,z) {
       this.workshop.occupied = this.assignee;
       this.steps-=1;
+      this.assignee.ai.acted = true;
       if (this.steps<=0) {
         let x = this.zone.x;
         let y = this.zone.y;
@@ -203,26 +209,27 @@ HTomb = (function(HTomb) {
             HTomb.GUI.pushMessage("Can't build there.");
             return;
           }
-          let ch;
+          let w;
           if (work!==null) {
-            ch = work;
+            w = work;
           } else {
-            ch = HTomb.Things[workshop.template]();
-            ch.owner = assigner;
-            ch.x = squares[0][0];
-            ch.y = squares[0][1];
-            ch.z = squares[0][2];
+            w = HTomb.Things[workshop.template]();
+            w.owner = assigner;
+            let mid = Math.floor(squares.length/2);
+            w.x = squares[mid][0];
+            w.y = squares[mid][1];
+            w.z = squares[mid][2];
           }
           for (let i=0; i<squares.length; i++) {
             let crd = squares[i];
-            if (HTomb.World.features[coord(crd[0],crd[1],crd[2])] && HTomb.World.features[coord(crd[0],crd[1],crd[2])].template===ch.template+"Feature") {
+            if (HTomb.World.features[coord(crd[0],crd[1],crd[2])] && HTomb.World.features[coord(crd[0],crd[1],crd[2])].template===w.template+"Feature") {
               continue;
             }
             let zone = this.placeZone(crd[0],crd[1],crd[2],assigner);
             if (zone) {
-              zone.task.workshop = ch;
+              zone.task.workshop = w;
               zone.task.makes = workshop.template+"Feature";
-              zone.task.ingredients = HTomb.Utils.clone(ch.ingredients);
+              zone.task.ingredients = HTomb.Utils.clone(w.ingredients);
               zone.position = i;
             }
           }

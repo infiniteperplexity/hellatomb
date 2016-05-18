@@ -13,6 +13,9 @@ HTomb = (function(HTomb) {
     },
     despawn: function() {
     // remove from the global things table
+      if (HTomb.World.things.indexOf(this)===-1) {
+        return;
+      }
       HTomb.World.things.splice(this.thingId,1);
       HTomb.Events.unsubscribeAll(this);
       if (this.onDespawn) {

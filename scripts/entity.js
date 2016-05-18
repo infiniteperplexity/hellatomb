@@ -361,8 +361,9 @@ HTomb = (function(HTomb) {
     feature.yields = args.yields || HTomb.Utils.clone(parent.yields) || null;
     args.behaviors.Feature = feature;
     if (args.craftable===true) {
-      let item = HTomb.Utils.clone(args);
+      let item = HTomb.Utils.copy(args);
       item.template = args.template+"Item";
+      delete item.behaviors.Feature;
       HTomb.Things.defineItem(item);
       args.ingredients = {};
       args.ingredients[args.template+"Item"] = 1;
