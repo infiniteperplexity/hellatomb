@@ -160,7 +160,9 @@ HTomb = (function(HTomb) {
         this.onComplete();
       }
       if (this.zone) {
-        this.zone.despawn();
+        let zone = this.zone;
+        zone.remove();
+        zone.despawn();
       }
       this.despawn();
     },

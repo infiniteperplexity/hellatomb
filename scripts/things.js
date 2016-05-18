@@ -11,11 +11,18 @@ HTomb = (function(HTomb) {
         this.onSpawn();
       }
     },
+    isSpawned: function() {
+      if (HTomb.World.things.indexOf(this)===-1) {
+        return false;
+      } else {
+        return true;
+      }
+    },
     despawn: function() {
     // remove from the global things table
-      if (HTomb.World.things.indexOf(this)===-1) {
-        return;
-      }
+      //if (HTomb.World.things.indexOf(this)===-1) {
+      //  return;
+      //}
       HTomb.World.things.splice(this.thingId,1);
       HTomb.Events.unsubscribeAll(this);
       if (this.onDespawn) {

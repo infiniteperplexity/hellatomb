@@ -56,8 +56,14 @@ HTomb = (function(HTomb) {
       if (this.queue.length===0) {
         return;
       }
+      console.log();
+      console.log(["turn",HTomb.Time.dailyCycle.turn]);
+      console.log(["b4",this.queue.length]);
       let zone = HTomb.Things.templates.ProduceTask.placeZone(this.x,this.y,this.z,this.owner);
       this.task = zone.task;
+      if (this.queue.length===0) {
+        throw new Error();
+      }
       zone.task.makes = this.queue[0][0];
       zone.task.workshop = this;
       zone.name = "produce "+HTomb.Things.templates[zone.task.makes].name;
@@ -148,6 +154,22 @@ HTomb = (function(HTomb) {
     workshop: null,
     makes: null,
     steps: 10,
+    // placeZone: function(x,y,z,assigner) {
+    //   var zone, t;
+    //   if (this.canDesignateTile(x,y,z)) {
+    //     zone = HTomb.Things[this.zoneTemplate.template]();
+    //     zone.place(x,y,z);
+    //     t = HTomb.Things[this.template]();
+    //     zone.task = t;
+    //     zone.assigner = assigner;
+    //     t.zone = zone;
+    //     t.assigner = assigner;
+    //     if (assigner.master) {
+    //       assigner.master.taskList.push(t);
+    //     }
+    //   }
+    //   return zone;
+    // },
     work: function(x,y,z) {
       this.workshop.occupied = this.assignee;
       this.steps-=1;
