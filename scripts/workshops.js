@@ -60,6 +60,7 @@ HTomb = (function(HTomb) {
       this.task = zone.task;
       zone.task.makes = this.queue[0][0];
       zone.task.workshop = this;
+      zone.name = "produce "+HTomb.Things.templates[zone.task.makes].name;
       zone.task.name = "produce "+HTomb.Things.templates[zone.task.makes].name;
       if (this.queue[0][1]==="finite") {
         this.queue[0][2]-=1;

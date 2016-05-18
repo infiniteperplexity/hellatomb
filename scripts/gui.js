@@ -1095,6 +1095,9 @@ HTomb = (function(HTomb) {
     txt.push(" ");
     txt.push("Production Queue:");
     let q = w.formattedQueue();
+    if (workQueueCursor>w.queue.length) {
+      workQueueCursor = w.queue.length;
+    }
     if (q.length>0) {
       let s = q[workQueueCursor];
       s = "*" + s.substr(1);
