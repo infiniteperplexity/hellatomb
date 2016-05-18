@@ -363,7 +363,7 @@ HTomb = (function(HTomb) {
     if (args.craftable===true) {
       let item = HTomb.Utils.clone(args);
       item.template = args.template+"Item";
-      HTomb.Things.defineItem(args);
+      HTomb.Things.defineItem(item);
       args.ingredients = {};
       args.ingredients[args.template+"Item"] = 1;
     }

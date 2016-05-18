@@ -56,6 +56,8 @@ HTomb = (function(HTomb) {
       let zone = HTomb.Things.templates.ProduceTask.placeZone(this.x,this.y,this.z,this.owner);
       this.task = zone.task;
       zone.task.makes = this.queue[0][0];
+      zone.task.workshop = this;
+      zone.task.name = "produce "+HTomb.Things.templates[zone.task.makes].name;
       if (this.queue[0][1]==="finite") {
         this.queue[0][2]-=1;
         if (this.queue[0][2]<=0) {
@@ -78,7 +80,7 @@ HTomb = (function(HTomb) {
         let item = this.queue[i];
         let s = "- " + item[0] + ": ";
         if (item[1]==="finite") {
-          s+=item[2];
+          s+=item[2] + " #";
         } else if (item[1]==="infinite") {
           s+="\u221E";
         } else if (item[1]===parseInt(item[1])) {
@@ -111,7 +113,7 @@ HTomb = (function(HTomb) {
     name: "carpenter",
     symbols: ["\u2261","\u2637","\u2261","\u2637","\u2699","\u2637","\u2261","\u2637","\u2261"],
     fgs: ["#BB9922","#BB9922","#BB9922","#BB9922","#BB9922","#BB9922","#BB9922","#BB9922","#BB9922"],
-    makes: ["Door","Torch","Throne"]
+    makes: ["DoorItem","TorchItem","ThroneItem"]
   });
 
   HTomb.Things.defineWorkshop({
@@ -153,6 +155,7 @@ HTomb = (function(HTomb) {
       }
     },
     onDespawn: function() {
+      this.workshop.task = null;
       this.workshop.nextGood();
     }
   });

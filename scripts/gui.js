@@ -670,7 +670,7 @@ HTomb = (function(HTomb) {
       return;
     }
     let f = HTomb.World.features[coord(x,y,gameScreen.z)];
-    if (f && f.workshop && HTomb.World.creatures[coord(x,y,gameScreen.z)]===undefined) {
+    if (f && f.workshop && f.workshop.active && HTomb.World.creatures[coord(x,y,gameScreen.z)]===undefined) {
       workshopView(f.workshop);
       return;
     }
@@ -793,9 +793,16 @@ HTomb = (function(HTomb) {
     VK_LEFT: workQueueLeft,
     VK_RIGHT: workQueueRight,
     VK_EQUALS: workQueueMore,
-    VK_HYPHEN_MINUS: workQueueLess
+    VK_HYPHEN_MINUS: workQueueLess,
+    VK_DELETE: cancelGood,
+    VK_BACK_SPACE: cancelGood
   });
 
+  function cancelGood() {
+    let w = currentWorkshop;
+    w.task.cancel();
+    w.nextGood();
+  }
   function workQueueDown() {
     workQueueCursor+=1;
     if (workQueueCursor>currentWorkshop.queue.length-1) {
@@ -984,6 +991,9 @@ HTomb = (function(HTomb) {
         bindKey(workshops,"VK_"+alphabet[i],function() {
           let good = w.makes[i];
           w.queue.splice(workQueueCursor,0,[good,"finite",1]);
+          if (w.task===null) {
+            w.nextGood();
+          }
           updateOverlay(workshopDetails(currentWorkshop));
         });
       }
@@ -1044,7 +1054,14 @@ HTomb = (function(HTomb) {
     updateOverlay(text);
   }
   function workshopDetails(w) {
-    let txt = [w.describe() + " at " + w.x + ", " + w.y + ", " + w.z];
+    let txt = [
+      "Up/Down to traverse queue, Left/Right to change repeat options.",
+      "Hyphen/Underscore to lower count, equals/plus to raise count.",
+      "a-z to insert or remove production good from queue.",
+      "Backspace or Delete to cancel current production.",
+      "PageUp/PageDown to change workshops, Tab to see minions, Esc to exit.",
+      w.describe() + " at " + w.x + ", " + w.y + ", " + w.z
+    ];
     if (w.makes && w.makes.length>0) {
       txt.push("Products:");
       let alphabet = 'abcdefghijklmnopqrstuvwxyz';
