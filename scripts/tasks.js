@@ -15,6 +15,7 @@ HTomb = (function(HTomb) {
     zoneTemplate: null,
     makes: null,
     target: null,
+    active: true,
     ingredients: {},
     // note that this passes the behavior, not the entity
     canReachZone: function(cr) {
@@ -138,9 +139,11 @@ HTomb = (function(HTomb) {
       }
       if (this.zone) {
         //prevent recursion traps
-        var z = this.zone;
+        let zone = this.zone;
         this.zone = null;
-        z.despawn();
+        zone.task = null;
+        zone.remove();
+        zone.despawn();
       }
       this.despawn();
     },
@@ -161,6 +164,8 @@ HTomb = (function(HTomb) {
       }
       if (this.zone) {
         let zone = this.zone;
+        this.zone = null;
+        zone.task = null;
         zone.remove();
         zone.despawn();
       }

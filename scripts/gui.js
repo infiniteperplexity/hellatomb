@@ -794,35 +794,47 @@ HTomb = (function(HTomb) {
     VK_RIGHT: workQueueRight,
     VK_EQUALS: workQueueMore,
     VK_HYPHEN_MINUS: workQueueLess,
-    VK_DELETE: cancelGood,
-    VK_BACK_SPACE: cancelGood
+    VK_BACK_SPACE: cancelGood,
+    VK_DELETE: cancelGood
   });
 
   function cancelGood() {
+    let i = workQueueCursor;
     let w = currentWorkshop;
-    w.task.cancel();
-    w.nextGood();
+    if (i===-1 && w.task) {
+      w.task.cancel();
+      w.nextGood();
+    } else if (w.queue.length>0 && i>=0) {
+      w.queue.splice(i,1);
+      if (workQueueCursor>=w.queue.length) {
+        workQueueCursor = w.queue.length-1;
+      }
+    }
+    updateOverlay(workshopDetails(w));
   }
+
   function workQueueDown() {
     workQueueCursor+=1;
     //if (workQueueCursor>currentWorkshop.queue.length-1) {
-    if (workQueueCursor>currentWorkshop.queue.length) {
-      workQueueCursor = 0;
+    if (workQueueCursor>=currentWorkshop.queue.length) {
+      workQueueCursor = -1;
     }
+    console.log(workQueueCursor);
     updateOverlay(workshopDetails(currentWorkshop));
   }
   function workQueueUp() {
     workQueueCursor-=1;
-    if (workQueueCursor<0) {
+    if (workQueueCursor<-1) {
       //workQueueCursor = currentWorkshop.queue.length-1;
-      workQueueCursor = currentWorkshop.queue.length;
+      workQueueCursor = currentWorkshop.queue.length-1;
     }
+    console.log(workQueueCursor);
     updateOverlay(workshopDetails(currentWorkshop));
   }
   function workQueueRight() {
     let i = workQueueCursor;
     let w = currentWorkshop;
-    if (i>=w.queue.length) {
+    if (i===-1 || w.queue.length===0) {
       return;
     }
     if (w.queue[i][1]==="finite") {
@@ -837,10 +849,7 @@ HTomb = (function(HTomb) {
   function workQueueLeft() {
     let i = workQueueCursor;
     let w = currentWorkshop;
-    if (i>=w.queue.length) {
-      return;
-    }
-    if (w.queue.length===0) {
+    if (i===-1 || w.queue.length===0) {
       return;
     }
     if (w.queue[i][1]==="finite") {
@@ -855,10 +864,7 @@ HTomb = (function(HTomb) {
   function workQueueMore() {
     let i = workQueueCursor;
     let w = currentWorkshop;
-    if (i>=w.queue.length) {
-      return;
-    }
-    if (w.queue.length===0) {
+    if (i===-1 || w.queue.length===0) {
       return;
     }
     if (w.queue[i][1]==="finite") {
@@ -872,10 +878,7 @@ HTomb = (function(HTomb) {
   function workQueueLess() {
     let i = workQueueCursor;
     let w = currentWorkshop;
-    if (i>=w.queue.length) {
-      return;
-    }
-    if (w.queue.length===0) {
+    if (i===-1 || w.queue.length===0) {
       return;
     }
     if (w.queue[i][1]==="finite" && w.queue[i][2]>1) {
@@ -992,21 +995,18 @@ HTomb = (function(HTomb) {
     HTomb.Controls.context = workshops;
     let alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
     for (let i=0; i<alphabet.length; i++) {
-      if (i===w.makes.length && i>0) {
-        bindKey(workshops,"VK_"+alphabet[i],function() {
-          w.queue.splice(workQueueCursor,1);
-          workQueueUp();
-          updateOverlay(workshopDetails(currentWorkshop));
-        });
-      } else if (i>w.makes.length) {
+      if (i>=w.makes.length) {
         delete workshops.boundKeys["VK_"+alphabet[i]];
       }
       else {
         bindKey(workshops,"VK_"+alphabet[i],function() {
           let good = w.makes[i];
-          w.queue.splice(workQueueCursor,0,[good,"finite",1]);
+          w.queue.splice(workQueueCursor+1,0,[good,"finite",1]);
           if (w.task===null) {
             w.nextGood();
+          }
+          if (workQueueCursor<w.queue.length-1) {
+            workQueueCursor+=1;
           }
           updateOverlay(workshopDetails(currentWorkshop));
         });
@@ -1071,11 +1071,12 @@ HTomb = (function(HTomb) {
     let txt = [
       "Up/Down to traverse queue, Left/Right to change repeat options.",
       "Hyphen/Underscore to lower count, equals/plus to raise count.",
-      "a-z to insert or remove production good from queue.",
-      "Backspace or Delete to cancel current production.",
+      "a-z to insert good into queue.",
+      "Backspace or Delete to cancel good or remove from queue.",
       "PageUp/PageDown to change workshops, Tab to see minions, Esc to exit.",
       w.describe() + " at " + w.x + ", " + w.y + ", " + w.z
     ];
+    txt.push(" ");
     if (w.makes && w.makes.length>0) {
       txt.push("Products:");
       let alphabet = 'abcdefghijklmnopqrstuvwxyz';
@@ -1083,25 +1084,21 @@ HTomb = (function(HTomb) {
         let t = HTomb.Things.templates[w.makes[i]];
         txt.push(alphabet[i] + ") " + t.describe());
       }
-      txt.push(alphabet[w.makes.length] + ") Remove item.");
       txt.push(" ");
     }
-    if (w.occupied) {
-      txt.push("It is manned by " + w.occupied.describe());
-    }
-    if (w.task) {
-      txt.push("It is working on " + w.task.describe());
-    }
-    txt.push(" ");
     txt.push("Production Queue:");
     let q = w.formattedQueue();
-    if (workQueueCursor>w.queue.length) {
-      workQueueCursor = w.queue.length;
+    if (workQueueCursor>=w.queue.length) {
+      workQueueCursor = w.queue.length-1;
     }
-    if (q.length>0) {
-      let s = q[workQueueCursor];
+    if (q.length>1 && workQueueCursor>-1) {
+      let s = q[workQueueCursor+1];
       s = "*" + s.substr(1);
-      q[workQueueCursor] = s;
+      q[workQueueCursor+1] = s;
+    } else {
+      let s = q[0];
+      s = "*" + s.substr(1);
+      q[0] = s;
     }
     txt = txt.concat(q);
     return txt;

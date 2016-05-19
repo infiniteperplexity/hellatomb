@@ -104,7 +104,10 @@ HTomb = (function(HTomb) {
       if (this.zone) {
         delete HTomb.World.zones[c];
         if (this.task) {
-          this.task.cancel();
+          let task = this.task;
+          this.task = null;
+          task.zone = null;
+          task.cancel();
         }
       }
       if (this.onRemove) {
