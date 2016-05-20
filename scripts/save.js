@@ -20,6 +20,7 @@ HTomb = (function(HTomb) {
     fakeLocalStorage = json;
     console.timeEnd("save game");
     console.log(json.length);
+    return json;
   };
 
   let seen = [];
