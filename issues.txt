@@ -1,10 +1,6 @@
 Small:
-+ don't put graves below water table
-+ merge dismantling and harvesting
+
 + grass grows back?
-+ particle system
-+ particles for spells
-+ fold Exhume into Dig, make sure their can be non-player masters
 + make sure refreshTile accounts for light level
 + make sure moon phase light levels work right
 + details view
@@ -18,8 +14,11 @@ Small:
 
 - will of wisps
 - drain life spell
-
-
+- make it so moving torches move light
+- attach a summary of item stacks method to master behavior
+- how should bulk work?
+  - items stacked with themselves should take less bulk...so like, if there's at least one odd-man-out, that should ruin things.
+  - or, could we do that by making stacks take less bulk than the sum of their parts?  Yeah I think so.
 
 
 - randomize growing times

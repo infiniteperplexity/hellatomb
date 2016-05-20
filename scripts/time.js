@@ -103,7 +103,8 @@ HTomb = (function(HTomb) {
   };
 
 
-  HTomb.Constants.STARTHOUR = 8;
+  //HTomb.Constants.STARTHOUR = 8;
+    HTomb.Constants.STARTHOUR = 16;
   HTomb.Constants.DAWN = 6;
   HTomb.Constants.DUSK = 17;
   HTomb.Constants.MONTH = 12;

@@ -104,6 +104,14 @@ HTomb = (function(HTomb) {
       var x = light.point.x;
       var y = light.point.y;
       var z = light.point.z;
+      if (light.point.item ) {
+        let cont = light.point.item.containerXYZ();
+        if (cont[0]!==null) {
+          x = cont[0];
+          y = cont[1];
+          z = cont[2];
+        }
+      }
       lightLevel = light.level;
       illuminate(x,y,z,light.range); //all lights 10 for now
     }
@@ -122,10 +130,6 @@ HTomb = (function(HTomb) {
   function light(x,y,r,v) {
     var d = Math.sqrt((x-x0)*(x-x0)+(y-y0)*(y-y0));
     var thisLevel = (r) ? Math.min(-lightLevel+(d*10),-1) : -lightLevel;
-    if (HTomb.World.lit[z0]===undefined) {
-      console.log(HTomb.World.lit);
-      console.log(z0);
-    }
     HTomb.World.lit[z0][x][y] = Math.min(HTomb.World.lit[z0][x][y],thisLevel);
     if (HTomb.World.tiles[z0+1][x][y].zview===-1) {
       HTomb.World.lit[z0+1][x][y] = Math.min(HTomb.World.lit[z0+1][x][y],thisLevel);

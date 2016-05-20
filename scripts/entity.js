@@ -261,6 +261,14 @@ HTomb = (function(HTomb) {
       if (this.entity.stackSize && this.stackable && this.n===null) {
         this.n = 1+HTomb.Utils.diceUntil(3,3);
       }
+    },
+    containerXYZ: function() {
+      if (this.container && this.container.parent && this.container.parent.entity) {
+        let e = this.container.parent.entity;
+        return [e.x,e.y,e.z];
+      } else {
+        return [null,null,null];
+      }
     }
   });
 

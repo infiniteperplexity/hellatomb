@@ -156,6 +156,7 @@ HTomb = (function(HTomb) {
     workshop: null,
     makes: null,
     steps: 10,
+    started: false,
     // placeZone: function(x,y,z,assigner) {
     //   var zone, t;
     //   if (this.canDesignateTile(x,y,z)) {
@@ -173,16 +174,19 @@ HTomb = (function(HTomb) {
     //   return zone;
     // },
     work: function(x,y,z) {
+      if (this.spend()===true || this.started===true) {
+        this.started = true;
       this.steps-=1;
-      this.assignee.ai.acted = true;
-      if (this.steps<=0) {
-        let x = this.zone.x;
-        let y = this.zone.y;
-        let z = this.zone.z;
-        HTomb.Things[this.makes]().place(x,y,z);
-        this.workshop.occupied = null;
-        HTomb.GUI.pushMessage(this.assignee.describe() + " finishes making " + HTomb.Things.templates[this.makes].describe());
-        this.complete();
+        this.assignee.ai.acted = true;
+        if (this.steps<=0) {
+          let x = this.zone.x;
+          let y = this.zone.y;
+          let z = this.zone.z;
+          HTomb.Things[this.makes]().place(x,y,z);
+          this.workshop.occupied = null;
+          HTomb.GUI.pushMessage(this.assignee.describe() + " finishes making " + HTomb.Things.templates[this.makes].describe());
+          this.complete();
+        }
       }
     },
     onDespawn: function() {
