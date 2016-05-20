@@ -20,6 +20,9 @@ HTomb = (function(HTomb) {
     fakeLocalStorage = json;
     console.timeEnd("save game");
     console.log(json.length);
+    let blob = new Blob([json],{type:"text/json"});
+    let url = URL.createObjectURL(blob);
+    open(url);
     return json;
   };
 
