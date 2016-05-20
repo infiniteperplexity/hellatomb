@@ -26,6 +26,21 @@ HTomb = (function(HTomb) {
     return json;
   };
 
+  HTomb.Save.stageFile = function() {
+    let reader = new FileReader();
+    reader.onload = function(e) {
+      let contents = e.target.result;
+      HTomb.Save.stagedFile = contents;
+    }
+    reader.readAsText(document.getElementById("file").files[0]);
+  }
+
+  HTomb.Save.loadFiles = function() {
+    let finput = document.getElementById("file");
+    finput.style.display = "inline";
+    //finput.setAttribute("onChange",stageFile);
+  }
+
   let seen = [];
   HTomb.Save.duplicates = [];
   HTomb.Save.nThings = 0;
