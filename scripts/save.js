@@ -35,6 +35,12 @@ HTomb = (function(HTomb) {
     reader.readAsText(document.getElementById("file").files[0]);
   }
 
+  HTomb.Save.loadPath = function(txt) {
+    let req = new XMLHttpRequest();
+    req.open('GET', 'file://'+txt, false);
+    req.send();
+    HTomb.Save.loadedJSON = req.responseText;
+  }
   HTomb.Save.loadFiles = function() {
     let finput = document.getElementById("file");
     finput.style.display = "inline";
