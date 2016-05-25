@@ -6,7 +6,6 @@ HTomb = (function(HTomb) {
   let NLEVELS = HTomb.Constants.NLEVELS;
 
 
-  let fakeLocalStorage;
   HTomb.Save.saveGame = function() {
     let saveGame = {};
     console.time("save game");
@@ -14,16 +13,15 @@ HTomb = (function(HTomb) {
     saveGame.tiles = HTomb.World.tiles;
     saveGame.explored = HTomb.World.explored;
     saveGame.covers = HTomb.World.covers;
+    saveGame.lights = HTomb.World.lights;
     saveGame.dailyCycle = HTomb.Time.dailyCycle;
     let json = HTomb.Save.stringify(saveGame);
-    //localStorage.saveGame = json;
-    fakeLocalStorage = json;
     console.timeEnd("save game");
     console.log(json.length);
     let blob = new Blob([json],{type:"text/json"});
     let url = URL.createObjectURL(blob);
     open(url);
-    return json;
+    //return json;
   };
 
   HTomb.Save.stageFile = function() {
@@ -51,7 +49,7 @@ HTomb = (function(HTomb) {
   HTomb.Save.duplicates = [];
   HTomb.Save.nThings = 0;
   //HTomb.Save.stringify = function(obj) {
-  HTomb.Save.stringify = function(obj, arg) {
+  HTomb.Save.stringify = function(obj) {
     let json = JSON.stringify(obj, function(key, val) {
       if (val===undefined) {
         //console.log("why is val undefined?");
@@ -62,12 +60,14 @@ HTomb = (function(HTomb) {
       }
       // if it has special instructions, use those to stringify
       if (val.stringify) {
+        seen.push(val);
         //console.log("special way to stringify");
         return val.stringify();
         // if it's from the global things table, stringify it normally
-      //} else if (this===HTomb.World.things) {
-      } else if (arg===true) {
-        arg = false;
+      } else if (this===HTomb.World.things) {
+        seen.push(val);
+      //} else if (arg===true) {
+        //arg = false;
         HTomb.Save.nThings+=1;
         // stringify only those things on the "each" list
         let dummy = {};
@@ -82,17 +82,20 @@ HTomb = (function(HTomb) {
         }
         return dummy;
       // if it's on the global things table, stringify its ID
-      } else if (val.thingId) {
+    } else if (val.thingId!==undefined) {
         //console.log("serialized as ID");
         return {tid: val.thingId};
       } else {
-        //console.log("normal value");
-        if (seen.indexOf(val)!==-1 && HTomb.Save.duplicates.indexOf(val)!==-1) {
-          HTomb.Save.duplicates.push([this, key, val]);
+        if (seen.indexOf(val)!==-1) {
+          if (HTomb.Save.duplicates.indexOf(val)===-1) {
+            HTomb.Save.duplicates.push([this, key, val]);
+          }
+        } else {
+          seen.push(val);
         }
         return val;
       }
-    });
+    }," ");
     return json;
   };
 

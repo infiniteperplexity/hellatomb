@@ -386,6 +386,13 @@ HTomb = (function(HTomb) {
   HTomb.ItemContainer = ItemContainer;
   ItemContainer.prototype = {
     parent: null,
+    stringify: function() {
+      let a = [];
+      for (let i=0; i<this.length; i++) {
+        a.push(this[i]);
+      }
+      return {"ItemContainer" : a};
+    },
     getParent: function() {
       if (parent===HTomb.World.items) {
         for (key in HTomb.World.items) {
