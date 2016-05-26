@@ -6,6 +6,72 @@ HTomb = (function(HTomb) {
   let NLEVELS = HTomb.Constants.NLEVELS;
 
 
+  HTomb.Save.restoreGame = function(txt) {
+    let path = "C:/Users/m543015/Desktop/GitHub/hellatomb/saves/";
+    txt = txt || "save";
+    let req = new XMLHttpRequest();
+    req.open('GET', 'file://'+path+txt+".json", false);
+    req.send();
+    let json = req.responseText;
+    let tids = [];
+    //let templates = [];
+    let player = null;
+    // parse while keeping a list of references to thingIds
+    let saveGame = JSON.parse(json, function (key, val) {
+      if (val===null) {
+        return null;
+      } else if (val.tid) {
+        tids.push([this,key,val]);
+        return undefined;
+      } else if (val.ItemContainer) {
+        let ic = new ItemContainer();
+        for (let i=0; i<val.ItemContainer.length; i++) {
+          ic.push(val.ItemContainer[i]);
+          ic.parent = this;
+        }
+        return ic;
+      } else if (val.template) {
+        let template = HTomb.Things.templates[val.template];
+        let dummy = Object.create(template);
+        for (let p in val) {
+          if (p!=="template" || val[p]!==template[p]) {
+            dummy[p] = val[p];
+          }
+        }
+        if (val.template==="Player") {
+          console.log("found player");
+          player = val;
+        }
+      }
+      return val;
+    });
+    // swap all thingId references for their thing
+    for (let i=0; i<tids.length; i++) {
+      let tid = tids[i];
+      tid[0][tid[1]] = saveGame.things[tid[2].tid];
+    }
+    HTomb.Player = player.entity;
+    fillListFrom(saveGame.things, HTomb.World.things);
+    fillGrid3dFrom(saveGame.tiles, HTomb.World.tiles, HTomb.Types.templates.Tile.parse);
+    fillGrid3dFrom(saveGame.explored, HTomb.World.explored);
+    fillListFrom(saveGame.creatures, HTomb.World.creatures);
+    fillListFrom(saveGame.items, HTomb.World.items);
+    fillListFrom(saveGame.features, HTomb.World.features);
+    fillListFrom(saveGame.zones, HTomb.World.zones);
+    fillListFrom(saveGame.covers, HTomb.World.covers, HTomb.Types.templates.Cover.parse);
+    HTomb.Time.dailyCycle.turn = saveGame.dailyCycle.turn;
+    HTomb.Time.dailyCycle.minute = saveGame.dailyCycle.minute;
+    HTomb.Time.dailyCycle.hour = saveGame.dailyCycle.hour;
+    HTomb.Time.dailyCycle.day = saveGame.dailyCycle.day;
+    HTomb.FOV.resetVisible();
+    if (HTomb.Player.sight) {
+      HTomb.FOV.findVisible(HTomb.Player.x, HTomb.Player.y, HTomb.Player.z, HTomb.Player.sight.range);
+    }
+    HTomb.GUI.splash("Game restored.");
+  };
+
+
+
   HTomb.Save.saveGame = function() {
     let saveGame = {};
     console.time("save game");
@@ -100,20 +166,24 @@ HTomb = (function(HTomb) {
   };
 
 
-  function fillListFrom(fromList, toList) {
+  function fillListFrom(fromList, toList, callb) {
+    // default callback is to return self
+    callb = callb || function(x) {return x;};
+    // if fromList is an array
     if (Array.isArray(fromList) && Array.isArray(toList)) {
       while(toList.length>0) {
         toList.pop();
       }
       for (let i=0; i<fromList.length; i++) {
-        toList.push(fromList[i]);
+        toList.push(callb(fromList[i]));
       }
+    // if fromList is an associative array
     } else {
       for (let t in toList) {
         delete toList[t];
       }
       for (let f in fromList) {
-        toList[f] = fromList[f];
+        toList[f] = callb(fromList[f]);
       }
     }
   };
@@ -129,83 +199,6 @@ HTomb = (function(HTomb) {
         }
       }
     }
-  };
-
-  HTomb.Save.firstParse = function(j) {
-    let tids = [];
-    let player = null;
-    let thing = JSON.parse(j, function (key, val) {
-      if (val.tid) {
-        tids.push([this,key,val]);
-        return val;
-        //return undefined;
-      } else if (val.template) {
-        let template = HTomb.Things.templates[val.template];
-        //let dummy = Object.create(template);
-        let dummy = HTomb.Things[template]();
-        for (let p in val) {
-          if (p!=="template" || val[p]!==template[p]) {
-            dummy[p] = val[p];
-          }
-        }
-        if (val.template==="Player") {
-          player = dummy;
-        }
-        return dummy;
-      } else {
-        return val;
-      }
-    });
-    return thing;
-  };
-
-  HTomb.Save.restoreGame = function(j) {
-    let json = localStorage.saveGame;
-    let tids = [];
-    //let templates = [];
-    let player = null;
-    // parse while keeping a list of references to thingIds
-    let saveGame = JSON.parse(json, function (key, val) {
-      if (val.tid) {
-        tids.push([this,key,val]);
-        return undefined;
-      } else if (val.template) {
-        let template = HTomb.Things.templates[val.template];
-        let dummy = Object.create(template);
-        for (let p in val) {
-          if (p!=="template" || val[p]!==template[p]) {
-            dummy[p] = val[p];
-          }
-        }
-        if (val.template==="Player") {
-          player = val;
-        }
-      }
-      return val;
-    });
-    // swap all thingId references for their thing
-    for (let i=0; i<tids.length; i++) {
-      let tid = tids[i];
-      tid[0][tid[1]] = saveGame.things[tid[2].tid];
-    }
-    HTomb.Player = player.entity;
-    fillListFrom(saveGame.things, HTomb.World.things);
-    fillGrid3dFrom(saveGame.tiles, HTomb.World.tiles, HTomb.Things.templates.Terrain.parse);
-    fillGrid3dFrom(saveGame.explored, HTomb.World.explored);
-    fillListFrom(saveGame.creatures, HTomb.World.creatures);
-    fillListFrom(saveGame.items, HTomb.World.items);
-    fillListFrom(saveGame.features, HTomb.World.features);
-    fillListFrom(saveGame.zones, HTomb.World.zones);
-    fillListFrom(saveGame.covers, HTomb.World.covers);
-    HTomb.Time.dailyCycle.turn = saveGame.dailyCycle.turn;
-    HTomb.Time.dailyCycle.minute = saveGame.dailyCycle.minute;
-    HTomb.Time.dailyCycle.hour = saveGame.dailyCycle.hour;
-    HTomb.Time.dailyCycle.day = saveGame.dailyCycle.day;
-    HTomb.FOV.resetVisible();
-    if (HTomb.Player.sight) {
-      HTomb.FOV.findVisible(HTomb.Player.x, HTomb.Player.y, HTomb.Player.z, HTomb.Player.sight.range);
-    }
-    HTomb.GUI.splash("Game restored.");
   };
 
   return HTomb;

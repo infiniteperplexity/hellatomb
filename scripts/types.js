@@ -12,6 +12,7 @@ HTomb = (function(HTomb) {
       return HTomb.Types.templates[this.parent].types.indexOf(this);
     },
   	parse: function(value) {
+      console.log(["type is",this]);
       return HTomb.Types.templates[this.parent].types[value];
     },
   	describe: function() {
