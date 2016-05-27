@@ -6,6 +6,33 @@ HTomb = (function(HTomb) {
   let NLEVELS = HTomb.Constants.NLEVELS;
 
 
+  var count = 0;
+  var list = [];
+  function stringifyArray(arr, every) {
+    every = every || 1000;
+    var count = 0;
+    var list = ['['];
+    var recurse = function() {
+      for (; count<arr.length; count++) {
+        list.push(HTomb.Save.stringify(arr[count]));
+        if (count<arr.length-1) {
+          list.push(',');
+        } else {
+          list.push(']');
+          localStorage.list = list.join('')
+        }
+        if (count>0 && count%every===0) {
+          console.log(count);
+          count++;
+          setTimeout(recurse);
+          break;
+        }
+      }
+    };
+    recurse();
+  }
+
+
   HTomb.Save.restoreGame = function(txt) {
     let path = "C:/Users/m543015/Desktop/GitHub/hellatomb/saves/";
     txt = txt || "save";
@@ -75,7 +102,7 @@ HTomb = (function(HTomb) {
   HTomb.Save.saveGame = function() {
     let saveGame = {};
     console.time("save game");
-    saveGame.things = HTomb.World.things;
+    //saveGame.things = HTomb.World.things;
     saveGame.tiles = HTomb.World.tiles;
     saveGame.explored = HTomb.World.explored;
     saveGame.covers = HTomb.World.covers;
