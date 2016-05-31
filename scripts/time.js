@@ -5,13 +5,24 @@ HTomb = (function(HTomb) {
 
   var timePassing = null;
   var speed = 1000;
+  var timeLocked = false;
   HTomb.Time.setSpeed = function(spd) {
     speed = Math.min(Math.max(100,spd),5000);
   };
   HTomb.Time.getSpeed = function() {
     return speed;
   };
+  HTomb.Time.lockTime = function() {
+    HTomb.Time.stopTime();
+    timeLocked = true;
+  };
+  HTomb.Time.unlockTime = function() {
+    timeLocked = false;
+  };
   HTomb.Time.startTime = function() {
+    if (timeLocked===true) {
+      return;
+    }
     timePassing = setInterval(HTomb.Time.passTime,speed);
     HTomb.GUI.renderStatus();
   };

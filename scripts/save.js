@@ -7,6 +7,8 @@ HTomb = (function(HTomb) {
 
 
   function stringifyList(arr, options) {
+    HTomb.Time.lockTime();
+    console.time("stringify list");
     options = options || {};
     var every = options.every || 1000;
     var callback = options.callback || function() {};
@@ -21,8 +23,9 @@ HTomb = (function(HTomb) {
           list.push(']');
           list = list.join('');
           console.log(list.length);
-          //callback(list);
+          callback(list);
           console.log(list);
+          console.timeEnd("stringify list");
         }
         if (count>0 && count%every===0) {
           //!!!! Should be a more informative message
@@ -119,8 +122,9 @@ HTomb = (function(HTomb) {
 
   function openBlob(json) {
     let blob = new Blob([json],{type:"text/json"});
-    let url = URL.createObjectURL(blob);
+    let url = (window.URL ? URL : webkitURL).createObjectURL(blob);
     open(url);
+    HTomb.Time.unlockTime();
   }
 
   HTomb.Save.stageFile = function() {
