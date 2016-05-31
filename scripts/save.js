@@ -6,22 +6,26 @@ HTomb = (function(HTomb) {
   let NLEVELS = HTomb.Constants.NLEVELS;
 
 
-  var count = 0;
-  var list = [];
-  function stringifyArray(arr, every) {
-    every = every || 1000;
+  function stringifyList(arr, options) {
+    options = options || {};
+    var every = options.every || 1000;
+    var callback = options.callback || function() {};
     var count = 0;
     var list = ['['];
     var recurse = function() {
       for (; count<arr.length; count++) {
-        list.push(HTomb.Save.stringify(arr[count]));
+        list.push(HTomb.Save.stringifyThing(arr[count]));
         if (count<arr.length-1) {
           list.push(',');
         } else {
           list.push(']');
-          localStorage.list = list.join('')
+          list = list.join('');
+          console.log(list.length);
+          //callback(list);
+          console.log(list);
         }
         if (count>0 && count%every===0) {
+          //!!!! Should be a more informative message
           console.log(count);
           count++;
           setTimeout(recurse);
@@ -103,19 +107,21 @@ HTomb = (function(HTomb) {
     let saveGame = {};
     console.time("save game");
     //saveGame.things = HTomb.World.things;
-    saveGame.tiles = HTomb.World.tiles;
-    saveGame.explored = HTomb.World.explored;
-    saveGame.covers = HTomb.World.covers;
-    saveGame.lights = HTomb.World.lights;
-    saveGame.dailyCycle = HTomb.Time.dailyCycle;
-    let json = HTomb.Save.stringify(saveGame);
+    //saveGame.tiles = HTomb.World.tiles;
+    //saveGame.explored = HTomb.World.explored;
+    //saveGame.covers = HTomb.World.covers;
+    //saveGame.lights = HTomb.World.lights;
+    //saveGame.dailyCycle = HTomb.Time.dailyCycle;
+    //let json = HTomb.Save.stringify(saveGame);
+    let json = stringifyList(HTomb.World.things,{callback: openBlob});
     console.timeEnd("save game");
-    console.log(json.length);
+  };
+
+  function openBlob(json) {
     let blob = new Blob([json],{type:"text/json"});
     let url = URL.createObjectURL(blob);
     open(url);
-    //return json;
-  };
+  }
 
   HTomb.Save.stageFile = function() {
     let reader = new FileReader();
@@ -138,10 +144,49 @@ HTomb = (function(HTomb) {
     //finput.setAttribute("onChange",stageFile);
   }
 
+
+  HTomb.Save.stringifyThing = function(obj) {
+    let topLevel = true;
+    let json = JSON.stringify(obj, function(key, val) {
+      if (val===undefined) {
+        //console.log("why is val undefined?");
+        return undefined;
+      } else if (val===null) {
+        //console.log("could I just do null normally?");
+        return null;
+      }
+      // if it has special instructions, use those to stringify
+      if (val.stringify) {
+        return val.stringify();
+        // if it's from the global things table, stringify it normally
+      } else if (topLevel===true) {
+        topLevel = false;
+        // stringify only those things on the "each" list
+        let dummy = {};
+        let template = HTomb.Things.templates[val.template];
+        for (let p in val) {
+          if (p==="template" || val[p]!==template[p]) {
+            dummy[p] = val[p];
+          }
+        }
+        if (dummy.thingId) {
+          delete dummy.thingId;
+        }
+        return dummy;
+      // if it's on the global things table, stringify its ID
+      } else if (val.thingId!==undefined) {
+        //console.log("serialized as ID");
+        return {tid: val.thingId};
+      } else {
+        return val;
+      }
+    }," ");
+    return json;
+  };
+
   let seen = [];
   HTomb.Save.duplicates = [];
   HTomb.Save.nThings = 0;
-  //HTomb.Save.stringify = function(obj) {
   HTomb.Save.stringify = function(obj) {
     let json = JSON.stringify(obj, function(key, val) {
       if (val===undefined) {
