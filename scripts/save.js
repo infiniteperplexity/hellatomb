@@ -117,6 +117,7 @@ HTomb = (function(HTomb) {
     //saveGame.dailyCycle = HTomb.Time.dailyCycle;
     //let json = HTomb.Save.stringify(saveGame);
     let json = stringifyList(HTomb.World.things,{callback: openBlob});
+    //let json = stringifyList(HTomb.World.things,{callback: storeLocal});
     console.timeEnd("save game");
   };
 
@@ -125,6 +126,13 @@ HTomb = (function(HTomb) {
     let url = (window.URL ? URL : webkitURL).createObjectURL(blob);
     open(url);
     HTomb.Time.unlockTime();
+  }
+
+  function storeLocal(json) {
+    localStorage.setItem('savedGame',json);
+    let test = localStorage.getItem('saveGame');
+    console.log("saved game length:");
+    console.log(test.length);
   }
 
   HTomb.Save.stageFile = function() {
