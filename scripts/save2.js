@@ -13,9 +13,15 @@ HTomb = (function(HTomb) {
       xhttp = new ActiveXObject("Microsoft.XMLHTTP");
   }
 
-  xhttp.open("POST","ajax_test.asp",true);
-  xhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
-  xhttp.send(JSON.stringify({foo: "bar", hello: "world"}));
+  //xhttp.open("POST","ajax_test.asp",true);
+  //xhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+  //xhttp.send(JSON.stringify({foo: "bar", hello: "world"}));
+
+  HTomb.Save.getFile = function() {
+      xhttp.open("GET","saves/test.json");
+      xhttp.send();
+      setTimeout(function() {console.log(xhttp.responseText);},5000);
+  }
 
   return HTomb;
 
