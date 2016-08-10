@@ -18,10 +18,20 @@ HTomb = (function(HTomb) {
   //xhttp.send(JSON.stringify({foo: "bar", hello: "world"}));
 
   HTomb.Save.getFile = function() {
-      xhttp.open("GET","saves/test.json");
+      xhttp.onreadystatechange = function() {
+        if (xhttp.readyState == XMLHttpRequest.DONE) {
+          if (xhttp.status == 200) {
+            console.log(xhttp.responseText);
+          } else if (xhttp.status == 400) {
+            console.log("There was an error 400");
+          } else {
+            console.log("Something other than 200 was returned.");
+          }
+        }
+      };
+      xhttp.open("GET","saves/test.json",true);
       xhttp.send();
-      setTimeout(function() {console.log(xhttp.responseText);},5000);
-  }
+  };
 
   return HTomb;
 
