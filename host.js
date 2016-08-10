@@ -5,7 +5,7 @@ var fs = require('fs');
 var bodyParser = require('body-parser');
 var path = "C:/Users/m543015/Desktop/GitHub/hellatomb";
 app.use(express.static('public'));
-app.use(bodyParser.json());
+app.use(bodyParser.json({limit: '50mb'}));
 
 function serveFile(req, res) {
   res.sendFile(__dirname + req.url);
@@ -22,11 +22,9 @@ app.get('/*.json', function(req, res) {
       return console.log(err);
     }
     res.send(data);
-    console.log(data);
   });
 });
-
-/*app.post('/*', function (req, res) {
+app.post('/*', function (req, res) {
   console.log("Received POST request: " + req.url);
   fs.writeFile("./saves/test.json", JSON.stringify(req.body), function(err) {
     if(err) {
@@ -34,7 +32,8 @@ app.get('/*.json', function(req, res) {
     }
   });
   console.log("The file was saved!");
-});*/
+});
+
 app.listen(8080, function () {
   console.log('Example app listening on port 8080!');
 });
