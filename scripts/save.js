@@ -116,10 +116,41 @@ HTomb = (function(HTomb) {
     //saveGame.lights = HTomb.World.lights;
     //saveGame.dailyCycle = HTomb.Time.dailyCycle;
     //let json = HTomb.Save.stringify(saveGame);
-    let json = stringifyList(HTomb.World.things,{callback: openBlob});
+    //let json = stringifyList(HTomb.World.things,{callback: openBlob});
+    let json = stringifyList(HTomb.World.things,{callback: postData});
     //let json = stringifyList(HTomb.World.things,{callback: storeLocal});
     console.timeEnd("save game");
   };
+
+  function postData(json, file) {
+  //function postData(json, file) {
+    var file = 'saves/test.json';
+    var xhttp = new XMLHttpRequest();
+    xhttp.open("POST", file, true);
+    xhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+    xhttp.send(json);
+    HTomb.Time.unlockTime();
+  }
+
+  //function getData(file) {
+  function getData() {
+    var file = 'saves/test.json';
+    var xhttp = new XMLHttpRequest();
+    xhttp.onreadystatechange = function() {
+      if (xhttp.readyState == XMLHttpRequest.DONE) {
+        if (xhttp.status == 200) {
+          console.log("Got our JSON, now we should do something with it.");
+        } else if (xhttp.status == 400) {
+          console.log("There was an error 400");
+        } else {
+          console.log("Something other than 200 was returned.");
+        }
+        HTomb.Time.unlockTime();
+      }
+    };
+    xhttp.open("GET", file, true);
+    xhttp.send();
+  }
 
   function openBlob(json) {
     let blob = new Blob([json],{type:"text/json"});
