@@ -91,3 +91,38 @@ Global status view:
 Maybe tab between those?  Esc to go back?
 
 ~
+
+so I need to think about how menus work.
+So the way it works currently is that...
+1) ControlContexts control what the input does.
+2) You directly render what the output does.
+3) The structure of things is all in chains of callbacks.
+
+So let's say I want to add a save/restore game option...maybe a system menu?
+So I'd need to add a system menu Control Context (unless I wanted it to be a-z, in which case it's choosingMenu(heading, choices, callback(array item))
+Then some of those choices have sub-menus, which need to be defined within the callback, right?  So maybe...implement this...and then try an alternate way.
+So, what alternate ways are there?
+
+One bad thing is that, unlike other lists, which are lists of game entities, this is a list of functions, that don't necessarily have the kind of representation
+I've been assuming.
+
+Also, and possibly related to this issue, the GUI .js file is horribly cluttered.  It has a hodgepodge of functions related to rendering, controls, and the like.
+And this is largely because of namespace issues - I want to be able to access the same private namespace.  Which isn't really necessary, you know?  What are the private
+things I'm accessing?  Not really anything that actually needs to be private.  You could stick them on objects like View and Control.
+
+Some notes:
+- Should I have a "menu stack?"
+- Should I have mouse control as well?
+- Should I separate the logical structure of the menu from its interface?
+
+So, two types of menus:
+- Static, with fixed functionality...usually a list of functions (save/restore game, quit, etc.)
+- Dynamic, based on game state...usually a list of game entities (choose item from inventory, etc.)
+
+* Dynamic menus will almost always be a-z, whereas static menus will probably have their own, specific key bindings.
+* Dynamic menus will usually take a callback, and feed a menu choice to that callback, whereas static menus will bind a function to each choice.
+* It's not always a stack of menus...sometimes it's controls beyond menus, sometimes the display doesn't change with the controls, and sometimes you don't nest.
+
+I use the mouse *extensively*.  I'm not sure that's a good thing after all.
+
+(just a note...light handling is killing performance.)

@@ -151,8 +151,33 @@ HTomb = (function(HTomb) {
     xhttp.send();
   }
 
+  function getDir() {
+    console.time("get request");
+    var file = '/saves/';
+    var xhttp = new XMLHttpRequest();
+    xhttp.onreadystatechange = function() {
+      if (xhttp.readyState == XMLHttpRequest.DONE) {
+        if (xhttp.status == 200) {
+          console.log("Got our JSON, now we should do something with it.");
+          console.log(xhttp.responseText);
+          console.timeEnd("get request");
+        } else if (xhttp.status == 400) {
+          console.log("There was an error 400");
+        } else {
+          console.log("Something other than 200 was returned.");
+        }
+        HTomb.Time.unlockTime();
+      }
+    };
+    xhttp.open("GET", file, true);
+    xhttp.send();
+  }
+
   HTomb.Save.getData = function() {
     getData();
+  };
+  HTomb.Save.getDir = function() {
+    getDir();
   };
 
   HTomb.Save.stringifyThing = function(obj) {
