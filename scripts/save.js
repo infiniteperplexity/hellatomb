@@ -114,11 +114,7 @@ HTomb = (function(HTomb) {
     //saveGame.covers = HTomb.World.covers;
     //saveGame.lights = HTomb.World.lights;
     //saveGame.dailyCycle = HTomb.Time.dailyCycle;
-    //let json = HTomb.Save.stringify(saveGame);
-    //let json = stringifyList(HTomb.World.things,{callback: openBlob});
     let json = stringifyList(HTomb.World.things,{callback: postData});
-    //let json = stringifyList(HTomb.World.things,{callback: storeLocal});
-    //let json = stringifyList(HTomb.World.things);
     console.timeEnd("save game");
   };
 
@@ -159,42 +155,6 @@ HTomb = (function(HTomb) {
     getData();
   };
 
-  function openBlob(json) {
-    let blob = new Blob([json],{type:"text/json"});
-    let url = (window.URL ? URL : webkitURL).createObjectURL(blob);
-    open(url);
-    HTomb.Time.unlockTime();
-  }
-
-  function storeLocal(json) {
-    localStorage.setItem('savedGame',json);
-    let test = localStorage.getItem('saveGame');
-    console.log("saved game length:");
-    console.log(test.length);
-  }
-
-  HTomb.Save.stageFile = function() {
-    let reader = new FileReader();
-    reader.onload = function(e) {
-      let contents = e.target.result;
-      HTomb.Save.stagedFile = contents;
-    }
-    reader.readAsText(document.getElementById("file").files[0]);
-  }
-
-  HTomb.Save.loadPath = function(txt) {
-    let req = new XMLHttpRequest();
-    req.open('GET', 'file://'+txt, false);
-    req.send();
-    HTomb.Save.loadedJSON = req.responseText;
-  }
-  HTomb.Save.loadFiles = function() {
-    let finput = document.getElementById("file");
-    finput.style.display = "inline";
-    //finput.setAttribute("onChange",stageFile);
-  }
-
-
   HTomb.Save.stringifyThing = function(obj) {
     let topLevel = true;
     let json = JSON.stringify(obj, function(key, val) {
@@ -211,7 +171,6 @@ HTomb = (function(HTomb) {
         // if it's from the global things table, stringify it normally
       } else if (topLevel===true) {
         topLevel = false;
-        // stringify only those things on the "each" list
         let dummy = {};
         let template = HTomb.Things.templates[val.template];
         for (let p in val) {
