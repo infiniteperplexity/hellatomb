@@ -37,18 +37,21 @@ HTomb = (function(HTomb) {
     recurse();
   }
 
+  function restoreData(parsed) {
+    let things = parsed.things;
+    let explored = parsed.explored;
+    let covers = parsed.covers;
+    let lights = parsed.lights;
+    let cycle = parsed.cycle;
+  }
 
-  HTomb.Save.restoreGame = function(txt) {
-    let path = "C:/Users/m543015/Desktop/GitHub/hellatomb/saves/";
-    txt = txt || "save";
-    let req = new XMLHttpRequest();
-    req.open('GET', 'file://'+path+txt+".json", false);
-    req.send();
-    let json = req.responseText;
+
+  HTomb.Save.restoreGame = function(json) {
     let tids = [];
     //let templates = [];
     let player = null;
     // parse while keeping a list of references to thingIds
+    console.time("actual parsing");
     let saveGame = JSON.parse(json, function (key, val) {
       if (val===null) {
         return null;
@@ -77,13 +80,15 @@ HTomb = (function(HTomb) {
       }
       return val;
     });
+    console.timeEnd("actual parsing");
     // swap all thingId references for their thing
     for (let i=0; i<tids.length; i++) {
       let tid = tids[i];
       tid[0][tid[1]] = saveGame.things[tid[2].tid];
     }
-    HTomb.Player = player.entity;
+    //HTomb.Player = player.entity;
     fillListFrom(saveGame.things, HTomb.World.things);
+    //this doesn't really work because "this" is wrong
     fillGrid3dFrom(saveGame.tiles, HTomb.World.tiles, HTomb.Types.templates.Tile.parse);
     fillGrid3dFrom(saveGame.explored, HTomb.World.explored);
     fillListFrom(saveGame.creatures, HTomb.World.creatures);
@@ -129,22 +134,23 @@ HTomb = (function(HTomb) {
   HTomb.Save.saveGame = function() {
     HTomb.Time.lockTime();
     console.time("save game");
+    let totalN = HTomb.World.things.length;
     batchMap(HTomb.Save.stringifyThing, HTomb.World.things,
       {
-        splitby: 100,
+        splitby: 1000,
         progress: function(i) {
-          HTomb.GUI.pushMessage("Saved " + i + " things.");
+          HTomb.GUI.pushMessage("%"+parseInt(100*i/totalN) + " complete (" + i + " entities.)");
         },
         then: function(rslt) {
-          HTomb.GUI.pushMessage("Finished saving " + rslt.length + " things");
+          HTomb.GUI.pushMessage("Finished saving " + rslt.length + " entities.");
           console.timeEnd("save game");
           let things = rslt.join(',');
           things = '['.concat(things,']');
-          let tiles = HTomb.Save.stringifyThing(HTomb.World.tiles);
-          let explored = HTomb.Save.stringifyThing(HTomb.World.explored);
-          let covers = HTomb.Save.stringifyThing(HTomb.World.covers);
-          let lights = HTomb.Save.stringifyThing(HTomb.World.lights);
-          let cycle = HTomb.Save.stringifyThing(HTomb.Time.dailyCycle);
+          let tiles = HTomb.Save.stringifyThing(HTomb.World.tiles, false);
+          let explored = HTomb.Save.stringifyThing(HTomb.World.explored, false);
+          let covers = HTomb.Save.stringifyThing(HTomb.World.covers, false);
+          let lights = HTomb.Save.stringifyThing(HTomb.World.lights, false);
+          let cycle = HTomb.Save.stringifyThing(HTomb.Time.dailyCycle, false);
           let json = '{'.concat(
             '"things": ', things, ", ",
             '"tiles": ', tiles, ", ",
@@ -154,16 +160,32 @@ HTomb = (function(HTomb) {
             '"cycle": ', cycle,
             '}'
           );
+          console.time("complex parse");
+          HTomb.Save.restoreGame(json);
+          console.timeEnd("complex parse");
           //console.time("simple parse");
           //let dta = JSON.parse(json);
           //console.log(dta.length);
           //console.timeEnd("simple parse");
-          postData(json);
+          //postData(json);
           HTomb.Time.unlockTime();
         }
       }
     );
   };
+
+  HTomb.Save.loadGame = function(json) {
+    HTomb.Time.lockTime();
+    getData();
+  }
+
+  function restoreData(parsed) {
+    let things = parsed.things;
+    let explored = parsed.explored;
+    let covers = parsed.covers;
+    let lights = parsed.lights;
+    let cycle = parsed.cycle;
+  }
 
   function postData(json) {
   //function postData(json, file) {
@@ -185,6 +207,7 @@ HTomb = (function(HTomb) {
         if (xhttp.status == 200) {
           console.log("Got our JSON, now we should do something with it.");
           console.log(xhttp.responseText.length);
+          let json = JSON.parse(xhttp.responseText);
           console.timeEnd("get request");
         } else if (xhttp.status == 400) {
           console.log("There was an error 400");
@@ -227,8 +250,10 @@ HTomb = (function(HTomb) {
     getDir();
   };
 
-  HTomb.Save.stringifyThing = function(obj) {
-    let topLevel = true;
+  HTomb.Save.stringifyThing = function(obj, topLevel) {
+    if (topLevel===undefined) {
+      topLevel = true;
+    }
     let json = JSON.stringify(obj, function(key, val) {
       if (val===undefined) {
         //console.log("why is val undefined?");
@@ -256,7 +281,6 @@ HTomb = (function(HTomb) {
         return dummy;
       // if it's on the global things table, stringify its ID
       } else if (val.thingId!==undefined) {
-        //console.log("serialized as ID");
         return {tid: val.thingId};
       } else {
         return val;
@@ -265,6 +289,7 @@ HTomb = (function(HTomb) {
     return json;
   };
 
+  // This method was used only for testing for circular references
   let seen = [];
   HTomb.Save.duplicates = [];
   HTomb.Save.nThings = 0;
