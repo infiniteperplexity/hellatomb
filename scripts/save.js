@@ -5,7 +5,6 @@ HTomb = (function(HTomb) {
   let LEVELH = HTomb.Constants.LEVELH;
   let NLEVELS = HTomb.Constants.NLEVELS;
 
-
   function stringifyList(arr, options) {
     HTomb.Time.lockTime();
     console.time("stringify list");
@@ -103,9 +102,52 @@ HTomb = (function(HTomb) {
     HTomb.GUI.splash("Game restored.");
   };
 
-
+  function batchMap(func, arr, options) {
+    options = options || {};
+    let splitby = options.splitby || 1;
+    let then = options.then || function() {};
+    let progress = options.progress || function(i) {console.log(i);};
+    let retn = [];
+    let count = 0;
+    let recurse = function() {
+      for (; count<arr.length; count++) {
+        retn.push(func(arr[count], count, arr));
+        if (count>=arr.length-1) {
+          then(retn);
+        }
+        if (count>0 && count%splitby===0) {
+          progress(count);
+          count++;
+          setTimeout(recurse);
+          break;
+        }
+      }
+    };
+    recurse();
+  }
 
   HTomb.Save.saveGame = function() {
+    HTomb.Time.lockTime();
+    console.time("save game");
+    batchMap(HTomb.Save.stringifyThing, HTomb.World.things,
+      {
+        splitby: 100,
+        progress: function(i) {
+          HTomb.GUI.pushMessage("Saved " + i + " things.");
+        },
+        then: function(rslt) {
+          HTomb.GUI.pushMessage("Finished saving " + rslt.length + " things");
+          console.timeEnd("save game");
+          let json = rslt.join(',');
+          json = '{'.concat(json,'}');
+          postData(json);
+          HTomb.Time.unlockTime();
+        }
+      }
+    );
+  };
+
+  HTomb.Save.saveGame2 = function() {
     let saveGame = {};
     console.time("save game");
     //saveGame.things = HTomb.World.things;
@@ -116,6 +158,7 @@ HTomb = (function(HTomb) {
     //saveGame.dailyCycle = HTomb.Time.dailyCycle;
     let json = stringifyList(HTomb.World.things,{callback: postData});
     console.timeEnd("save game");
+    HTomb.Time.unlockTime();
   };
 
   function postData(json) {
