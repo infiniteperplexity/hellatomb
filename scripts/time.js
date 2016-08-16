@@ -13,6 +13,7 @@ HTomb = (function(HTomb) {
     return speed;
   };
   HTomb.Time.lockTime = function() {
+    console.log("Note that we haven't actually locked the interface yet...");
     HTomb.Time.stopTime();
     timeLocked = true;
   };
@@ -62,6 +63,9 @@ HTomb = (function(HTomb) {
 
   // Process a turn of play
   HTomb.Time.turn = function() {
+    if (timeLocked===true) {
+      return;
+    }
     HTomb.Time.startParticles();
     HTomb.Events.publish({type: "TurnBegin"});
     HTomb.Time.stopTime();
@@ -115,7 +119,7 @@ HTomb = (function(HTomb) {
 
 
   //HTomb.Constants.STARTHOUR = 8;
-    HTomb.Constants.STARTHOUR = 16;
+  HTomb.Constants.STARTHOUR = 16;
   HTomb.Constants.DAWN = 6;
   HTomb.Constants.DUSK = 17;
   HTomb.Constants.MONTH = 12;

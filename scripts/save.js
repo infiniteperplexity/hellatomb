@@ -139,8 +139,12 @@ HTomb = (function(HTomb) {
           HTomb.GUI.pushMessage("Finished saving " + rslt.length + " things");
           console.timeEnd("save game");
           let json = rslt.join(',');
-          json = '{'.concat(json,'}');
-          postData(json);
+          json = '['.concat(json,']');
+          //console.time("simple parse");
+          //let dta = JSON.parse(json);
+          //console.log(dta.length);
+          //console.timeEnd("simple parse");
+          //postData(json);
           HTomb.Time.unlockTime();
         }
       }
