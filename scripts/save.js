@@ -138,31 +138,31 @@ HTomb = (function(HTomb) {
         then: function(rslt) {
           HTomb.GUI.pushMessage("Finished saving " + rslt.length + " things");
           console.timeEnd("save game");
-          let json = rslt.join(',');
-          json = '['.concat(json,']');
+          let things = rslt.join(',');
+          things = '['.concat(things,']');
+          let tiles = HTomb.Save.stringifyThing(HTomb.World.tiles);
+          let explored = HTomb.Save.stringifyThing(HTomb.World.explored);
+          let covers = HTomb.Save.stringifyThing(HTomb.World.covers);
+          let lights = HTomb.Save.stringifyThing(HTomb.World.lights);
+          let cycle = HTomb.Save.stringifyThing(HTomb.Time.dailyCycle);
+          let json = '{'.concat(
+            '"things": ', things, ", ",
+            '"tiles": ', tiles, ", ",
+            '"explored": ', explored, ", ",
+            '"covers": ', covers, ", ",
+            '"lights": ', lights, ", ",
+            '"cycle": ', cycle,
+            '}'
+          );
           //console.time("simple parse");
           //let dta = JSON.parse(json);
           //console.log(dta.length);
           //console.timeEnd("simple parse");
-          //postData(json);
+          postData(json);
           HTomb.Time.unlockTime();
         }
       }
     );
-  };
-
-  HTomb.Save.saveGame2 = function() {
-    let saveGame = {};
-    console.time("save game");
-    //saveGame.things = HTomb.World.things;
-    //saveGame.tiles = HTomb.World.tiles;
-    //saveGame.explored = HTomb.World.explored;
-    //saveGame.covers = HTomb.World.covers;
-    //saveGame.lights = HTomb.World.lights;
-    //saveGame.dailyCycle = HTomb.Time.dailyCycle;
-    let json = stringifyList(HTomb.World.things,{callback: postData});
-    console.timeEnd("save game");
-    HTomb.Time.unlockTime();
   };
 
   function postData(json) {
@@ -241,7 +241,7 @@ HTomb = (function(HTomb) {
       if (val.stringify) {
         return val.stringify();
         // if it's from the global things table, stringify it normally
-      } else if (topLevel===true) {
+      } else if (topLevel===true && val.thingId!==undefined) {
         topLevel = false;
         let dummy = {};
         let template = HTomb.Things.templates[val.template];
