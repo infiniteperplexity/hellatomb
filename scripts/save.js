@@ -45,7 +45,6 @@ HTomb = (function(HTomb) {
     let cycle = parsed.cycle;
   }
 
-
   HTomb.Save.restoreGame = function(json) {
     let tids = [];
     //let templates = [];
@@ -59,10 +58,14 @@ HTomb = (function(HTomb) {
         tids.push([this,key,val]);
         return undefined;
       } else if (val.ItemContainer) {
-        let ic = new ItemContainer();
+        let ic = new HTomb.ItemContainer();
+        ic.parent = this;
         for (let i=0; i<val.ItemContainer.length; i++) {
+          // length somehow gets really messed up here...
+          if (val.ItemContainer[i]===undefined) {
+            continue;
+          }
           ic.push(val.ItemContainer[i]);
-          ic.parent = this;
         }
         return ic;
       } else if (val.template) {
@@ -88,22 +91,28 @@ HTomb = (function(HTomb) {
     }
     //HTomb.Player = player.entity;
     fillListFrom(saveGame.things, HTomb.World.things);
-    //this doesn't really work because "this" is wrong
-    fillGrid3dFrom(saveGame.tiles, HTomb.World.tiles, HTomb.Types.templates.Tile.parse);
+    console.log("filled things");
+    fillGrid3dFrom(saveGame.tiles, HTomb.World.tiles, HTomb.Types.parseTile);
     fillGrid3dFrom(saveGame.explored, HTomb.World.explored);
+    console.log("filled tiles and explored");
     fillListFrom(saveGame.creatures, HTomb.World.creatures);
     fillListFrom(saveGame.items, HTomb.World.items);
     fillListFrom(saveGame.features, HTomb.World.features);
     fillListFrom(saveGame.zones, HTomb.World.zones);
-    fillListFrom(saveGame.covers, HTomb.World.covers, HTomb.Types.templates.Cover.parse);
+    console.log("filled entities");
+    fillListFrom(saveGame.covers, HTomb.World.covers, HTomb.Types.parseCover);
+    console.log("parsed all covers");
     HTomb.Time.dailyCycle.turn = saveGame.dailyCycle.turn;
     HTomb.Time.dailyCycle.minute = saveGame.dailyCycle.minute;
     HTomb.Time.dailyCycle.hour = saveGame.dailyCycle.hour;
     HTomb.Time.dailyCycle.day = saveGame.dailyCycle.day;
+    console.log("restored everything");
     HTomb.FOV.resetVisible();
+    console.log("reset visiblity");
     if (HTomb.Player.sight) {
       HTomb.FOV.findVisible(HTomb.Player.x, HTomb.Player.y, HTomb.Player.z, HTomb.Player.sight.range);
     }
+    console.log("refreshed visibility");
     HTomb.GUI.splash("Game restored.");
   };
 
@@ -135,7 +144,10 @@ HTomb = (function(HTomb) {
     HTomb.Time.lockTime();
     console.time("save game");
     let totalN = HTomb.World.things.length;
-    batchMap(HTomb.Save.stringifyThing, HTomb.World.things,
+    batchMap(function(v, i, a) {
+        return HTomb.Save.stringifyThing(v, true);
+      }, HTomb.World.things,
+    //batchMap(HTomb.Save.stringifyThing, HTomb.World.things,
       {
         splitby: 1000,
         progress: function(i) {
@@ -251,9 +263,6 @@ HTomb = (function(HTomb) {
   };
 
   HTomb.Save.stringifyThing = function(obj, topLevel) {
-    if (topLevel===undefined) {
-      topLevel = true;
-    }
     let json = JSON.stringify(obj, function(key, val) {
       if (val===undefined) {
         //console.log("why is val undefined?");
@@ -267,6 +276,9 @@ HTomb = (function(HTomb) {
         return val.stringify();
         // if it's from the global things table, stringify it normally
       } else if (topLevel===true && val.thingId!==undefined) {
+        if (val.template==="Player") {
+          console.log("hit the player.");
+        }
         topLevel = false;
         let dummy = {};
         let template = HTomb.Things.templates[val.template];
@@ -347,6 +359,7 @@ HTomb = (function(HTomb) {
   function fillListFrom(fromList, toList, callb) {
     // default callback is to return self
     callb = callb || function(x) {return x;};
+
     // if fromList is an array
     if (Array.isArray(fromList) && Array.isArray(toList)) {
       while(toList.length>0) {
@@ -358,9 +371,15 @@ HTomb = (function(HTomb) {
     // if fromList is an associative array
     } else {
       for (let t in toList) {
+        if (callb === HTomb.Types.parseCover) {
+          console.log(["deleting",toList[t]]);
+        }
         delete toList[t];
       }
       for (let f in fromList) {
+        if (callb === HTomb.Types.parseCover) {
+          console.log(["inserting",fromList[f]]);
+        }
         toList[f] = callb(fromList[f]);
       }
     }

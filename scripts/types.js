@@ -11,10 +11,10 @@ HTomb = (function(HTomb) {
   	stringify: function() {
       return HTomb.Types.templates[this.parent].types.indexOf(this);
     },
-  	parse: function(value) {
-      console.log(["type is",this]);
-      return HTomb.Types.templates[this.parent].types[value];
-    },
+  	//parse: function(value) {
+    //  console.log(["type is",this]);
+    //  return HTomb.Types.templates[this.parent].types[value];
+    //},
   	describe: function() {
   		return this.name;
   	}
@@ -48,6 +48,10 @@ HTomb = (function(HTomb) {
         opts.parent = args.template;
         return HTomb.Types.define(opts);
       };
+      // Create a parsing function for the type
+      HTomb.Types["parse" + args.template] = function(value) {
+        return HTomb.Types.templates[args.template].types[value];
+      }
   	} else {
       // define a concrete type
   		t = Object.create(HTomb.Types.templates[args.parent]);
@@ -58,6 +62,7 @@ HTomb = (function(HTomb) {
       }
   		HTomb[plural][args.template] = t;
   		HTomb.Types.templates[args.parent].types.push(t);
+      // experiment with adding a parser for the types
   	}
   	// Add the arguments to the template
   	for (var arg in args) {
