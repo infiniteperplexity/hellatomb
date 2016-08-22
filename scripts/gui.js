@@ -647,7 +647,8 @@ HTomb = (function(HTomb) {
     VK_SPACE: Commands.wait,
     VK_ENTER: HTomb.Time.toggleTime,
     //VK_ESCAPE: HTomb.Time.stopTime,
-    VK_ESCAPE: summaryView,
+    VK_TILDE: summaryView,
+    VK_ESCAPE: systemView,
     VK_PAGE_UP: function() {
       HTomb.Time.setSpeed(HTomb.Time.getSpeed()/1.25);
       HTomb.GUI.pushMessage("Speed set to " + parseInt(HTomb.Time.getSpeed()) + ".");
@@ -773,6 +774,46 @@ HTomb = (function(HTomb) {
     gameScreen.render();
   };
 
+  function systemView() {
+    HTomb.Controls.context = system;
+    // it would be nice if "static menu" were a thing
+    updateOverlay([
+      "Esc) Back to game.",
+      "S) Save game.",
+      "A) Save game as...",
+      "R) Restore game.",
+      "Q) Quit game."
+    ]);
+  }
+  function saveCommand() {
+
+  }
+  function saveAsCommand() {
+
+  }
+  function restoreCommand() {
+
+  }
+  function quitCommand() {
+    console.log("testing");
+    updateOverlay([
+      "Really quit?",
+      "Y) Yes.",
+      "N) No."
+    ]);
+    HTomb.Controls.context = new ControlContext({
+      VK_ESCAPE: HTomb.GUI.reset,
+      VK_Y: function() {close();},
+      VK_N: systemView
+    });
+  }
+  var system = new ControlContext({
+    VK_ESCAPE: HTomb.GUI.reset,
+    VK_S: saveCommand,
+    VK_A: saveAsCommand,
+    VK_R: restoreCommand,
+    VK_Q: quitCommand
+  });
 
   // These are the default controls
   var summary = new ControlContext({
@@ -1015,6 +1056,7 @@ HTomb = (function(HTomb) {
   }
   function summaryView() {
     HTomb.Controls.context = summary;
+
     var text = ["Tab/PageUp/PageDown to scroll through minions; Escape to exit."];
     text.push(" ");
     var s;
