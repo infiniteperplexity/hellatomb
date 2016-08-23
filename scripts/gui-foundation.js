@@ -156,7 +156,7 @@ HTomb = (function(HTomb) {
     Controls.context.mouseTile(x+gameScreen.xoffset,y+gameScreen.yoffset);
   };
   // Bind a ROT.js keyboard constant to a function for a particular context
-  var bindKey = function(target, key, func) {
+  var bindKey = GUI.bindKey = function(target, key, func) {
     target.boundKeys[ROT[key]] = func;
   };
   // Set up event listeners
@@ -314,8 +314,8 @@ HTomb = (function(HTomb) {
     GUI.highlightTile(x,y,"#0000FF");
     oldCursor = [x,y];
     var z = gameScreen.z;
-    var txt = examineSquare(x,y,z); /// This seems broken!!!
-    var myText = this.menuText || getDefaultText(); /// This seems broken!!!
+    var txt = GUI.examineSquare(x,y,z);
+    var myText = this.menuText || GUI.getDefaultText(); /// This seems broken!!!
     GUI.displayMenu(myText.concat(" ").concat(txt));
   };
 
@@ -344,10 +344,10 @@ HTomb = (function(HTomb) {
   // Render display panels
   GUI.render = function() {
     // Draw all the panels
-    GUI.panels.main.render();
-    GUI.panels.middle.render();
-    GUI.panels.bottom.render();
-    GUI.panels.right.render();
+    GUI.panels.active.main.render();
+    GUI.panels.active.middle.render();
+    GUI.panels.active.bottom.render();
+    GUI.panels.active.right.render();
   };
 
   GUI.refreshTile = function(x,y) {
@@ -409,7 +409,7 @@ HTomb = (function(HTomb) {
   };
 
   var overlayActive = false;
-  function updateOverlay(arr) {
+  GUI.updateOverlay = function(arr) {
     HTomb.Time.stopTime();
     HTomb.Time.stopParticles();
     // we may not want to force the player to reset the GUI...but let's try it out
@@ -434,7 +434,7 @@ HTomb = (function(HTomb) {
 
   GUI.splash = function(arr) {
     Controls.context = new ControlContext();
-    updateOverlay(arr);
+    GUI.updateOverlay(arr);
   };
   // Reset the GUI
   GUI.reset = function() {
@@ -442,13 +442,13 @@ HTomb = (function(HTomb) {
       document.getElementById("overlay").style.display = "none";
       overlayActive = false;
     }
-    GUI.panels = {
+    GUI.panels.active = {
       main: gameScreen,
       middle: status,
       bottom: scroll,
       right: menu
     };
-    Controls.context = main;
+    Controls.context = Controls.contexts.main;
     GUI.updateMenu();
     GUI.recenter();
     GUI.render();
@@ -480,6 +480,76 @@ HTomb = (function(HTomb) {
     }
     menu.text = arr;
     menu.render();
+  };
+
+  var oldSquares;
+  GUI.renderParticles = function() {
+    var squares = {};
+    var p,c,x,y,z;
+    // collect the particles
+    for (var j=0; j<HTomb.Particles.emitters.length; j++) {
+      var emitter = HTomb.Particles.emitters[j];
+      for (var i=0; i<emitter.particles.length; i++) {
+        p = emitter.particles[i];
+        // don't collect particles that aren't on the screen
+        x = Math.round(p.x);
+        if (x<gameScreen.xoffset || x>=gameScreen.xoffset+SCREENW || x>=LEVELW-1) {
+          continue;
+        }
+        y = Math.round(p.y);
+        if (y<gameScreen.yoffset || y>=gameScreen.yoffset+SCREENH || y>=LEVELH-1) {
+          continue;
+        }
+        z = Math.round(p.z);
+        // only bother with particles on the same level for now...or maybe within one level?
+        //if (z!==gameScreen.z) {
+        //  continue;
+        //}
+        c = coord(x,y,z);
+        if (squares[c]===undefined) {
+          squares[c] = [];
+        }
+        squares[c].push(p);
+      }
+    }
+    // process the particles
+    for (var s in squares) {
+      if (oldSquares[s]) {
+        delete oldSquares[s];
+      }
+      c = HTomb.Utils.decoord(s);
+      x = c[0];
+      y = c[1];
+      z = c[2];
+      var particles = squares[s];
+      HTomb.Utils.shuffle(particles);
+      var ch, fg;
+      // if there are ever invisible particles we may need to handle this differently
+      fg = HTomb.Tiles.getGlyph(x,y,z)[1];
+      fg = ROT.Color.fromString(fg);
+      for (var k=0; k<particles.length; k++) {
+        var pfg = particles[k].fg;
+        pfg[0] = Math.min(255,Math.max(pfg[0],0));
+        pfg[1] = Math.min(255,Math.max(pfg[1],0));
+        pfg[2] = Math.min(255,Math.max(pfg[2],0));
+        //fg = HTomb.Utils.alphaHex(pfg, fg, particles[k].alpha);
+        fg = HTomb.Utils.alphaHex(pfg, fg, particles[k].alpha);
+      }
+      fg[0] = Math.round(fg[0]);
+      fg[1] = Math.round(fg[1]);
+      fg[2] = Math.round(fg[2]);
+      fg = ROT.Color.toHex(fg);
+      ch = particles[particles.length-1].symbol;
+      HTomb.GUI.drawGlyph(x,y,ch,fg);
+    }
+    // clean up expired particles
+    for (var o in oldSquares) {
+      c = HTomb.Utils.decoord(o);
+      x = c[0];
+      y = c[1];
+      HTomb.GUI.refreshTile(x,y);
+    }
+    oldSquares = squares;
   };
 
   return HTomb;
