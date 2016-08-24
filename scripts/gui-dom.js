@@ -123,10 +123,10 @@ HTomb = (function(HTomb) {
         }
       }
       if (diagonal!==null) {
-        GUI.Contexts.active.keydown({keyCode: diagonal});
+        Controls.context.keydown({keyCode: diagonal});
       }
     } else {
-      GUI.Contexts.active.keydown(key);
+      Controls.context.keydown(key);
     }
   };
   function keyup(key) {
@@ -141,9 +141,9 @@ HTomb = (function(HTomb) {
     var x = Math.floor((click.clientX+XSKEW)/CHARWIDTH-1);
     var y = Math.floor((click.clientY+YSKEW)/CHARHEIGHT-1);
     if (click.button===2) {
-      GUI.Contexts.active.rightClickTile(x+gameScreen.xoffset,y+gameScreen.yoffset);
+      Controls.context.rightClickTile(x+gameScreen.xoffset,y+gameScreen.yoffset);
     } else {
-      GUI.Contexts.active.clickTile(x+gameScreen.xoffset,y+gameScreen.yoffset);
+      Controls.context.clickTile(x+gameScreen.xoffset,y+gameScreen.yoffset);
     }
   };
   var mousemove = function(move) {
@@ -151,7 +151,7 @@ HTomb = (function(HTomb) {
     var x = Math.floor((move.clientX+XSKEW)/CHARWIDTH-1);
     var y = Math.floor((move.clientY+YSKEW)/CHARHEIGHT-1);
       // If the hover is on the game screen, pass the X and Y tile coordinates
-    GUI.Contexts.active.mouseTile(x+gameScreen.xoffset,y+gameScreen.yoffset);
+    Controls.context.mouseTile(x+gameScreen.xoffset,y+gameScreen.yoffset);
   };
   // Bind a ROT.js keyboard constant to a function for a particular context
   var bindKey = GUI.bindKey = function(target, key, func) {
@@ -163,9 +163,8 @@ HTomb = (function(HTomb) {
   display.getContainer().addEventListener("mousedown",mousedown);
   display.getContainer().addEventListener("mousemove",mousemove);
   window.oncontextmenu = function(e) {if (e && e.stopPropagation) {e.stopPropagation();} return false;};
-  menuDisplay.getContainer().addEventListener("mousemove",function() {GUI.Contexts.active.mouseOver();});
-  scrollDisplay.getContainer().addEventListener("mousemove",function() {GUI.Contexts.active.mouseOver();});
-  ///!!!! Maybe get rid of the next line....
+  menuDisplay.getContainer().addEventListener("mousemove",function() {HTomb.Controls.context.mouseOver();});
+  scrollDisplay.getContainer().addEventListener("mousemove",function() {HTomb.Controls.context.mouseOver();});
   overlayDisplay.getContainer().addEventListener("mousedown",function() {GUI.reset();});
 
   //************* Define the basic panels and how they access the DOM *********;
@@ -192,7 +191,7 @@ HTomb = (function(HTomb) {
   }
 
   GUI.panels.gameScreen = new Panel(0,0,display);
-  GUI.panels.status = new Panel(1,0,scrollDisplay);
+  GUI.panels.status = new Panel(1,0,display);
   GUI.panels.scroll = new Panel(1,STATUSH,scrollDisplay);
   GUI.panels.menu = new Panel(0,1,menuDisplay);
   GUI.panels.overlay = new Panel(0,0,overlayDisplay,document.getElementById("overlay"));
