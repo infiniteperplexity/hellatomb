@@ -222,8 +222,8 @@ HTomb = (function(HTomb) {
     }
   };
   GUI.Contexts.default = Context.prototype;
-  GUI.Contexts.new = function() {
-    return new Context();
+  GUI.Contexts.new = function(args) {
+    return new Context(args);
   };
 
   return HTomb;

@@ -28,7 +28,7 @@ HTomb = (function(HTomb) {
   var coord = HTomb.Utils.coord;
 
   let Actions = GUI.Actions = {};
-  let Panels = GUI.Panels = {};
+  let Panels = GUI.Panels;
   let gameScreen = Panels.gameScreen;
   let menu = Panels.menu;
   let scroll = Panels.scroll;
@@ -311,7 +311,7 @@ HTomb = (function(HTomb) {
 
   return HTomb;
 })(HTomb);
-// set up message buffer
+// set up 8message buffer
 
 //****methods for drawing on canvases******
 gameScreen.refreshTile = function(x,y) {
