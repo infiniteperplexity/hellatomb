@@ -28,6 +28,8 @@ HTomb = (function(HTomb) {
   var coord = HTomb.Utils.coord;
   // set up GUI and display
   var GUI = HTomb.GUI;
+  var gameScreen = GUI.Panels.gameScreen;
+  var menu = GUI.Panels.menu;
 
   let Contexts = GUI.Contexts;
 
@@ -47,25 +49,25 @@ HTomb = (function(HTomb) {
   var oldCursor = null;
   Contexts.default.mouseOver = function() {
     if (oldCursor!==null) {
-      Main.refreshTile(oldCursor[0],oldCursor[1]);
+      gameScreen.refreshTile(oldCursor[0],oldCursor[1]);
     }
     oldCursor = null;
   };
 
   Contexts.default.mouseTile = function(x,y) {
     if (oldCursor!==null) {
-      Main.refreshTile(oldCursor[0],oldCursor[1]);
+      gameScreen.refreshTile(oldCursor[0],oldCursor[1]);
     }
-    Main.highlightTile(x,y,"#0000FF");
+    gameScreen.highlightTile(x,y,"#0000FF");
     oldCursor = [x,y];
     var z = gameScreen.z;
     var txt = examineSquare(x,y,z); // Not sure yet what to do here
     var myText = this.menuText || getDefaultText(); // Not sure yet what to do here
-    GUI.displayMenu(myText.concat(" ").concat(txt)); // Not sure yet what to do here
+    menu.update(myText.concat(" ").concat(txt)); // Not sure yet what to do here
   };
 
   // **** Selection and targeting methods
-  Main.selectSquareZone = function(z, callb, options) {
+  GUI.selectSquareZone = function(z, callb, options) {
     options = options || {};
     GUI.pushMessage("Select the first corner.");
     var context = Object.create(survey);
@@ -75,7 +77,7 @@ HTomb = (function(HTomb) {
       context.menuText.unshift(options.message);
     }
     Contexts.active = context;
-    Main.updateMenu();
+    menu.refresh();
     survey.saveX = gameScreen.xoffset;
     survey.saveY = gameScreen.yoffset;
     survey.saveZ = gameScreen.z;
@@ -113,11 +115,11 @@ HTomb = (function(HTomb) {
         }
         for (var k =0; k<squares.length; k++) {
           var coord = squares[k];
-          Main.highlightTile(coord[0],coord[1],bg);
+          gameScreen.highlightTile(coord[0],coord[1],bg);
         }
         var txt = examineSquare(x1,y1,gameScreen.z);
         var myText = Contexts.active.menuText;
-        Main.displayMenu(myText.concat(" ").concat(txt));
+        menu.update(myText.concat(" ").concat(txt));
       };
     };
     var secondSquare = function(x0,y0) {
@@ -153,7 +155,7 @@ HTomb = (function(HTomb) {
     };
   };
 
-  Main.selectBox = function(width, height, z, callb, options) {
+  menu.selectBox = function(width, height, z, callb, options) {
     options = options || {};
     var gameScreen = gameScreen;
     GUI.pushMessage("Select a square.");
@@ -170,18 +172,18 @@ HTomb = (function(HTomb) {
       }
       for (var k =0; k<squares.length; k++) {
         var coord = squares[k];
-        Main.highlightTile(coord[0],coord[1],bg);
+      gameScreen.highlightTile(coord[0],coord[1],bg);
       }
-      var txt = Main.examineSquare(x0,y0,gameScreen.z);
+      var txt = examineSquare(x0,y0,gameScreen.z);
       var myText = Contexts.active.menuText;
-      Main.displayMenu(myText.concat(" ").concat(txt));
+      menu.update(myText.concat(" ").concat(txt));
     };
     Contexts.active = context;
     if (options.message) {
       context.menuText.unshift("");
       context.menuText.unshift(options.message);
     }
-    Main.updateMenu();
+    menu.refresh();
     survey.saveX = gameScreen.xoffset;
     survey.saveY = gameScreen.yoffset;
     survey.saveZ = gameScreen.z;
@@ -198,7 +200,7 @@ HTomb = (function(HTomb) {
   };
 
   // Display a menu of letter-bound choices
-  Main.choosingMenu = function(s, arr, func) {
+  GUI.choosingMenu = function(s, arr, func) {
     var alpha = "abcdefghijklmnopqrstuvwxyz";
     var contrls = {};
     var choices = [s];
@@ -214,11 +216,11 @@ HTomb = (function(HTomb) {
     choices.push("Esc to cancel");
     Contexts.active = Contexts.new();
     Contexts.active.menuText = choices;
-    Main.updateMenu(); // change this
+    menu.refresh();
   };
 
   // Select a single square with the mouse
-  Main.selectSquare = function(z, callb, options) {
+  GUI.selectSquare = function(z, callb, options) {
     options = options || {};
     GUI.pushMessage("Select a square.");
     var context = Object.create(survey);
@@ -228,7 +230,7 @@ HTomb = (function(HTomb) {
       context.menuText.unshift("");
       context.menuText.unshift(options.message);
     }
-    Main.updateMenu();
+    menu.update();
     survey.saveX = gameScreen.xoffset;
     survey.saveY = gameScreen.yoffset;
     survey.saveZ = gameScreen.z;
@@ -245,17 +247,17 @@ HTomb = (function(HTomb) {
         var line = HTomb.Path.line(x0,y0,x,y);
         for (var i in line) {
           var sq = line[i];
-          Main.highlightSquare(sq[0],sq[1],bg);
+          gameScreen.highlightSquare(sq[0],sq[1],bg);
         }
-        var txt = Main.examineSquare(x1,y1,gameScreen.z);
+        var txt = examineSquare(x1,y1,gameScreen.z);
         var myText = Contexts.active.menuText;
-        Main.displayMenu(myText.concat(" ").concat(txt));
+        menu.update(myText.concat(" ").concat(txt));
       };
     }
   };
 
   // ***** I'm not sure how to categorize this one yet...
-  Main.examineSquare(x,y,z) {
+  function examineSquare(x,y,z) {
     var square = HTomb.Tiles.getSquare(x,y,z);
     var below = HTomb.Tiles.getSquare(x,y,z-1);
     var above = HTomb.Tiles.getSquare(x,y,z+1);
@@ -398,7 +400,7 @@ HTomb = (function(HTomb) {
     VK_I: Commands.inventory,
     VK_J: Commands.showJobs,
     VK_Z: Commands.showSpells,
-    VK_TAB: Main.surveyMode,
+    VK_TAB: surveyMode,
     VK_SPACE: Commands.wait,
     VK_ENTER: HTomb.Time.toggleTime,
     //VK_ESCAPE: HTomb.Time.stopTime,
@@ -442,7 +444,7 @@ HTomb = (function(HTomb) {
     survey.saveX = gameScreen.xoffset;
     survey.saveY = gameScreen.yoffset;
     survey.saveZ = gameScreen.z;
-    Main.updateMenu();
+    menu.refresh();
   };
   // Enter survey mode and save the screen's current position
   Main.surveyMove = function(dx,dy,dz) {
@@ -456,7 +458,7 @@ HTomb = (function(HTomb) {
       if (gameScreen.yoffset+dy < LEVELH-SCREENH && gameScreen.yoffset+dy >= 0) {
         gameScreen.yoffset+=dy;
       }
-      Main.render();
+      GUI.render();
     };
     // Actually this returns a custom function for each type of movement
     return f;
@@ -506,7 +508,7 @@ HTomb = (function(HTomb) {
       //gameScreen.xoffset = survey.saveX;
       //gameScreen.yoffset = survey.saveY;
       gameScreen.z = survey.saveZ;
-      Main.recenter();
+      gameScreen.recenter();
       GUI.reset();
     }
   });

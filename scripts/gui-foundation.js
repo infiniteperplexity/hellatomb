@@ -182,7 +182,8 @@ HTomb = (function(HTomb) {
     }
     this.render = function();
   }
-  Panel.prototype.hide = function() {
+  Panel.prototype.hide = f
+  unction() {
     this.element.style.display = "none";
     this.active = false;
   }

@@ -56,10 +56,10 @@ HTomb = (function(HTomb) {
         display.draw(this.x0+x-xoffset,this.y0+y-yoffset, sym[0], sym[1], sym[2]);
       }
     }
-    Main.renderParticles();
+    gameScreen.renderParticles();
   };
   var oldSquares;
-  Main.renderParticles = function() {
+  gameScreen.renderParticles = function() {
     var squares = {};
     var p,c,x,y,z;
     // collect the particles
@@ -116,14 +116,14 @@ HTomb = (function(HTomb) {
       fg[2] = Math.round(fg[2]);
       fg = ROT.Color.toHex(fg);
       ch = particles[particles.length-1].symbol;
-      Main.drawGlyph(x,y,ch,fg);
+      gameScreen.drawGlyph(x,y,ch,fg);
     }
     // clean up expired particles
     for (var o in oldSquares) {
       c = HTomb.Utils.decoord(o);
       x = c[0];
       y = c[1];
-      Main.refreshTile(x,y);
+      gameScreen.refreshTile(x,y);
     }
     oldSquares = squares;
   };
@@ -175,16 +175,14 @@ HTomb = (function(HTomb) {
     }
   };
 
-  let Display = GUI.Display = {};
-
   GUI.reset = function() {
     if (overlay.active) {
       overlay.hide();
     }
     GUI.Contexts.active = GUI.Contexts.main;
     // This shoudl probably be handled a bit differently?
-    GUI.updateMenu(); // menu.refresh();
-    GUI.recenter(); // gameScreen.recenter();
+    menu.refresh(); // menu.refresh();
+    gameScreen.recenter(); // gameScreen.recenter();
     GUI.render(); // Actions.render();
   };
   // This should probably be an Event, not a GUI method
@@ -211,23 +209,16 @@ HTomb = (function(HTomb) {
   };
 
   // Render all four default panels
-  Display.render = function() {
+  GUI.render = function() {
     gameScreen.render();
     status.render();
     scroll.render();
     menu.render();
   };
+  //******end defaults
 
-
-  Main.getDefaultText = function() { // Not sure yet what to do here
-    if (HTomb.Debug.tutorial.active!==true) {
-      return defaultText;
-    } else {
-      let tutorialText = defaultText.concat([" ","TUTORIAL:",HTomb.Debug.tutorial.getText()]);
-      return tutorialText;
-    }
-  }
-  var defaultText = [
+  // ***** Basic right-hand menu stuff *****
+  menu.defaultText = [
     "Movement: NumPad / Arrows.",
     "(Shift+Arrows for diagonal.)",
     "J: Assign Job, Z: Cast Spell.",
@@ -239,11 +230,48 @@ HTomb = (function(HTomb) {
     "Right click for detailed view.",
     "Escape for summary view."
   ];
-  //******end defaults
+  // This function will correctly break text into lines
+  menu.update = function(arr) {
+    if (arr===undefined) {
+      if (HTomb.Debug.tutorial.active!==true) {
+        arr = menu.defaultText;
+      } else {
+        let tutorialText = menu.defaultText.concat([" ","TUTORIAL:",HTomb.Debug.tutorial.getText()]);
+        arr = tutorialText;
+      }
+    }
+    var i=0;
+    var br=null;
+    while(i<arr.length) {
+      if (arr[i].length<MENUW-2) {
+        i++;
+        continue;
+      }
+      for (var j=0; j<arr[i].length; j++) {
+        if (arr[i][j]===" ") {
+          br = j;
+        }
+        if (j>=MENUW-2) {
+          var one = arr[i].substring(0,br);
+          var two = arr[i].substring(br+1);
+          arr[i] = one;
+          arr.splice(i+1,0,two);
+          break;
+        }
+      }
+      i++;
+      br = null;
+    }
+    menu.text = arr;
+    menu.render();
+  };
+  menu.refresh = function() {
+    menu.update(Controls.context.menuText || undefined);
+  };
 
 
   // *** Drawing on the game screen *****
-  Main.refreshTile = function(x,y) {
+  gameScreen.refreshTile = function(x,y) {
     var xoffset = gameScreen.xoffset || 0;
     var yoffset = gameScreen.yoffset || 0;
     var z = gameScreen.z;
@@ -257,7 +285,7 @@ HTomb = (function(HTomb) {
     );
   };
   // Draw a character at the appropriate X and Y tile
-  Main.drawTile = function(x,y,ch,fg,bg) {
+  gameScreen.drawTile = function(x,y,ch,fg,bg) {
     var xoffset = gameScreen.xoffset || 0;
     var yoffset = gameScreen.yoffset || 0;
     fg = fg || "white"  ;
@@ -271,7 +299,7 @@ HTomb = (function(HTomb) {
     );
   };
 
-  Main.drawGlyph = function(x,y,ch,fg) {
+  gameScreen.drawGlyph = function(x,y,ch,fg) {
     var xoffset = gameScreen.xoffset || 0;
     var yoffset = gameScreen.yoffset || 0;
     fg = fg || "white";
@@ -287,7 +315,7 @@ HTomb = (function(HTomb) {
   };
 
   // Change the background color of the appropriate X and Y tile
-  Main.highlightTile = function(x,y,bg) {
+  gameScreen.highlightTile = function(x,y,bg) {
     var xoffset = gameScreen.xoffset || 0;
     var yoffset = gameScreen.yoffset || 0;
     var z = gameScreen.z;
@@ -299,6 +327,32 @@ HTomb = (function(HTomb) {
       sym[1],
       bg
     );
+  };
+
+  overlay.update = function(arr) {
+    HTomb.Time.stopTime();
+    HTomb.Time.stopParticles();
+    // we may not want to force the player to reset the GUI...but let's try it out
+    for (var i=0; i<SCREENH+SCROLLH; i++) {
+      overlayDisplay.drawText(1,1+i,"%c{black}"+(UNIBLOCK.repeat(SCREENW*(CHARWIDTH/TEXTWIDTH)+MENUW-2)));
+    }
+    for (var j=0; j<arr.length; j++) {
+      var x=0;
+      if (arr[j].charAt(0)===" ") {
+        for (x=1; x<arr[j].length; x++) {
+          if (arr[j].charAt(x)!==" ") {
+            break;
+          }
+        }
+      }
+      overlayDisplay.drawText(4+x, 3+j, arr[j]);
+    }
+    overlay.unhide();
+  }
+
+  GUI.splash = function(arr) {
+    Contexts.active = Contexts.new();
+    overlay.update(arr);
   };
 
   return HTomb;

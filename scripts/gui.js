@@ -1041,32 +1041,7 @@ HTomb = (function(HTomb) {
     HTomb.Controls.context = details;
   }
   // Update the right-hand menu instructions
-  GUI.displayMenu = function(arr) {
-    var i=0;
-    var br=null;
-    while(i<arr.length) {
-      if (arr[i].length<MENUW-2) {
-        i++;
-        continue;
-      }
-      for (var j=0; j<arr[i].length; j++) {
-        if (arr[i][j]===" ") {
-          br = j;
-        }
-        if (j>=MENUW-2) {
-          var one = arr[i].substring(0,br);
-          var two = arr[i].substring(br+1);
-          arr[i] = one;
-          arr.splice(i+1,0,two);
-          break;
-        }
-      }
-      i++;
-      br = null;
-    }
-    menu.text = arr;
-    menu.render();
-  };
+
 
   // Display a menu of letter-bound choices
   GUI.choosingMenu = function(s, arr, func) {
