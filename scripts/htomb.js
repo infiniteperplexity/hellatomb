@@ -20,7 +20,8 @@ var HTomb = (function() {
     console.timeEnd("worldInit");
     // Prepare the GUI and throw up an intro screen
     GUI.reset();
-    HTomb.GUI.center(HTomb.Player.x,HTomb.Player.y);
+    HTomb.GUI.Panels.gameScreen.center(HTomb.Player.x,HTomb.Player.y);
+    //HTomb.GUI.center(HTomb.Player.x,HTomb.Player.y);
     GUI.splash(["Welcome to HellaTomb!"]);
     HTomb.GUI.render();
 

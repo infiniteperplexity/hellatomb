@@ -126,11 +126,14 @@ timeIt("elevation", function() {
   var elevation;
   function assignElevation(ground) {
     ground = ground || 50;
-    var hscale1 = 128;
+    //var hscale1 = 128;
+    var hscale1 = 256;
     var vscale1 = 3;
     var hscale2 = 64;
+    //var hscale2 = 128;
     var vscale2 = 2;
-    var hscale3 = 32;
+    //var hscale3 = 32;
+    var hscale3 = 64;
     var vscale3 = 1;
     var noise = new ROT.Noise.Simplex();
     var grid = [];

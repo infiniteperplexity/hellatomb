@@ -205,7 +205,11 @@ HTomb = (function(HTomb) {
       if (Math.random()<0.25) {
         var rock = HTomb.Things.Rock();
         rock.item.n = 1;
-        rock.place(x,y,z);
+        if (tiles[z][x][y]===DownSlopeTile) {
+          rock.place(x,y,z-1);
+        } else {
+          rock.place(x,y,z);
+        }
       }
       HTomb.World.validate.cleanNeighbors(x,y,z);
       this.despawn();

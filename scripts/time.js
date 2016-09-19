@@ -25,12 +25,12 @@ HTomb = (function(HTomb) {
       return;
     }
     timePassing = setInterval(HTomb.Time.passTime,speed);
-    HTomb.GUI.renderStatus();
+    HTomb.GUI.Panels.status.render();
   };
   HTomb.Time.stopTime = function() {
     clearInterval(timePassing);
     timePassing = null;
-    HTomb.GUI.renderStatus();
+    HTomb.GUI.Panels.status.render();
   };
   HTomb.Time.toggleTime = function() {
     if (timePassing===null) {
@@ -49,7 +49,7 @@ HTomb = (function(HTomb) {
       particleTime = setInterval(function() {
         //console.log("updating particles");
         HTomb.Particles.update(particleSpeed);
-        HTomb.GUI.renderParticles();
+        HTomb.GUI.Panels.gameScreen.renderParticles();
       },particleSpeed);
     }
   };
@@ -104,7 +104,7 @@ HTomb = (function(HTomb) {
       }
     }
     // Recenter the GUI on the player
-    HTomb.GUI.recenter();
+    HTomb.GUI.Panels.gameScreen.recenter();
     // Render the GUI
     HTomb.GUI.render();
     if (HTomb.Debug.paused!==true) {
@@ -118,8 +118,8 @@ HTomb = (function(HTomb) {
   };
 
 
-  //HTomb.Constants.STARTHOUR = 8;
-  HTomb.Constants.STARTHOUR = 16;
+  HTomb.Constants.STARTHOUR = 8;
+  //HTomb.Constants.STARTHOUR = 16;
   HTomb.Constants.DAWN = 6;
   HTomb.Constants.DUSK = 17;
   HTomb.Constants.MONTH = 12;

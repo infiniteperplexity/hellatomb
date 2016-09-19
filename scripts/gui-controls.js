@@ -32,6 +32,9 @@ HTomb = (function(HTomb) {
   var menu = GUI.Panels.menu;
 
   let Contexts = GUI.Contexts;
+  let Commands = HTomb.Commands;
+  let Views = GUI.Views = {};
+  let Main = GUI.Views.Main = {};
 
   // **** Set default controls
   // By default, clicking resets the GUI
@@ -62,7 +65,7 @@ HTomb = (function(HTomb) {
     oldCursor = [x,y];
     var z = gameScreen.z;
     var txt = examineSquare(x,y,z); // Not sure yet what to do here
-    var myText = this.menuText || getDefaultText(); // Not sure yet what to do here
+    var myText = this.menuText || menu.defaultText; // Not sure yet what to do here
     menu.update(myText.concat(" ").concat(txt)); // Not sure yet what to do here
   };
 
@@ -155,9 +158,9 @@ HTomb = (function(HTomb) {
     };
   };
 
-  menu.selectBox = function(width, height, z, callb, options) {
+  GUI.selectBox = function(width, height, z, callb, options) {
     options = options || {};
-    var gameScreen = gameScreen;
+    var gameScreen = GUI.Panels.gameScreen;
     GUI.pushMessage("Select a square.");
     var context = Object.create(survey);
     context.menuText = ["Use movement keys to navigate.","Comma go down.","Period to go up.","Escape to exit."];
@@ -214,7 +217,7 @@ HTomb = (function(HTomb) {
     }
     contrls.VK_ESCAPE = GUI.reset;
     choices.push("Esc to cancel");
-    Contexts.active = Contexts.new();
+    Contexts.active = Contexts.new(contrls);
     Contexts.active.menuText = choices;
     menu.refresh();
   };
@@ -383,7 +386,7 @@ HTomb = (function(HTomb) {
     VK_UP: Commands.tryMoveNorth,
     VK_DOWN: Commands.tryMoveSouth,
     // bind keyboard movement
-    VK_A: Commands.act,
+    //VK_A: Commands.act,
     VK_NUMPAD7: Commands.tryMoveNorthWest,
     VK_NUMPAD8: Commands.tryMoveNorth,
     VK_NUMPAD9: Commands.tryMoveNorthEast,
@@ -400,12 +403,13 @@ HTomb = (function(HTomb) {
     VK_I: Commands.inventory,
     VK_J: Commands.showJobs,
     VK_Z: Commands.showSpells,
-    VK_TAB: surveyMode,
+    VK_TAB: function() {Main.surveyMode();},
     VK_SPACE: Commands.wait,
     VK_ENTER: HTomb.Time.toggleTime,
     //VK_ESCAPE: HTomb.Time.stopTime,
-    VK_TILDE: Main.summaryView,
-    VK_ESCAPE: Main.systemView,
+    VK_BACK_QUOTE: function() {Views.summaryView();},
+    VK_TILDE: function() {Views.summaryView();},
+    VK_ESCAPE: function() {Views.systemView();},
     VK_PAGE_UP: function() {
       HTomb.Time.setSpeed(HTomb.Time.getSpeed()/1.25);
       HTomb.GUI.pushMessage("Speed set to " + parseInt(HTomb.Time.getSpeed()) + ".");
@@ -424,15 +428,15 @@ HTomb = (function(HTomb) {
   main.rightClickTile = function(x,y) {
     let p = HTomb.Player;
     if (x===p.x && y===p.y && gameScreen.z===p.z) {
-      summaryView();
+      GUI.Views.summaryView();
       return;
     }
     let f = HTomb.World.features[coord(x,y,gameScreen.z)];
     if (f && f.workshop && f.workshop.active && HTomb.World.creatures[coord(x,y,gameScreen.z)]===undefined) {
-      workshopView(f.workshop);
+      GUI.Views.workshopView(f.workshop);
       return;
     }
-    detailsView(x,y,gameScreen.z);
+    GUI.Views.detailsView(x,y,gameScreen.z);
   }
   main.clickTile = function(x,y) {
     HTomb.Time.toggleTime();

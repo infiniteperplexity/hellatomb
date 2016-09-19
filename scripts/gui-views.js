@@ -28,9 +28,219 @@ HTomb = (function(HTomb) {
   var coord = HTomb.Utils.coord;
   // set up GUI and display
   var GUI = HTomb.GUI;
-  var Controls = HTomb.Controls;
+  var Views = GUI.Views;
 
-  Controls.viewDetails = function(x,y,z) {
+  Views.systemView = function() {
+    GUI.Contexts.active = GUI.Contexts.system;
+    // it would be nice if "static menu" were a thing
+    GUI.Panels.overlay.update([
+      "Esc) Back to game.",
+      "S) Save game.",
+      "A) Save game as...",
+      "R) Restore game.",
+      "Q) Quit game."
+    ]);
+  };
+  Views.System = {};
+  Views.System.save = function() {
+
+  };
+  Views.System.saveAs = function() {
+
+  };
+  Views.System.restore = function() {
+
+  };
+  Views.System.quit = function() {
+    console.log("testing");
+    GUI.Panels.overlay.update([
+      "Really quit?",
+      "Y) Yes.",
+      "N) No."
+    ]);
+    GUI.Contexts.active = GUI.Contexts.new({
+      VK_ESCAPE: HTomb.GUI.reset,
+      VK_Y: function() {close();},
+      VK_N: function() {Views.systemView();}
+    });
+  };
+  GUI.Contexts.system = GUI.Contexts.new({
+    VK_ESCAPE: HTomb.GUI.reset,
+    VK_A: function() {Views.System.saveAs();},
+    VK_S: function() {Views.System.save();},
+    VK_R: function() {Views.System.restore();},
+    VK_Q: function() {Views.System.quit();}
+  });
+
+  // These are the default controls
+  GUI.Contexts.summary = GUI.Contexts.new({
+    VK_ESCAPE: HTomb.GUI.reset,
+    VK_PAGE_UP: function() {Views.detailsView();},
+    VK_PAGE_DOWN: function() {Views.detailsView();},
+    VK_TAB: function() {Views.workshopView();}
+  });
+
+  Views.Workshops = {};
+  var workQueueCursor = 0;
+  GUI.Contexts.workshops = GUI.Contexts.new({
+    VK_ESCAPE: HTomb.GUI.reset,
+    VK_PAGE_UP: function() {Views.Workshops.nextWorkshop();},
+    VK_PAGE_DOWN: function() {Views.Workshops.previousWorkshop();},
+    VK_TAB: function() {Views.detailsView();},
+    VK_UP: function() {Views.Workshops.workQueueUp();},
+    VK_DOWN: function() {Views.Workshops.workQueueDown();},
+    VK_LEFT: function() {Views.Workshops.workQueueLeft();},
+    VK_RIGHT: function() {Views.Workshops.workQueueRight();},
+    VK_EQUALS: function() {Views.Workshops.workQueueMore();},
+    VK_HYPHEN_MINUS: function() {Views.Workshops.workQueueLess();},
+    VK_BACK_SPACE: function() {Views.Workshops.cancelGood();},
+    VK_DELETE: function() {Views.Workshops.cancelGood();}
+  });
+
+  Views.Workshops.cancelGood = function() {
+    let i = workQueueCursor;
+    let w = currentWorkshop;
+    if (i===-1 && w.task) {
+      w.task.cancel();
+      w.nextGood();
+    } else if (w.queue.length>0 && i>=0) {
+      w.queue.splice(i,1);
+      if (workQueueCursor>=w.queue.length) {
+        workQueueCursor = w.queue.length-1;
+      }
+    }
+    GUI.Panels.overlay.update(Views.Workshops.workshopDetails(w));
+  };
+
+  Views.Workshops.workQueueDown = function() {
+    workQueueCursor+=1;
+    if (workQueueCursor>=currentWorkshop.queue.length) {
+      workQueueCursor = -1;
+    }
+    GUI.Panels.overlay.update(Views.Workshops.workshopDetails(currentWorkshop));
+  };
+  Views.Workshops.workQueueUp = function() {
+    workQueueCursor-=1;
+    if (workQueueCursor<-1) {
+      workQueueCursor = currentWorkshop.queue.length-1;
+    }
+    GUI.Panels.overlay.update(Views.Workshops.workshopDetails(currentWorkshop));
+  };
+  Views.Workshops.workQueueRight = function() {
+    let i = workQueueCursor;
+    let w = currentWorkshop;
+    if (i===-1 || w.queue.length===0) {
+      return;
+    }
+    if (w.queue[i][1]==="finite") {
+      w.queue[i][1]=1;
+    } else if (parseInt(w.queue[i][1])===w.queue[i][1]) {
+      w.queue[i][1]="infinite";
+    } else if (w.queue[i][1]==="infinite") {
+      w.queue[i][1] = "finite";
+    }
+    GUI.Panels.overlay.update(Views.Workshops.workshopDetails(currentWorkshop));
+  };
+  Views.Workshops.workQueueLeft = function() {
+    let i = workQueueCursor;
+    let w = currentWorkshop;
+    if (i===-1 || w.queue.length===0) {
+      return;
+    }
+    if (w.queue[i][1]==="finite") {
+      w.queue[i][1]="infinite";
+    } else if (parseInt(w.queue[i][1])===w.queue[i][1]) {
+      w.queue[i][1]="finite";
+    } else if (w.queue[i][1]==="infinite") {
+      w.queue[i][1] = 1;
+    }
+    GUI.Panels.overlay.update(Views.Workshops.workshopDetails(currentWorkshop));
+  };
+  Views.Workshops.workQueueMore = function() {
+    let i = workQueueCursor;
+    let w = currentWorkshop;
+    if (i===-1 || w.queue.length===0) {
+      return;
+    }
+    if (w.queue[i][1]==="finite") {
+      w.queue[i][2]+=1;
+    } else if (parseInt(w.queue[i][1])===w.queue[i][1]) {
+      w.queue[i][1]+=1;
+      w.queue[i][2]+=1;
+    }
+    GUI.Panels.overlay.update(Views.Workshops.workshopDetails(currentWorkshop));
+  };
+  Views.Workshops.workQueueLess = function() {
+    let i = workQueueCursor;
+    let w = currentWorkshop;
+    if (i===-1 || w.queue.length===0) {
+      return;
+    }
+    if (w.queue[i][1]==="finite" && w.queue[i][2]>1) {
+      w.queue[i][2]-=1;
+    } else if (parseInt(w.queue[i][1])===w.queue[i][1] && w.queue[i][1]>1) {
+      w.queue[i][1]-=1;
+      if (w.queue[i][2]>w.queue[i][1]) {
+        w.queue[i][2] = w.queue[i][1];
+      }
+    }
+    GUI.Panels.overlay.update(Views.Workshops.workshopDetails(currentWorkshop));
+  };
+
+  Views.Details = {};
+  GUI.Contexts.details = GUI.Contexts.new({
+    VK_ESCAPE: HTomb.GUI.reset,
+    VK_PAGE_UP: function() {Views.Details.nextMinion();},
+    VK_PAGE_DOWN: function() {Views.Details.previousMinion();},
+    VK_TAB: function() {Views.summaryView();}
+  });
+  var currentMinion = null;
+  var currentWorkshop = null;
+  Views.Details.nextMinion = function() {
+    var p = HTomb.Player;
+    if (currentMinion===null && p.master.minions.length>0) {
+      p = p.master.minions[0];
+      currentMinion = p;
+      GUI.Panels.overlay.update(Views.Details.viewDetails(p.x,p.y,p.z));
+    } else if (p.master.minions.indexOf(currentMinion)===-1) {
+      currentMinion = null;
+      GUI.Panels.overlay.update(Views.Details.viewDetails(p.x,p.y,p.z));
+    } else {
+      var i = p.master.minions.indexOf(currentMinion);
+      if (i===p.master.minions.length-1) {
+        i = 0;
+      } else {
+        i+=1;
+      }
+      p = p.master.minions[i];
+      currentMinion = p;
+      GUI.Panels.overlay.update(Views.Details.viewDetails(p.x,p.y,p.z));
+    }
+    GUI.Contexts.active = GUI.Contexts.details;
+  };
+  Views.Details.previousMinion = function() {
+    var p = HTomb.Player;
+    if (currentMinion===null && p.master.minions.length>0) {
+      p = p.master.minions[p.master.minions.length-1];
+      currentMinion = p;
+      GUI.Panels.overlay.update(Views.Details.viewDetails(p.x,p.y,p.z));
+    } else if (p.master.minions.indexOf(currentMinion)===-1) {
+      currentMinion = null;
+      GUI.Panels.overlay.update(Views.Details.viewDetails(p.x,p.y,p.z));
+    } else {
+      var i = p.master.minions.indexOf(currentMinion);
+      if (i===0) {
+        i = p.master.minions.length-1;
+      } else {
+        i-=1;
+      }
+      p = p.master.minions[i];
+      currentMinion = p;
+      GUI.Panels.overlay.update(Views.Details.viewDetails(p.x,p.y,p.z));
+    }
+    GUI.Contexts.active = GUI.Contexts.details;
+  };
+  Views.Details.viewDetails = function(x,y,z) {
     var square = HTomb.Tiles.getSquare(x,y,z);
     var c = coord(x,y,z);
     var details = ["PageUp or PageDown to scroll through minions; Tab to view summary; Escape to exit."]
@@ -117,228 +327,15 @@ HTomb = (function(HTomb) {
     return details;
   };
 
-
-
-  Controls.systemView = function() {
-    Controls.context = Controls.contexts.system;
-    // it would be nice if "static menu" were a thing
-    GUI.updateOverlay([
-      "Esc) Back to game.",
-      "S) Save game.",
-      "A) Save game as...",
-      "R) Restore game.",
-      "Q) Quit game."
-    ]);
-  };
-  Controls.save = function() {
-
-  };
-  Controls.saveAs = function() {
-
-  };
-  Controls.restore = function() {
-
-  };
-  Controls.quit = function() {
-    console.log("testing");
-    GUI.updateOverlay([
-      "Really quit?",
-      "Y) Yes.",
-      "N) No."
-    ]);
-    HTomb.Controls.context = new Controls.newContext({
-      VK_ESCAPE: HTomb.GUI.reset,
-      VK_Y: function() {close();},
-      VK_N: Controls.systemView
-    });
-  };
-  Controls.contexts.system = new Controls.newContext({
-    VK_ESCAPE: HTomb.GUI.reset,
-    VK_S: Controls.save,
-    VK_A: Controls.saveAs,
-    VK_R: Controls.restore,
-    VK_Q: Controls.quit
-  });
-
-  // These are the default controls
-  Controls.contexts.summary = new Controls.newContext({
-    VK_ESCAPE: HTomb.GUI.reset,
-    VK_PAGE_UP: Controls.detailsView,
-    VK_PAGE_DOWN: Controls.workshopView,
-    VK_TAB: Controls.workshopView
-  });
-
-  var workQueueCursor = 0;
-  Controls.contexts.workshops = new Controls.newContext({
-    VK_ESCAPE: HTomb.GUI.reset,
-    VK_PAGE_UP: Controls.nextWorkshop,
-    VK_PAGE_DOWN: Controls.previousWorkshop,
-    VK_TAB: Controls.detailsView,
-    VK_UP: Controls.workQueueUp,
-    VK_DOWN: Controls.workQueueDown,
-    VK_LEFT: Controls.workQueueLeft,
-    VK_RIGHT: Controls.workQueueRight,
-    VK_EQUALS: Controls.workQueueMore,
-    VK_HYPHEN_MINUS: Controls.workQueueLess,
-    VK_BACK_SPACE: Controls.cancelGood,
-    VK_DELETE: Controls.cancelGood
-  });
-
-  Controls.cancelGood = function() {
-    let i = workQueueCursor;
-    let w = currentWorkshop;
-    if (i===-1 && w.task) {
-      w.task.cancel();
-      w.nextGood();
-    } else if (w.queue.length>0 && i>=0) {
-      w.queue.splice(i,1);
-      if (workQueueCursor>=w.queue.length) {
-        workQueueCursor = w.queue.length-1;
-      }
-    }
-    GUI.updateOverlay(Controls.workshopDetails(w));
-  };
-
-  Controls.workQueueDown = function() {
-    workQueueCursor+=1;
-    //if (workQueueCursor>currentWorkshop.queue.length-1) {
-    if (workQueueCursor>=currentWorkshop.queue.length) {
-      workQueueCursor = -1;
-    }
-    console.log(workQueueCursor);
-    GUI.updateOverlay(Controls.workshopDetails(currentWorkshop));
-  };
-  Controls.workQueueUp = function() {
-    workQueueCursor-=1;
-    if (workQueueCursor<-1) {
-      //workQueueCursor = currentWorkshop.queue.length-1;
-      workQueueCursor = currentWorkshop.queue.length-1;
-    }
-    console.log(workQueueCursor);
-    GUI.updateOverlay(Controls.workshopDetails(currentWorkshop));
-  };
-  Controls.workQueueRight = function() {
-    let i = workQueueCursor;
-    let w = currentWorkshop;
-    if (i===-1 || w.queue.length===0) {
-      return;
-    }
-    if (w.queue[i][1]==="finite") {
-      w.queue[i][1]=1;
-    } else if (parseInt(w.queue[i][1])===w.queue[i][1]) {
-      w.queue[i][1]="infinite";
-    } else if (w.queue[i][1]==="infinite") {
-      w.queue[i][1] = "finite";
-    }
-    GUI.updateOverlay(Controls.workshopDetails(currentWorkshop));
-  };
-  Controls.workQueueLeft = function() {
-    let i = workQueueCursor;
-    let w = currentWorkshop;
-    if (i===-1 || w.queue.length===0) {
-      return;
-    }
-    if (w.queue[i][1]==="finite") {
-      w.queue[i][1]="infinite";
-    } else if (parseInt(w.queue[i][1])===w.queue[i][1]) {
-      w.queue[i][1]="finite";
-    } else if (w.queue[i][1]==="infinite") {
-      w.queue[i][1] = 1;
-    }
-    GUI.updateOverlay(Controls.workshopDetails(currentWorkshop));
-  };
-  Controls.workQueueMore = function() {
-    let i = workQueueCursor;
-    let w = currentWorkshop;
-    if (i===-1 || w.queue.length===0) {
-      return;
-    }
-    if (w.queue[i][1]==="finite") {
-      w.queue[i][2]+=1;
-    } else if (parseInt(w.queue[i][1])===w.queue[i][1]) {
-      w.queue[i][1]+=1;
-      w.queue[i][2]+=1;
-    }
-    GUI.updateOverlay(Controls.workshopDetails(currentWorkshop));
-  };
-  Controls.workQueueLess = function() {
-    let i = workQueueCursor;
-    let w = currentWorkshop;
-    if (i===-1 || w.queue.length===0) {
-      return;
-    }
-    if (w.queue[i][1]==="finite" && w.queue[i][2]>1) {
-      w.queue[i][2]-=1;
-    } else if (parseInt(w.queue[i][1])===w.queue[i][1] && w.queue[i][1]>1) {
-      w.queue[i][1]-=1;
-      if (w.queue[i][2]>w.queue[i][1]) {
-        w.queue[i][2] = w.queue[i][1];
-      }
-    }
-    GUI.updateOverlay(Controls.workshopDetails(currentWorkshop));
-  };
-
-  Controls.contexts.details = new Controls.newContext({
-    VK_ESCAPE: HTomb.GUI.reset,
-    VK_PAGE_UP: Controls.nextMinion,
-    VK_PAGE_DOWN: Controls.previousMinion,
-    VK_TAB: Controls.summaryView
-  });
-  var currentMinion = null;
-  var currentWorkshop = null;
-  Controls.nextMinion = function() {
-    var p = HTomb.Player;
-    if (currentMinion===null && p.master.minions.length>0) {
-      p = p.master.minions[0];
-      currentMinion = p;
-      GUI.updateOverlay(Controls.viewDetails(p.x,p.y,p.z));
-    } else if (p.master.minions.indexOf(currentMinion)===-1) {
-      currentMinion = null;
-      GUI.updateOverlay(Controls.viewDetails(p.x,p.y,p.z));
-    } else {
-      var i = p.master.minions.indexOf(currentMinion);
-      if (i===p.master.minions.length-1) {
-        i = 0;
-      } else {
-        i+=1;
-      }
-      p = p.master.minions[i];
-      currentMinion = p;
-      GUI.updateOverlay(Controls.viewDetails(p.x,p.y,p.z));
-    }
-    HTomb.Controls.context = details;
-  };
-  Controls.previousMinion = function() {
-    var p = HTomb.Player;
-    if (currentMinion===null && p.master.minions.length>0) {
-      p = p.master.minions[p.master.minions.length-1];
-      currentMinion = p;
-      GUI.updateOverlay(Controls.viewDetails(p.x,p.y,p.z));
-    } else if (p.master.minions.indexOf(currentMinion)===-1) {
-      currentMinion = null;
-      GUI.updateOverlay(Controls.viewDetails(p.x,p.y,p.z));
-    } else {
-      var i = p.master.minions.indexOf(currentMinion);
-      if (i===0) {
-        i = p.master.minions.length-1;
-      } else {
-        i-=1;
-      }
-      p = p.master.minions[i];
-      currentMinion = p;
-      GUI.updateOverlay(Controls.viewDetails(p.x,p.y,p.z));
-    }
-    HTomb.Controls.context = details;
-  };
-  Controls.nextWorkshop = function() {
+  Views.Workshops.nextWorkshop = function() {
     var p = HTomb.Player;
     if (currentWorkshop===null && p.master.workshops.length>0) {
       p = p.master.workshops[0];
       currentWorkshop = p;
-      GUI.updateOverlay(Controls.workshopDetails(p));
+      GUI.Panels.overlay.update(Views.Workshops.workshopDetails(p));
     } else if (p.master.workshops.indexOf(currentWorkshop)===-1) {
       currentWorkshop = null;
-      GUI.updateOverlay(Controls.viewDetails(p.x,p.y,p.z));
+      GUI.Panels.overlay.update(Controls.viewDetails(p.x,p.y,p.z));
     } else {
       var i = p.master.workshops.indexOf(currentWorkshop);
       if (i===p.master.workshops.length-1) {
@@ -348,19 +345,20 @@ HTomb = (function(HTomb) {
       }
       p = p.master.workshops[i];
       currentWorkshop = p;
-      GUI.updateOverlay(Controls.workshopDetails(p));
+      GUI.Panels.overlay.update(Views.Workshops.workshopDetails(p));
     }
-    HTomb.Controls.context = workshops;
+    GUI.Contexts.active = workshops;
   }
-  Controls.previousWorkshop = function() {
+  Views.Workshops.previousWorkshop = function() {
     var p = HTomb.Player;
     if (currentWorkshop===null && p.master.workshops.length>0) {
-      p = p.master.workshops[p.master.workshops.length-1];
-      currentWorkshop = p;
-      updateOverlay(workshopDetails(p));
+      let w = p.master.workshops[p.master.workshops.length-1];
+      currentWorkshop = w;
+      console.log(w);
+      overlay.update(Views.Workshops.workshopDetails(w));
     } else if (p.master.workshops.indexOf(currentWorkshop)===-1) {
       currentWorkshop = null;
-      updateOverlay(viewDetails(p.x,p.y,p.z));
+      overlay.update(Views.Details.viewDetails(p.x,p.y,p.z));
     } else {
       var i = p.master.workshops.indexOf(currentWorkshop);
       if (i===0) {
@@ -368,25 +366,31 @@ HTomb = (function(HTomb) {
       } else {
         i-=1;
       }
-      p = p.master.workshops[i];
-      currentWorkshop = p;
-      updateOverlay(workshopDetails(p));
+      let w = p.master.workshops[i];
+      currentWorkshop = w;
+      overlay.update(Views.Workshops.workshopDetails(w));
     }
-    HTomb.Controls.context = workshops;
+    GUI.Contexts.active = workshops;
   };
-  Controls.workshopView = function(w) {
+  Views.workshopView = function(w) {
     w = w || HTomb.Player.master.workshops[0] || null;
     currentWorkshop = w;
-    GUI.updateOverlay(Controls.workshopDetails(w));
-    HTomb.Controls.context = Controls.contexts.workshops;
+    if (w===null) {
+      GUI.Panels.overlay.update(["You have no current workshops."]);
+      GUI.Contexts.active = GUI.Contexts.new();
+      GUI.Contexts.active.keydown = Views.summaryView;
+      return;
+    }
+    GUI.Panels.overlay.update(Views.Workshops.workshopDetails(w));
+    GUI.Contexts.active = GUI.Contexts.workshops;
     let alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
     for (let i=0; i<alphabet.length; i++) {
       if (i>=w.makes.length) {
-        delete workshops.boundKeys["VK_"+alphabet[i]];
+        delete GUI.Contexts.workshops.boundKeys["VK_"+alphabet[i]];
       }
       else {
         // This might be broken!
-        GUI.bindKey(workshops,"VK_"+alphabet[i],function() {
+        GUI.bindKey(GUI.Contexts.workshops,"VK_"+alphabet[i],function() {
           let good = w.makes[i];
           w.queue.splice(workQueueCursor+1,0,[good,"finite",1]);
           if (w.task===null) {
@@ -395,13 +399,13 @@ HTomb = (function(HTomb) {
           if (workQueueCursor<w.queue.length-1) {
             workQueueCursor+=1;
           }
-          GUI.updateOverlay(Controls.workshopDetails(currentWorkshop));
+          GUI.Panels.overlay.update(Views.Workshops.workshopDetails(currentWorkshop));
         });
       }
     }
   };
-  Controls.summaryView = function() {
-    HTomb.Controls.context = Controls.contexts.summary;
+  Views.summaryView = function() {
+    GUI.Contexts.active = GUI.Contexts.summary;
 
     var text = ["Tab/PageUp/PageDown to scroll through minions; Escape to exit."];
     text.push(" ");
@@ -453,9 +457,9 @@ HTomb = (function(HTomb) {
         text.push("  "+items[k].describe());
       }
     }
-    GUI.updateOverlay(text);
+    GUI.Panels.overlay.update(text);
   }
-  Controls.workshopDetails = function(w) {
+  Views.Workshops.workshopDetails = function(w) {
     let txt = [
       "Up/Down to traverse queue, Left/Right to change repeat options.",
       "Hyphen/Underscore to lower count, equals/plus to raise count.",
@@ -491,18 +495,19 @@ HTomb = (function(HTomb) {
     txt = txt.concat(q);
     return txt;
   };
-  Controls.detailsView = function(x,y,z) {
+  Views.detailsView = function(x,y,z) {
     if (x===undefined || y===undefined || z===undefined) {
       var p = HTomb.Player;
       if (p.master.minions.indexOf(currentMinion)===-1) {
-        GUI.updateOverlay(Controls.viewDetails(p.x,p.y,p.z));
+        GUI.Panels.overlay.update(Views.Details.viewDetails(p.x,p.y,p.z));
       } else {
         p = currentMinion;
-        GUI.updateOverlay(Controls.viewDetails(p.x,p.y,p.z));
+        GUI.Panels.overlay.update(Views.Details.viewDetails(p.x,p.y,p.z));
       }
     } else {
-      GUI.updateOverlay(Controls.viewDetails(x,y,z));
+      GUI.Panels.overlay.update(Views.Details.viewDetails(x,y,z));
     }
+    GUI.Contexts.active = GUI.Contexts.details;
   };
 
   return HTomb;

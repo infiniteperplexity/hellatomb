@@ -140,6 +140,7 @@ HTomb = (function(HTomb) {
     // Convert X and Y from pixels to characters
     var x = Math.floor((click.clientX+XSKEW)/CHARWIDTH-1);
     var y = Math.floor((click.clientY+YSKEW)/CHARHEIGHT-1);
+    var gameScreen = GUI.Panels.gameScreen;
     if (click.button===2) {
       GUI.Contexts.active.rightClickTile(x+gameScreen.xoffset,y+gameScreen.yoffset);
     } else {
@@ -151,6 +152,7 @@ HTomb = (function(HTomb) {
     var x = Math.floor((move.clientX+XSKEW)/CHARWIDTH-1);
     var y = Math.floor((move.clientY+YSKEW)/CHARHEIGHT-1);
       // If the hover is on the game screen, pass the X and Y tile coordinates
+    var gameScreen = GUI.Panels.gameScreen;
     GUI.Contexts.active.mouseTile(x+gameScreen.xoffset,y+gameScreen.yoffset);
   };
   // Bind a ROT.js keyboard constant to a function for a particular context
@@ -170,33 +172,33 @@ HTomb = (function(HTomb) {
 
   //************* Define the basic panels and how they access the DOM *********;
   GUI.Panels = {};
-  function Panel(leftx, topy, display, element) {
+  function Panel(leftx, topy, display, element, active) {
     this.x0 = leftx;
     this.y0 = topy;
     this.display = display;
     this.element = element;
-    if (this.element && this.element.style.display==="none") {
-      this.active = false;
+    if (active===false) {
+      this.active = active;
     } else {
       this.active = true;
     }
-    this.render = function();
+
+    this.render = function() {};
   }
-  Panel.prototype.hide = f
-  unction() {
-    this.element.style.display = "none";
+  Panel.prototype.hide = function() {
+    document.getElementById(this.element).style.display = "none";
     this.active = false;
   }
   Panel.prototype.unhide = function() {
-    this.element.style.display = "initial";
+    document.getElementById(this.element).style.display = "initial";
     this.active = true;
   }
 
-  GUI.panels.gameScreen = new Panel(0,0,display);
-  GUI.panels.status = new Panel(1,0,scrollDisplay);
-  GUI.panels.scroll = new Panel(1,STATUSH,scrollDisplay);
-  GUI.panels.menu = new Panel(0,1,menuDisplay);
-  GUI.panels.overlay = new Panel(0,0,overlayDisplay,document.getElementById("overlay"));
+  GUI.Panels.gameScreen = new Panel(0,0,display);
+  GUI.Panels.status = new Panel(1,0,scrollDisplay);
+  GUI.Panels.scroll = new Panel(1,STATUSH,scrollDisplay);
+  GUI.Panels.menu = new Panel(0,1,menuDisplay);
+  GUI.Panels.overlay = new Panel(0,0,overlayDisplay,"overlay",false);
 
   //******* Define the abstract control context *******
   GUI.Contexts = {};
@@ -212,7 +214,7 @@ HTomb = (function(HTomb) {
       }
     }
   }
-  Context.prototype.bindKey = = function(k, f) {
+  Context.prototype.bindKey = function(k, f) {
     bindKey(this,k,f);
   };
   Context.prototype.keydown = function(key) {

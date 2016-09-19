@@ -32,9 +32,12 @@ HTomb = (function(HTomb) {
   let Panels = GUI.Panels;
   let gameScreen = Panels.gameScreen;
   let menu = Panels.menu;
+  let menuDisplay = Panels.menu.display;
   let scroll = Panels.scroll;
+  let scrollDisplay = scroll.display;
   let status = Panels.status;
   let overlay = Panels.overlay;
+  let overlayDisplay = overlay.display;
 
   // Basic rendering of panels
   // Keep track of how many tiles it is offset from 0, 0
@@ -53,10 +56,35 @@ HTomb = (function(HTomb) {
         }
         // Draw every symbol in the right
         var sym = HTomb.Tiles.getSymbol(x,y,z);
-        display.draw(this.x0+x-xoffset,this.y0+y-yoffset, sym[0], sym[1], sym[2]);
+        gameScreen.display.draw(this.x0+x-xoffset,this.y0+y-yoffset, sym[0], sym[1], sym[2]);
       }
     }
     gameScreen.renderParticles();
+  };
+  gameScreen.recenter = function() {
+    var Player = HTomb.Player;
+    gameScreen.z = Player.z;
+    if (Player.x >= gameScreen.xoffset+SCREENW-2) {
+      gameScreen.xoffset = Player.x-SCREENW+2;
+    } else if (Player.x <= gameScreen.xoffset) {
+      gameScreen.xoffset = Player.x-1;
+    }
+    if (Player.y >= gameScreen.yoffset+SCREENH-2) {
+      gameScreen.yoffset = Player.y-SCREENH+2;
+    } else if (Player.y <= gameScreen.yoffset) {
+      gameScreen.yoffset = Player.y-1;
+    }
+  };
+  gameScreen.center = function(x,y,z) {
+    x = x-Math.floor(SCREENW/2)-1;
+    y = y-Math.floor(SCREENH/2)-1;
+    z = z || HTomb.Player.z;
+    x = Math.max(x,Math.ceil(SCREENW/2));
+    y = Math.max(y,Math.ceil(SCREENW/2));
+    x = Math.min(x,Math.floor(LEVELW-1-SCREENW/2));
+    y = Math.min(y,Math.floor(LEVELH-1-SCREENH/2));
+    gameScreen.xoffset = x;
+    gameScreen.yoffset = y;
   };
   var oldSquares;
   gameScreen.renderParticles = function() {
@@ -197,9 +225,9 @@ HTomb = (function(HTomb) {
       scroll.buffer.shift();
     }
     // Render the message immediatey if the scroll is visible
-    if (GUI.panels.bottom===scroll) {
+    //if (GUI.panels.bottom===scroll) {
       scroll.render();
-    }
+    //}
   };
   HTomb.Debug.pushMessage = function(msg) {
     if (HTomb.Debug.messages===true) {
@@ -266,7 +294,7 @@ HTomb = (function(HTomb) {
     menu.render();
   };
   menu.refresh = function() {
-    menu.update(Controls.context.menuText || undefined);
+    menu.update(GUI.Contexts.active.menuText || undefined);
   };
 
 
@@ -276,7 +304,7 @@ HTomb = (function(HTomb) {
     var yoffset = gameScreen.yoffset || 0;
     var z = gameScreen.z;
     var sym = HTomb.Tiles.getSymbol(x,y,z);
-    display.draw(
+    gameScreen.display.draw(
       x-xoffset,
       y-yoffset,
       sym[0],
@@ -290,7 +318,7 @@ HTomb = (function(HTomb) {
     var yoffset = gameScreen.yoffset || 0;
     fg = fg || "white"  ;
     bg = bg || "black";
-    display.draw(
+    gameScreen.display.draw(
       x-xoffset,
       y-yoffset,
       ch,
@@ -305,7 +333,7 @@ HTomb = (function(HTomb) {
     fg = fg || "white";
     var z = gameScreen.z;
     var bg = HTomb.Tiles.getBackground(x,y,z);
-    display.draw(
+    gameScreen.display.draw(
       x-xoffset,
       y-yoffset,
       ch,
@@ -320,7 +348,7 @@ HTomb = (function(HTomb) {
     var yoffset = gameScreen.yoffset || 0;
     var z = gameScreen.z;
     var sym = HTomb.Tiles.getGlyph(x,y,z);
-    display.draw(
+    gameScreen.display.draw(
       x-xoffset,
       y-yoffset,
       sym[0],
@@ -351,7 +379,7 @@ HTomb = (function(HTomb) {
   }
 
   GUI.splash = function(arr) {
-    Contexts.active = Contexts.new();
+    GUI.Contexts.active = GUI.Contexts.new();
     overlay.update(arr);
   };
 
