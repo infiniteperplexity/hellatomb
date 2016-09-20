@@ -55,7 +55,6 @@ HTomb = (function(HTomb) {
   Views.System.save = function() {
     // Uses the current or default save game name
     HTomb.Save.saveGame();
-    Views.systemView();
   };
 
   Views.System.saveAs = function() {
@@ -93,7 +92,7 @@ HTomb = (function(HTomb) {
         controls["VK_"+alpha[i].toUpperCase()] = function() {
             let fragment = saves[i].substring(0,saves[i].length-5);
             return function() {
-              alert(fragment);
+              HTomb.Save.getData(fragment,HTomb.Save.restoreGame);
             }
         }();
         saves[i] = alpha[i]+") " + saves[i].substring(0,saves[i].length-5);

@@ -6,8 +6,7 @@ HTomb = (function(HTomb) {
   let NLEVELS = HTomb.Constants.NLEVELS;
 
   // Global value for the name of the current game
-  HTomb.Save.currentGame = "testing";
-
+  HTomb.Save.currentGame = "test";
   // Main game-saving function
     // Takes name and, implicitly, game state
     // Encodes as JSON and then posts data to server
@@ -128,6 +127,7 @@ HTomb = (function(HTomb) {
   };
   // End code for saving games
 
+  // Code for listing saved games in directory
   HTomb.Save.getDir = function(callback) {
     getDir(callback);
   };
@@ -153,13 +153,49 @@ HTomb = (function(HTomb) {
     xhttp.open("GET", file, true);
     xhttp.send();
   }
+  // End code for listing directory contents
+
+  // Code for restoring games
+  HTomb.Save.getData = function(name, callback) {
+    HTomb.Time.lockTime();
+    HTomb.GUI.Views.progressView(["Restoring '" + name + "'..."]);
+    getData(name, callback);
+  };
+  //function getData(file) {
+  function getData(name, callback) {
+    name = name || currentGame;
+    console.time("get request");
+    var file = 'saves/'+ name + '.json';
+    var xhttp = new XMLHttpRequest();
+    xhttp.onreadystatechange = function() {
+      if (xhttp.readyState == XMLHttpRequest.DONE) {
+        if (xhttp.status == 200) {
+          console.log("Got our JSON, now we should do something with it.");
+          console.log(xhttp.responseText.length);
+          callback(xhttp.responseText);
+          //let json = JSON.parse(xhttp.responseText);
+          console.timeEnd("get request");
+        } else if (xhttp.status == 400) {
+          console.log("There was an error 400");
+        } else {
+          console.log("Something other than 200 was returned.");
+        }
+        HTomb.Time.unlockTime();
+      }
+    };
+    xhttp.open("GET", file, true);
+    xhttp.send();
+  }
 
   HTomb.Save.restoreGame = function(json) {
     let tids = [];
     //let templates = [];
     let player = null;
     // parse while keeping a list of references to thingIds
-    console.time("actual parsing");
+    HTomb.GUI.Views.progressView([
+      "Restoring game:",
+      "...parsing JSON..."
+    ]);
     let saveGame = JSON.parse(json, function (key, val) {
       if (val===null) {
         return null;
@@ -192,7 +228,6 @@ HTomb = (function(HTomb) {
       }
       return val;
     });
-    console.timeEnd("actual parsing");
     // swap all thingId references for their thing
     for (let i=0; i<tids.length; i++) {
       let tid = tids[i];
@@ -200,76 +235,79 @@ HTomb = (function(HTomb) {
     }
     //HTomb.Player = player.entity;
     fillListFrom(saveGame.things, HTomb.World.things);
-    console.log("filled things");
+    HTomb.GUI.Views.progressView([
+      "Restoring game:",
+      "...rebuilding map..."
+    ]);
     fillGrid3dFrom(saveGame.tiles, HTomb.World.tiles, HTomb.Types.parseTile);
     fillGrid3dFrom(saveGame.explored, HTomb.World.explored);
-    console.log("filled tiles and explored");
+    HTomb.GUI.Views.progressView([
+      "Restoring game:",
+      "...rebuilding entity lists..."
+    ]);
     fillListFrom(saveGame.creatures, HTomb.World.creatures);
     fillListFrom(saveGame.items, HTomb.World.items);
     fillListFrom(saveGame.features, HTomb.World.features);
     fillListFrom(saveGame.zones, HTomb.World.zones);
     console.log("filled entities");
-    fillListFrom(saveGame.covers, HTomb.World.covers, HTomb.Types.parseCover);
-    console.log("parsed all covers");
-    HTomb.Time.dailyCycle.turn = saveGame.dailyCycle.turn;
-    HTomb.Time.dailyCycle.minute = saveGame.dailyCycle.minute;
-    HTomb.Time.dailyCycle.hour = saveGame.dailyCycle.hour;
-    HTomb.Time.dailyCycle.day = saveGame.dailyCycle.day;
-    console.log("restored everything");
+    HTomb.GUI.Views.progressView([
+      "Restoring game:",
+      "...rebuilding liquids and ground cover..."
+    ]);
+    //fillListFrom(saveGame.covers, HTomb.World.covers, HTomb.Types.parseCover);
+    HTomb.GUI.Views.progressView([
+      "Restoring game:",
+      "...rebuilding time cycle and visibility..."
+    ]);
+    HTomb.Time.dailyCycle.turn = saveGame.cycle.turn;
+    HTomb.Time.dailyCycle.minute = saveGame.cycle.minute;
+    HTomb.Time.dailyCycle.hour = saveGame.cycle.hour;
+    HTomb.Time.dailyCycle.day = saveGame.cycle.day;
     HTomb.FOV.resetVisible();
-    console.log("reset visiblity");
     if (HTomb.Player.sight) {
       HTomb.FOV.findVisible(HTomb.Player.x, HTomb.Player.y, HTomb.Player.z, HTomb.Player.sight.range);
     }
+    HTomb.GUI.Panels.gameScreen.recenter();
     console.log("refreshed visibility");
-    HTomb.GUI.splash("Game restored.");
+    HTomb.Time.unlockTime();
+    HTomb.GUI.splash(["Game restored."]);
   };
 
+  function fillListFrom(fromList, toList, callb) {
+    // default callback is to return self
+    callb = callb || function(x) {return x;};
 
-
-  HTomb.Save.loadGame = function(json) {
-    HTomb.Time.lockTime();
-    getData();
-  }
-
-  function restoreData(parsed) {
-    let things = parsed.things;
-    let explored = parsed.explored;
-    let covers = parsed.covers;
-    let lights = parsed.lights;
-    let cycle = parsed.cycle;
-  }
-
-  //function getData(file) {
-  function getData(name) {
-    name = name || currentGame;
-    console.time("get request");
-    var file = 'saves/'+ name + '.json';
-    var xhttp = new XMLHttpRequest();
-    xhttp.onreadystatechange = function() {
-      if (xhttp.readyState == XMLHttpRequest.DONE) {
-        if (xhttp.status == 200) {
-          console.log("Got our JSON, now we should do something with it.");
-          console.log(xhttp.responseText.length);
-          let json = JSON.parse(xhttp.responseText);
-          console.timeEnd("get request");
-        } else if (xhttp.status == 400) {
-          console.log("There was an error 400");
-        } else {
-          console.log("Something other than 200 was returned.");
-        }
-        HTomb.Time.unlockTime();
+    // if fromList is an array
+    if (Array.isArray(fromList) && Array.isArray(toList)) {
+      while(toList.length>0) {
+        toList.pop();
       }
-    };
-    xhttp.open("GET", file, true);
-    xhttp.send();
-  }
-
-
-  HTomb.Save.getData = function() {
-    getData();
+      for (let i=0; i<fromList.length; i++) {
+        toList.push(callb(fromList[i]));
+      }
+    // if fromList is an associative array
+    } else {
+      for (let t in toList) {
+        delete toList[t];
+      }
+      for (let f in fromList) {
+        toList[f] = callb(fromList[f]);
+      }
+    }
   };
 
+  function fillGrid3dFrom(fromGrid, toGrid, callb) {
+  // default callback is to return self
+    callb = callb || function(x) {return x;};
+    // pull all elements from old grid
+    for (let z=0; z<NLEVELS; z++) {
+      for (let x=0; x<LEVELW; x++) {
+        for (let y=0; y<LEVELH; y++) {
+          toGrid[z][x][y] = callb(fromGrid[z][x][y]);
+        }
+      }
+    }
+  };
 
   return HTomb;
 
