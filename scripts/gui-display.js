@@ -358,6 +358,7 @@ HTomb = (function(HTomb) {
   };
 
   overlay.update = function(arr) {
+    overlay.currentLines = arr;
     HTomb.Time.stopTime();
     HTomb.Time.stopParticles();
     // we may not want to force the player to reset the GUI...but let's try it out

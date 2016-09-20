@@ -18,6 +18,7 @@ HTomb = (function(HTomb) {
     timeLocked = true;
   };
   HTomb.Time.unlockTime = function() {
+    console.log("time unlocked");
     timeLocked = false;
   };
   HTomb.Time.startTime = function() {

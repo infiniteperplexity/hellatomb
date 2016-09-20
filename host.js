@@ -8,14 +8,17 @@ app.use(express.static('public'));
 app.use(bodyParser.json({limit: '50mb'}));
 
 function serveFile(req, res) {
+  console.log("Received GET request: " + req.url);
   res.sendFile(__dirname + req.url);
 }
 app.get('/', function (req, res) {
+  console.log("Received GET request: " + req.url);
   res.sendFile(__dirname +"/index.html");
 });
 app.get('/*.html', serveFile);
 app.get('/*.js', serveFile);
 app.get('/*.json', function(req, res) {
+  console.log("Received GET request: " + req.url);
   fs.readFile(__dirname + req.url, 'utf8', function(err, data) {
     if (err) {
       return console.log(err);
@@ -24,6 +27,7 @@ app.get('/*.json', function(req, res) {
   });
 });
 app.get('/saves/', function(req, res) {
+  console.log("Received GET request: " + req.url);
   fs.readdir(__dirname + '/saves/', function(err, data) {
     if (err) {
       return console.log(err);

@@ -43,13 +43,55 @@ HTomb = (function(HTomb) {
   };
   Views.System = {};
   Views.System.save = function() {
-
+    // Uses the current or default save game name
+    HTomb.Save.saveGame();
+    Views.systemView();
   };
-  Views.System.saveAs = function() {
 
+  Views.System.saveAs = function() {
+    HTomb.Save.getDir(function(arg) {
+      let saves = JSON.parse(arg);
+      var alpha = "abcdefghijklmnopqrstuvwxyz";
+      var controls = {};
+      for (let i=0; i<saves.length; i++) {
+        controls["VK_"+alpha[i].toUpperCase()] = function() {
+            let fragment = saves[i].substring(0,saves[i].length-5);
+            return function() {
+              HTomb.Save.saveGame(fragment);
+              console.log("We need some kind of way to manage the async...");
+            }
+        }();
+        saves[i] = alpha[i]+") " + saves[i].substring(0,saves[i].length-5);
+      }
+      saves.unshift("Choose a save file to overwrite:");
+      saves.push(alpha[saves.length-1]+") ...new save...");
+      controls["VK_"+alpha[saves.length-2].toUpperCase()] = function() {
+        let entered = prompt();
+        HTomb.Save.saveGame(entered);
+        console.log("Probably got saved as " + entered);
+      };
+      GUI.Contexts.active = GUI.Contexts.new(controls);
+      GUI.Panels.overlay.update(saves);
+    });
   };
   Views.System.restore = function() {
-
+    HTomb.Save.getDir(function(arg) {
+      let saves = JSON.parse(arg);
+      var alpha = "abcdefghijklmnopqrstuvwxyz";
+      var controls = {};
+      for (let i=0; i<saves.length; i++) {
+        controls["VK_"+alpha[i].toUpperCase()] = function() {
+            let fragment = saves[i].substring(0,saves[i].length-5);
+            return function() {
+              alert(fragment);
+            }
+        }();
+        saves[i] = alpha[i]+") " + saves[i].substring(0,saves[i].length-5);
+      }
+      saves.unshift("Choose a save file to restore:");
+      GUI.Contexts.active = GUI.Contexts.new(controls);
+      GUI.Panels.overlay.update(saves);
+    });
   };
   Views.System.quit = function() {
     console.log("testing");
