@@ -30,6 +30,16 @@ HTomb = (function(HTomb) {
   var GUI = HTomb.GUI;
   var Views = GUI.Views;
 
+  //GUI.Contexts.stashed = null;
+  GUI.Contexts.frozen = GUI.Contexts.new({});
+  GUI.Contexts.frozen.clickTile = function() {};
+  GUI.Contexts.frozen.rightClickTile = function() {};
+  GUI.Contexts.frozen.mouseTile = function() {};
+  Views.progressView = function(arr) {
+    GUI.Contexts.active = GUI.Contexts.frozen;
+    GUI.Panels.overlay.update(arr);
+  };
+
   Views.systemView = function() {
     GUI.Contexts.active = GUI.Contexts.system;
     // it would be nice if "static menu" were a thing

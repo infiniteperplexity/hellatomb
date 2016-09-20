@@ -22,7 +22,8 @@ HTomb = (function(HTomb) {
     {
         splitby: 1000,
         progress: function(i) {
-          console.log("%"+parseInt(100*i/totalN) + " complete (" + i + " entities.)");
+          console.log(parseInt(100*i/totalN).toString() + "% complete (" + i + " entities.)");
+          HTomb.GUI.Views.progressView(["Saving game:",parseInt(100*i/totalN).toString() + "% complete"]);
         },
         then: function(rslt) {
           HTomb.GUI.pushMessage("Finished saving " + rslt.length + " entities.");
@@ -47,6 +48,7 @@ HTomb = (function(HTomb) {
           //HTomb.Save.restoreGame(json);
           //console.timeEnd("complex parse");
           postData(name, json);
+          HTomb.GUI.splash(["Finished saving "+"'"+name+"'."]);
         }
       }
     );
@@ -59,7 +61,6 @@ HTomb = (function(HTomb) {
     xhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
     xhttp.send(json);
     console.log("probably should have success/fail message...");
-    alert("game probably got saved!");
     HTomb.Time.unlockTime();
   }
   // Helper function to split job and unlock DOM
