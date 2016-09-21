@@ -4,6 +4,7 @@ HTomb = (function(HTomb) {
   let LEVELW = HTomb.Constants.LEVELW;
   let LEVELH = HTomb.Constants.LEVELH;
   let NLEVELS = HTomb.Constants.NLEVELS;
+  let coord = HTomb.Utils.coord;
 
   // Global value for the name of the current game
   HTomb.Save.currentGame = "test";
@@ -201,7 +202,7 @@ HTomb = (function(HTomb) {
         return null;
       } else if (val.tid) {
         tids.push([this,key,val]);
-        return undefined;
+        return val.tid;
       } else if (val.ItemContainer) {
         let ic = new HTomb.ItemContainer();
         ic.parent = this;
@@ -210,7 +211,11 @@ HTomb = (function(HTomb) {
           if (val.ItemContainer[i]===undefined) {
             continue;
           }
-          ic.push(val.ItemContainer[i]);
+          if (val.ItemContainer[i]===null || typeof(val.ItemContainer[i])==="number") {
+            // This should never happen...but it does because of how the order goes
+            continue;
+          }
+          //ic.push(val.ItemContainer[i]);
         }
         return ic;
       } else if (val.template) {
@@ -221,18 +226,39 @@ HTomb = (function(HTomb) {
             dummy[p] = val[p];
           }
         }
-        if (val.template==="Player") {
-          console.log("found player");
-          player = val;
-        }
+        //if (val.template==="Player") {
+        //  player = dummy;
+        //}
+        return dummy;
       }
       return val;
     });
     // swap all thingId references for their thing
+    var thing1;
+    var thing2;
+    var thingOne;
+    var thingTwo;
     for (let i=0; i<tids.length; i++) {
       let tid = tids[i];
+      if (tid[0].template==="Player") {
+        //player = tid[0];
+        console.log(["player",tid,saveGame.things[tid[2].tid]]);
+        thing1 = saveGame.things[tid[2].tid];
+        thing2 = tid[0];
+      }
+      if (tid[2].tid===92310) {
+        console.log(["Player",tid,saveGame.things[tid[2].tid]]);
+        player = tid[0];
+        thingOne = tid[0];
+        thingTwo = saveGame.things[tid[2].tid];
+      }
+      //92310
       tid[0][tid[1]] = saveGame.things[tid[2].tid];
     }
+    console.log([thing1, thingOne, thing1===thingOne]);
+    console.log([thing2, thingTwo, thing2===thingTwo]);
+    console.log(["player",player]);
+    HTomb.Player = player;
     //HTomb.Player = player.entity;
     fillListFrom(saveGame.things, HTomb.World.things);
     HTomb.GUI.Views.progressView([
@@ -245,16 +271,59 @@ HTomb = (function(HTomb) {
       "Restoring game:",
       "...rebuilding entity lists..."
     ]);
-    fillListFrom(saveGame.creatures, HTomb.World.creatures);
-    fillListFrom(saveGame.items, HTomb.World.items);
-    fillListFrom(saveGame.features, HTomb.World.features);
-    fillListFrom(saveGame.zones, HTomb.World.zones);
+    console.log(saveGame);
+
+    while(HTomb.World.things.length>0) {
+      HTomb.World.things.pop();
+    }
+    for (let t in HTomb.World.creatures) {
+      HTomb.World.creatures[t] = null;
+    }
+    for (let t in HTomb.World.features) {
+      HTomb.World.features[t] = null;
+    }
+    for (let t in HTomb.World.items) {
+      HTomb.World.items[t] = null;
+    }
+    for (let t in HTomb.World.zones) {
+      HTomb.World.zones[t] = null;
+    }
+    for (let t in HTomb.World.covers) {
+      HTomb.World.covers[t] = null;
+    }
+    for (let t = 0; t<saveGame.things.length; t++) {
+      let thing = saveGame.things[t];
+      let x = thing.x;
+      let y = thing.y;
+      let z = thing.z;
+      HTomb.World.things[t] = thing;
+      if (thing.creature) {
+        HTomb.World.creatures[coord(x,y,z)]=thing;
+      }
+      if (thing.feature) {
+        HTomb.World.features[coord(x,y,z)]=thing;
+      }
+      if (thing.zone) {
+        HTomb.World.zones[coord(x,y,z)]=thing;
+      }
+      if (thing.item) {
+        if (x!==null && y!==null && z!==null) {
+          //console.log(thing);
+          //thing.place(x,y,z);
+        }
+      }
+    }
+    //console.log(["Creatures length",saveGame.creatures.length]);
+    //fillListFrom(saveGame.creatures, HTomb.World.creatures);
+    //fillListFrom(saveGame.items, HTomb.World.items);
+    //fillListFrom(saveGame.features, HTomb.World.features);
+    //fillListFrom(saveGame.zones, HTomb.World.zones);
     console.log("filled entities");
     HTomb.GUI.Views.progressView([
       "Restoring game:",
       "...rebuilding liquids and ground cover..."
     ]);
-    //fillListFrom(saveGame.covers, HTomb.World.covers, HTomb.Types.parseCover);
+    fillListFrom(saveGame.covers, HTomb.World.covers, HTomb.Types.parseCover);
     HTomb.GUI.Views.progressView([
       "Restoring game:",
       "...rebuilding time cycle and visibility..."
@@ -273,6 +342,11 @@ HTomb = (function(HTomb) {
     HTomb.GUI.splash(["Game restored."]);
   };
 
+  function rebuildLists(fromThings, toList, callb) {
+    callb = callb || function(x) {return x;};
+
+  };
+
   function fillListFrom(fromList, toList, callb) {
     // default callback is to return self
     callb = callb || function(x) {return x;};
@@ -288,7 +362,8 @@ HTomb = (function(HTomb) {
     // if fromList is an associative array
     } else {
       for (let t in toList) {
-        delete toList[t];
+        toList[t] = null;
+        //delete toList[t];
       }
       for (let f in fromList) {
         toList[f] = callb(fromList[f]);
@@ -309,6 +384,30 @@ HTomb = (function(HTomb) {
     }
   };
 
+  /*
+  test = {
+    creatures: Object.keys(HTomb.World.creatures).length,
+    items: Object.keys(HTomb.World.items).length,
+    covers: Object.keys(HTomb.World.covers).length,
+    behaviors: HTomb.Utils.where(HTomb.World.things,
+      function(v,k,o) {
+        return (v.parent==="Behavior");
+      }).length
+  }
+
+  Object { creatures: 673, items: 22648, covers: 884185, behaviors: 47646 }
+
+  test2 = {};
+  for (let i in HTomb.World.things) {
+    let thing = HTomb.World.things[i];
+    let parent = thing.parent;
+    if (test2[parent]===undefined) {
+      test2[parent] = 1;
+    } else {
+    test2[parent]+=1;
+    }
+  }
+  */
   return HTomb;
 
 })(HTomb);
