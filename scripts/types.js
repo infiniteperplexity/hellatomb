@@ -11,6 +11,10 @@ HTomb = (function(HTomb) {
   	stringify: function() {
       return HTomb.Types.templates[this.parent].types.indexOf(this);
     },
+    // Alternately...
+    //stringify: function() {
+    //  return {"Type" : this.template};
+    //},
   	//parse: function(value) {
     //  console.log(["type is",this]);
     //  return HTomb.Types.templates[this.parent].types[value];

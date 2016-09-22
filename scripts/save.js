@@ -5,39 +5,6 @@ HTomb = (function(HTomb) {
   let LEVELH = HTomb.Constants.LEVELH;
   let NLEVELS = HTomb.Constants.NLEVELS;
   let coord = HTomb.Utils.coord;
-
-  HTomb.Save.restoreTest = function() {
-    //let json = '{"things": [{"me": "mod", "modle": {"tid": 1}},{"me": "player", "playr": {"tid": 0}}]}';
-    let json = '{"things": [{"me": "player", "playr": {"tid": 1}},{"me": "mod", "modle": {"tid": 0}}]}';
-    let tids = [];
-    let saveGame = JSON.parse(json, function (key, val) {
-      if (val===null) {
-        return null;
-      } else if (val.tid!==undefined) {
-        tids.push([this,key,val]);
-        return val.tid;
-      } else if (typeof(val)==="object") {
-        let dummy = Object.create({});
-        for (let p in val) {
-          if (p!=="template" || val[p]!==template[p]) {
-            dummy[p] = val[p];
-          }
-        }
-        val.swappedWith = dummy;
-        return dummy;
-      }
-      return val;
-    });
-    for (let i=0; i<tids.length; i++) {
-      let tid = tids[i];
-      if (tid[0].swappedWith) {
-        tid[0].swappedWith[tid[1]] = saveGame.things[tid[2].tid];
-      } else {
-        tid[0][tid[1]] = saveGame.things[tid[2].tid];
-      }
-    }
-    console.log(saveGame);
-  }
   // Global value for the name of the current game
   HTomb.Save.currentGame = "test";
   // Main game-saving function
