@@ -6,6 +6,38 @@ HTomb = (function(HTomb) {
   let NLEVELS = HTomb.Constants.NLEVELS;
   let coord = HTomb.Utils.coord;
 
+  HTomb.Save.restoreTest = function() {
+    //let json = '{"things": [{"me": "mod", "modle": {"tid": 1}},{"me": "player", "playr": {"tid": 0}}]}';
+    let json = '{"things": [{"me": "player", "playr": {"tid": 1}},{"me": "mod", "modle": {"tid": 0}}]}';
+    let tids = [];
+    let saveGame = JSON.parse(json, function (key, val) {
+      if (val===null) {
+        return null;
+      } else if (val.tid!==undefined) {
+        tids.push([this,key,val]);
+        return val.tid;
+      } else if (typeof(val)==="object") {
+        let dummy = Object.create({});
+        for (let p in val) {
+          if (p!=="template" || val[p]!==template[p]) {
+            dummy[p] = val[p];
+          }
+        }
+        val.swappedWith = dummy;
+        return dummy;
+      }
+      return val;
+    });
+    for (let i=0; i<tids.length; i++) {
+      let tid = tids[i];
+      if (tid[0].swappedWith) {
+        tid[0].swappedWith[tid[1]] = saveGame.things[tid[2].tid];
+      } else {
+        tid[0][tid[1]] = saveGame.things[tid[2].tid];
+      }
+    }
+    console.log(saveGame);
+  }
   // Global value for the name of the current game
   HTomb.Save.currentGame = "test";
   // Main game-saving function
@@ -200,9 +232,9 @@ HTomb = (function(HTomb) {
     let saveGame = JSON.parse(json, function (key, val) {
       if (val===null) {
         return null;
-      } else if (val.tid) {
+      } else if (val.tid!==undefined) {
         tids.push([this,key,val]);
-        return val.tid;
+        return {tid: val.tid};
       } else if (val.ItemContainer) {
         let ic = new HTomb.ItemContainer();
         ic.parent = this;
@@ -226,40 +258,24 @@ HTomb = (function(HTomb) {
             dummy[p] = val[p];
           }
         }
-        //if (val.template==="Player") {
-        //  player = dummy;
-        //}
+        val.swappedWith = dummy;
         return dummy;
       }
       return val;
     });
-    // swap all thingId references for their thing
-    var thing1;
-    var thing2;
-    var thingOne;
-    var thingTwo;
+    // Swap thingIDs for things
     for (let i=0; i<tids.length; i++) {
       let tid = tids[i];
-      if (tid[0].template==="Player") {
-        //player = tid[0];
-        console.log(["player",tid,saveGame.things[tid[2].tid]]);
-        thing1 = saveGame.things[tid[2].tid];
-        thing2 = tid[0];
+      if (tid[0].swappedWith) {
+        tid[0].swappedWith[tid[1]] = saveGame.things[tid[2].tid];
+      } else {
+        tid[0][tid[1]] = saveGame.things[tid[2].tid];
       }
-      if (tid[2].tid===92310) {
-        console.log(["Player",tid,saveGame.things[tid[2].tid]]);
-        player = tid[0];
-        thingOne = tid[0];
-        thingTwo = saveGame.things[tid[2].tid];
+      if (tid[1]==="player") {
+        player = saveGame.things[tid[2].tid];
       }
-      //92310
-      tid[0][tid[1]] = saveGame.things[tid[2].tid];
     }
-    console.log([thing1, thingOne, thing1===thingOne]);
-    console.log([thing2, thingTwo, thing2===thingTwo]);
-    console.log(["player",player]);
-    HTomb.Player = player;
-    //HTomb.Player = player.entity;
+    HTomb.Player = player.entity;
     fillListFrom(saveGame.things, HTomb.World.things);
     HTomb.GUI.Views.progressView([
       "Restoring game:",
