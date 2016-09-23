@@ -18,7 +18,10 @@ HTomb = (function(HTomb) {
   HTomb.Types.define({
     template: "Tile",
     name: "tile",
-    symbol: " "
+    symbol: " ",
+    stringify: function() {
+      return HTomb.Types.templates[this.parent].types.indexOf(this);
+    }
   });
 
   // Define specific types of tiles

@@ -295,6 +295,9 @@ HTomb = (function(HTomb) {
     template: "Cover",
     name: "cover",
     liquid: false,
+    stringify: function() {
+      return HTomb.Types.templates[this.parent].types.indexOf(this);
+    },
     shimmer: function() {
       var bg = ROT.Color.fromString(this.bg);
       bg = ROT.Color.randomize(bg,[bg[0]/16, bg[1]/16, bg[2]/16]);

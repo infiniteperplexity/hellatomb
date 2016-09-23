@@ -199,23 +199,28 @@ HTomb = (function(HTomb) {
     let saveGame = JSON.parse(json, function (key, val) {
       if (val===null) {
         return null;
-      } else if (val.tid!==undefined) {
+      } else if (val.Type!==undefined) {
+        // should not require tracking swaps
+        return HTomb.Types.templates[val.Type];
+      }else if (val.tid!==undefined) {
         tids.push([this,key,val]);
         return {tid: val.tid};
       } else if (val.ItemContainer) {
+        // should require tracking swaps
         let ic = new HTomb.ItemContainer();
+        // This doesn't set correctly.
         ic.parent = this;
+        console.log("parent is "+HTomb.Save.stringifyThing(this,true));
         for (let i=0; i<val.ItemContainer.length; i++) {
-          // length somehow gets really messed up here...
+          // I saw length get messed up sometimes but I'm not sure it still does
           if (val.ItemContainer[i]===undefined) {
             continue;
           }
-          if (val.ItemContainer[i]===null || typeof(val.ItemContainer[i])==="number") {
-            // This should never happen...but it does because of how the order goes
-            continue;
-          }
-          //ic.push(val.ItemContainer[i]);
+          ic[i] = val.ItemContainer[i];
+          // You have to set length manually it seems
+          ic.length=i+1;
         }
+        val.ItemContainer.swappedWith = ic;
         return ic;
       } else if (val.template) {
         let template = HTomb.Things.templates[val.template];
@@ -259,20 +264,26 @@ HTomb = (function(HTomb) {
     while(HTomb.World.things.length>0) {
       HTomb.World.things.pop();
     }
-    for (let t in HTomb.World.creatures) {
-      HTomb.World.creatures[t] = null;
+    var oldkeys;
+    oldkeys = Object.keys(HTomb.World.creatures);
+    for (let i=0; i<oldkeys.length; i++) {
+      delete HTomb.World.creatures[oldkeys[i]];
     }
-    for (let t in HTomb.World.features) {
-      HTomb.World.features[t] = null;
+    oldkeys = Object.keys(HTomb.World.features);
+    for (let i=0; i<oldkeys.length; i++) {
+      delete HTomb.World.features[oldkeys[i]];
     }
-    for (let t in HTomb.World.items) {
-      HTomb.World.items[t] = null;
+    oldkeys = Object.keys(HTomb.World.items);
+    for (let i=0; i<oldkeys.length; i++) {
+      delete HTomb.World.items[oldkeys[i]];
     }
-    for (let t in HTomb.World.zones) {
-      HTomb.World.zones[t] = null;
+    oldkeys = Object.keys(HTomb.World.zones);
+    for (let i=0; i<oldkeys.length; i++) {
+      delete HTomb.World.zones[oldkeys[i]];
     }
-    for (let t in HTomb.World.covers) {
-      HTomb.World.covers[t] = null;
+    oldkeys = Object.keys(HTomb.World.covers);
+    for (let i=0; i<oldkeys.length; i++) {
+      delete HTomb.World.covers[oldkeys[i]];
     }
     for (let t = 0; t<saveGame.things.length; t++) {
       let thing = saveGame.things[t];
@@ -291,16 +302,11 @@ HTomb = (function(HTomb) {
       }
       if (thing.item) {
         if (x!==null && y!==null && z!==null) {
-          //console.log(thing);
-          //thing.place(x,y,z);
+          // should I do this manually instead of using thing.place?
+          thing.place(x,y,z);
         }
       }
     }
-    //console.log(["Creatures length",saveGame.creatures.length]);
-    //fillListFrom(saveGame.creatures, HTomb.World.creatures);
-    //fillListFrom(saveGame.items, HTomb.World.items);
-    //fillListFrom(saveGame.features, HTomb.World.features);
-    //fillListFrom(saveGame.zones, HTomb.World.zones);
     console.log("filled entities");
     HTomb.GUI.Views.progressView([
       "Restoring game:",
@@ -319,7 +325,7 @@ HTomb = (function(HTomb) {
     if (HTomb.Player.sight) {
       HTomb.FOV.findVisible(HTomb.Player.x, HTomb.Player.y, HTomb.Player.z, HTomb.Player.sight.range);
     }
-    HTomb.GUI.Panels.gameScreen.recenter();
+    HTomb.GUI.Panels.gameScreen.center(HTomb.Player.x,HTomb.Player.y);
     console.log("refreshed visibility");
     HTomb.Time.unlockTime();
     HTomb.GUI.splash(["Game restored."]);
@@ -366,31 +372,6 @@ HTomb = (function(HTomb) {
       }
     }
   };
-
-  /*
-  test = {
-    creatures: Object.keys(HTomb.World.creatures).length,
-    items: Object.keys(HTomb.World.items).length,
-    covers: Object.keys(HTomb.World.covers).length,
-    behaviors: HTomb.Utils.where(HTomb.World.things,
-      function(v,k,o) {
-        return (v.parent==="Behavior");
-      }).length
-  }
-
-  Object { creatures: 673, items: 22648, covers: 884185, behaviors: 47646 }
-
-  test2 = {};
-  for (let i in HTomb.World.things) {
-    let thing = HTomb.World.things[i];
-    let parent = thing.parent;
-    if (test2[parent]===undefined) {
-      test2[parent] = 1;
-    } else {
-    test2[parent]+=1;
-    }
-  }
-  */
   return HTomb;
 
 })(HTomb);
