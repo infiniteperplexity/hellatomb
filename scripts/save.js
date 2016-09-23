@@ -95,6 +95,9 @@ HTomb = (function(HTomb) {
       } else if (val===null) {
         //console.log("could I just do null normally?");
         return null;
+      } else if (key==="container") {
+        // skip item reference to ItemContainers
+        return undefined;
       }
       // if it has special instructions, use those to stringify
       if (val.stringify) {
@@ -189,6 +192,7 @@ HTomb = (function(HTomb) {
 
   HTomb.Save.restoreGame = function(json) {
     let tids = [];
+    let icontains = [];
     //let templates = [];
     let player = null;
     // parse while keeping a list of references to thingIds
@@ -199,10 +203,13 @@ HTomb = (function(HTomb) {
     let saveGame = JSON.parse(json, function (key, val) {
       if (val===null) {
         return null;
+      // remove this once parsing is corrected
+      } else if (key==="container") {
+        return undefined;
       } else if (val.Type!==undefined) {
         // should not require tracking swaps
         return HTomb.Types.templates[val.Type];
-      }else if (val.tid!==undefined) {
+      } else if (val.tid!==undefined) {
         tids.push([this,key,val]);
         return {tid: val.tid};
       } else if (val.ItemContainer) {
@@ -211,6 +218,7 @@ HTomb = (function(HTomb) {
         // This doesn't set correctly.
         ic.parent = this;
         console.log("parent is "+HTomb.Save.stringifyThing(this,true));
+        icontains.push([ic]);
         for (let i=0; i<val.ItemContainer.length; i++) {
           // I saw length get messed up sometimes but I'm not sure it still does
           if (val.ItemContainer[i]===undefined) {
@@ -219,6 +227,7 @@ HTomb = (function(HTomb) {
           ic[i] = val.ItemContainer[i];
           // You have to set length manually it seems
           ic.length=i+1;
+          icontains[icontains.length-1].push(val.ItemContainer[i]);
         }
         val.ItemContainer.swappedWith = ic;
         return ic;
@@ -248,6 +257,20 @@ HTomb = (function(HTomb) {
       }
     }
     HTomb.Player = player.entity;
+    // Fix ItemContainer references
+    for (let i=0; i<icontains.length; i++) {
+      let container = icontains[i][0];
+      if (container.parent.swappedWith) {
+        container.parent = container.parent.swappedWith;
+      }
+      for (let j=1; j<icontains[i].length; j++) {
+        let item = icontains[i][j];
+        if (item.tid) {
+          item = saveGame.things[item.tid];
+        }
+        item.container = container;
+      }
+    }
     fillListFrom(saveGame.things, HTomb.World.things);
     HTomb.GUI.Views.progressView([
       "Restoring game:",
