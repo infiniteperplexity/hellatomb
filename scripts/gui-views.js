@@ -436,7 +436,7 @@ HTomb = (function(HTomb) {
     GUI.Contexts.active = GUI.Contexts.workshops;
     let alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
     for (let i=0; i<alphabet.length; i++) {
-      if (i>=w.makes.length) {
+      if (w.makes===undefined || i>=w.makes.length) {
         delete GUI.Contexts.workshops.boundKeys["VK_"+alphabet[i]];
       }
       else {
