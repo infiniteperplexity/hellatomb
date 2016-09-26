@@ -255,6 +255,32 @@ HTomb = (function(HTomb) {
       }
       return true;
     },
+    // experiment with a filter to dig only one level at a time
+    designateSquares: function(squares, options) {
+      var tallest = -1;
+      for (var j=0; j<squares.length; j++) {
+        var s = squares[j];
+        let tile = HTomb.World.tiles[s[2]][s[0]][s[1]];
+        if (tile===HTomb.Tiles.WallTile) {
+          tallest = Math.max(tallest,1);
+        } else if (tile===HTomb.Tiles.UpSlopeTile) {
+          tallest = Math.max(tallest,1);
+        } else if (tile===HTomb.Tiles.FloorTile) {
+          tallest = Math.max(tallest,0);
+        }
+      }
+      if (tallest===1) {
+        squares = squares.filter(function(e,i,a) {
+          return (HTomb.World.tiles[e[2]][e[0]][e[1]]===HTomb.Tiles.UpSlopeTile
+                  || HTomb.World.tiles[e[2]][e[0]][e[1]]===HTomb.Tiles.WallTile);
+        });
+      } else if (tallest===0) {
+        squares = squares.filter(function(e,i,a) {
+          return (HTomb.World.tiles[e[2]][e[0]][e[1]]===HTomb.Tiles.FloorTile);
+        });
+      }
+      HTomb.Things.templates.Task.designateSquares.call(this, squares, options);
+    },
     work: function(x,y,z) {
       // If this was initially placed illegally in unexplored territory, remove it now
       var t = (HTomb.World.tiles[z][x][y]);
@@ -312,6 +338,30 @@ HTomb = (function(HTomb) {
       } else {
         return true;
       }
+    },
+    // experiment with a filter to build only one level at a time
+    designateSquares: function(squares, options) {
+      var lowest = 1;
+      for (var j=0; j<squares.length; j++) {
+        var s = squares[j];
+        let tile = HTomb.World.tiles[s[2]][s[0]][s[1]];
+        if (tile===HTomb.Tiles.EmptyTile || tile===HTomb.Tiles.DownSlopeTile) {
+          lowest = Math.min(lowest,-1);
+        } else if (tile===HTomb.Tiles.FloorTile) {
+          lowest = Math.min(lowest,0);
+        }
+      }
+      if (lowest===-1) {
+        squares = squares.filter(function(e,i,a) {
+          return (HTomb.World.tiles[e[2]][e[0]][e[1]]===HTomb.Tiles.EmptyTile
+                  || HTomb.World.tiles[e[2]][e[0]][e[1]]===HTomb.Tiles.DownSlopeTile);
+        });
+      } else if (lowest===0) {
+        squares = squares.filter(function(e,i,a) {
+          return (HTomb.World.tiles[e[2]][e[0]][e[1]]===HTomb.Tiles.FloorTile);
+        });
+      }
+      HTomb.Things.templates.Task.designateSquares.call(this, squares, options);
     },
     designate: function(assigner) {
       HTomb.GUI.selectSquareZone(assigner.z,this.designateSquares,{
