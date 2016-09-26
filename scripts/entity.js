@@ -44,9 +44,12 @@ HTomb = (function(HTomb) {
       if (this.zone) {
         let zones = HTomb.World.zones;
         if (zones[c]) {
+          let zn = zones[c];
           HTomb.Debug.pushMessage("Overwrote a zone!");
-          zones[c].remove();
-          zones[c].despawn();
+          //zones[c].remove();
+          //zones[c].despawn();
+          zn.remove();
+          zn.despawn();
         }
         zones[c] = this;
       }
