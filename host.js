@@ -1,5 +1,6 @@
-var port = process.env.PORT || 3000;
+//var port = process.env.PORT || 3000;
 //var port = 8080;
+var port = 8081;
 var express = require('express');
 var app = express();
 var fs = require('fs');
@@ -38,7 +39,13 @@ app.get('/saves/', function(req, res) {
 });
 app.post('/saves/*.json', function (req, res) {
   console.log("Received POST request: " + req.url);
-  fs.writeFile("." + req.url, JSON.stringify(req.body), function(err) {
+  console.log(length(JSON.stringify(req.body)));
+  //fs.writeFile("." + req.url, JSON.stringify(req.body), function(err) {
+  //  if(err) {
+  //    return console.log(err);
+  //  }
+  //});
+  fs.writeFile("." + req.url, JSON.stringify("foobar"), function(err) {
     if(err) {
       return console.log(err);
     }
