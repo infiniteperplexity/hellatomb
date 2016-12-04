@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>HellaTomb</title>
+		<script src="scripts/rot.js"></script>
+		<script>
+			function disp(fnt, sz) {
+				let w = 75;
+				fnt = fnt || "monospace";
+				sz = sz || 15;
+				let d = new ROT.Display({
+					width: w,
+					height: 1,
+					fontSize: sz,
+					fontFamily: fnt
+				});
+				document.body.appendChild(d.getContainer());
+				d.drawText(0,0,fnt+": The quick brown fox jumps over the lazy dog.")
+				document.body.appendChild(document.createElement("br"));
+				console.log(d.getContainer().getContext('2d').font);
+				let c = document.createElement("canvas");
+				c.height = sz;
+				c.width = w*sz;
+				let ctx = c.getContext("2d");
+				ctx.fillStyle = "black";
+				ctx.fillRect(0,0,w*sz,sz);
+				document.body.appendChild(c);
+				document.body.appendChild(document.createElement("br"));
+				ctx.fillStyle = "white";
+				ctx.font = sz+"px "+fnt;
+				console.log(ctx.font);
+				ctx.fillText(fnt+": The quick brown fox jumps over the lazy dog.",0,sz);
+			}
+			function init() {
+				disp("fakefont");
+				disp("Monaco");
+				disp("Lucida Console");
+				disp("Verdana");
+			}
+		</script>
+	</head>
+	<style>
+	@font-face {
+		font-family: 'Monaco';
+		src: url(fonts/monaco.ttf) format('truetype');
+		font-weight: normal;
+		font-style: normal;
+	}
+	@font-face {
+		font-family: 'Lucida Console';
+		src: url(fonts/lucon.ttf) format('truetype');
+		font-weight: normal;
+		font-style: normal;
+	}
+	@font-face {
+		font-family: 'Verdana';
+		src: url(fonts/verdana.ttf) format('truetype');
+		font-weight: normal;
+		font-style: normal;
+	}
+	</style>
+	<body onload="init();">
+	</body>
+</html>
